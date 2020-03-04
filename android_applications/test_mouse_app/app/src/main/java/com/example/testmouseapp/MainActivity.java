@@ -2,13 +2,18 @@ package com.example.testmouseapp;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+
 import android.content.Context;
+
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
@@ -23,6 +28,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     float xmin = 0;
     float ymax = 0;
     float ymin = 0;
+
+    //accelerometer bounds
+    float x_pos_bound;
+    float x_neg_bound;
+    float y_pos_bound;
+    float y_neg_bound;
+
+    //printed accelerometer values
+    float val_x;
+    float val_y;
+
+    //calibration vars
+    boolean calibrating = false;
+    int num_readings = 0;
+    int readings_max = 10000;  //change this to determine how many readings the accelerometer calibrates on
+    float x_total;
+    float y_total;
+    float x_pad = 0;
+    float y_pad = 0;
 
 
     @Override
@@ -44,37 +68,95 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Log.d(TAG, "onCreate: Registered accelerometer listener");
 
 
+        Button calibrate = findViewById(R.id.calibrate);
+        calibrate.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                activateCalibrate(v);
+            }
+        });
     }
 
     //on sensor value change, display X and Z values
     @Override
     public void onSensorChanged(SensorEvent event) {
-        if (event.values[0] > 0.0254 || event.values[0] < -0.0254) {  //attempt to ignore small values
 
-            if (event.values[0] > xmax) {xmax = event.values[0];}
-            if (event.values[0] < xmin) {xmin = event.values[0];}
+        TextView live_acceleration;
+        TextView max_acceleration;
 
-            if (event.values[1] > ymax) { ymax = event.values[1];}
-            if (event.values[1] < ymin) { ymin = event.values[1];}
+        live_acceleration = findViewById(R.id.acceleration);
+        max_acceleration = findViewById(R.id.maximums);
 
+        if (calibrating) {
+            live_acceleration.setText("Calibrating");
+            calibrateAccelerometer(event);
+        }
 
-            TextView live_acceleration;
-            TextView max_acceleration;
+        else {
 
-            live_acceleration = (TextView)findViewById(R.id.acceleration);
-            max_acceleration = (TextView)findViewById(R.id.maximums);
+            //if (event.values[0] > 0.0254 || event.values[0] < -0.0254) {  //attempt to ignore small values
+            if (true) {
 
-            //Log.d(TAG, "onSensorChanged: X: " + event.values[0] + " Y: " + event.values[1] + " Z: " + event.values[2]);
-            String data_live = "X: " + event.values[0] + "\nY: " + event.values[1];
-            String data_max = "X Maximum: " + xmax + "\nX Minimum: " + xmin + "\n\nY Maximum: " + ymax + "\nY Minimum: " + ymin;
+                if (event.values[0] > xmax) {xmax = event.values[0];}
+                if (event.values[0] < xmin) {xmin = event.values[0];}
 
-            live_acceleration.setText(data_live);
-            max_acceleration.setText(data_max);
+                if (event.values[1] > ymax) { ymax = event.values[1];}
+                if (event.values[1] < ymin) { ymin = event.values[1];}
+
+                val_x = event.values[0] + x_pad;
+                val_y = event.values[1] + y_pad;
+
+                //Log.d(TAG, "onSensorChanged: X: " + event.values[0] + " Y: " + event.values[1] + " Z: " + event.values[2]);
+                String data_live = "X: " + val_x + "\nY: " + val_y;
+                String data_max = "X Maximum: " + xmax + "\nX Minimum: " + xmin + "\n\nY Maximum: " + ymax + "\nY Minimum: " + ymin;
+
+                live_acceleration.setText(data_live);
+                max_acceleration.setText(data_max);
+            }
+
+            else {
+
+                String data_live = "X: " + 0 + "\nY: " + 0;
+                String data_max = "X Maximum: " + xmax + "\nX Minimum: " + xmin + "\n\nY Maximum: " + ymax + "\nY Minimum: " + ymin;
+
+                live_acceleration.setText(data_live);
+                max_acceleration.setText(data_max);
+            }
+        }
+
+    }
+
+    public void calibrateAccelerometer(SensorEvent event) {
+        num_readings += 1;
+        xmax = 0;
+        ymax = 0;
+        xmin = 0;
+        ymin = 0;
+
+        if (num_readings > readings_max) {
+            x_total += event.values[0];
+            y_total += event.values[1];
+        }
+
+        else {
+            x_pad = x_total / readings_max;
+            y_pad = y_total / readings_max;
+
+            calibrating = false;
+            num_readings = 0;
+            Log.d(TAG, "accelerometer calibrated");
         }
     }
+
+    public void activateCalibrate(View view) {
+        calibrating = true;
+        x_total = 0;
+        y_total = 0;
+    }
+
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
     }
 }
+
