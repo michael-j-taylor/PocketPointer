@@ -3,6 +3,7 @@ package com.example.testmouseapp;
 import androidx.appcompat.app.AppCompatActivity;
 
 
+import android.annotation.TargetApi;
 import android.content.Context;
 
 import android.hardware.Sensor;
@@ -10,6 +11,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
