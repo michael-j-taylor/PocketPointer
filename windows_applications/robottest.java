@@ -11,7 +11,7 @@ public class robottest {
         Runtime run = Runtime.getRuntime(); 
         run.exec(command); 
         try { 
-            Thread.sleep(2000); 
+            Thread.sleep(2000); //wait 2s for notepad to open, could probably be reduced on faster computers
         } 
         catch (InterruptedException e) 
         { 
@@ -22,8 +22,6 @@ public class robottest {
         Robot robot = new Robot(); 
   
         // Press keys using robot. A gap of 
-        // of 500 mili seconds is added after 
-        // every key press 
         robot.keyPress(KeyEvent.VK_F);
     }
 }

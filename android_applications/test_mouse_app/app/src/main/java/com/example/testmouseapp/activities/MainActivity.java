@@ -1,22 +1,21 @@
-package com.example.testmouseapp;
+package com.example.testmouseapp.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
-
-
-import android.annotation.TargetApi;
 import android.content.Context;
-
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import com.example.testmouseapp.R;
+
+import com.example.testmouseapp.dataOperations.MovingAverage;
+import com.example.testmouseapp.dataOperations.Filter;
+
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -68,7 +67,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);  //can be changed to different delays
 
         Log.d(TAG, "onCreate: Registered accelerometer listener");
-
 
         Button calibrate = findViewById(R.id.calibrate);
         calibrate.setOnClickListener(new View.OnClickListener() {
