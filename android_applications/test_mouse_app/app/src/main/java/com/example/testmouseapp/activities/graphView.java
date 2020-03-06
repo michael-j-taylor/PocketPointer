@@ -1,4 +1,4 @@
-package com.example.testmouseapp;
+package com.example.testmouseapp.activities;
 
 import android.content.Context;
 import android.graphics.Canvas;
