@@ -14,6 +14,8 @@ import android.widget.TextView;
 import com.example.testmouseapp.R;
 
 import com.example.testmouseapp.dataOperations.MovingAverage;
+import com.example.testmouseapp.dataOperations.Filter;
+
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
