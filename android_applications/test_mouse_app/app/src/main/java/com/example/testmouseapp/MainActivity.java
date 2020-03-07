@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     //calibration vars
     boolean calibrating = false;
     int num_readings = 0;
-    int readings_max = 10000;  //change this to determine how many readings the accelerometer calibrates on
+    int readings_max = 100000;  //change this to determine how many readings the accelerometer calibrates on
     float x_total;
     float y_total;
     float x_pad = 0;
