@@ -33,4 +33,7 @@ public class MovingAverage {
         BigDecimal divisor = BigDecimal.valueOf(window.size());
         return sum.divide(divisor, 2, RoundingMode.HALF_UP);
     }
+
+
+
 }
