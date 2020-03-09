@@ -1,6 +1,8 @@
 package com.example.testmouseapp.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -10,11 +12,13 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.example.testmouseapp.R;
 
 import com.example.testmouseapp.dataOperations.MovingAverage;
 import com.example.testmouseapp.dataOperations.Filter;
+import com.google.android.material.snackbar.Snackbar;
 
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
@@ -48,6 +52,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     float y_total;
     float x_pad = 0;
     float y_pad = 0;
+
+    //bluetooth vars
 
 
     @Override
@@ -157,6 +163,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
+    }
+
+    public void checkBluetooth(View view) {
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        if (bluetoothAdapter == null) {
+            String noBtMsg = "Your device does not support Bluetooth. Please connect using a USB cable.";
+            Snackbar noBtSnackbar = Snackbar.make(findViewById(R.id.MainActivityCoordinator), noBtMsg, Snackbar.LENGTH_LONG);
+            noBtSnackbar.show();
+        }
+        else {
+            String hasBtMsg = "Your device suppports Bluetooth.";
+            Snackbar hasBtSnackbar = Snackbar.make(findViewById(R.id.MainActivityCoordinator), hasBtMsg, Snackbar.LENGTH_LONG);
+            hasBtSnackbar.show();
+        }
     }
 }
 
