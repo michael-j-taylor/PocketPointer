@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
         //setup listener
-        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);  //can be changed to different delays //could use 1000000/polling_rate
+        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);  //can be changed to different delays //could use 1000000/polling_rate
 
         Log.d(TAG, "onCreate: Registered accelerometer listener");
 
@@ -134,8 +134,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 magnitude = (float) Math.sqrt(Math.pow(val_x, 2) + Math.pow(val_y, 2));
 
                 if (magnitude < threshold) {
-                    val_x_ave = 0;
-                    val_y_ave = 0;
+                    val_x = 0;
+                    val_y = 0;
                 }
                 x_vel = x_vel + val_x * time;
                 y_vel = y_vel + val_y * time;
@@ -145,23 +145,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                 //Log.d(TAG, "onSensorChanged: X: " + event.values[0] + " Y: " + event.values[1] + " Z: " + event.values[2]);
                 String data_live = "X: " + val_x + "\nY: " + val_y;
-                String data_max = "X Maximum: " + String.format("%.3d", xmax) + "\nX Minimum: " +
-                        String.format("%.3d", xmin) + "\n\nY Maximum: " + String.format("%.3d", ymax) + "\nY Minimum: " + String.format("%.3d", ymin);
+                String data_max = "X Maximum: " + String.format("%.3f", xmax) + "\nX Minimum: " +
+                        String.format("%.3f", xmin) + "\n\nY Maximum: " + String.format("%.3f", ymax) + "\nY Minimum: " + String.format("%.3f", ymin);
                 live_acceleration.setText(data_live);
                 max_acceleration.setText(data_max);
                 position.setText("Position: " + String.format("%.3f",x_pos) + ", " + String.format("%.3f",y_pos));
                 startTime = Calendar.getInstance().getTimeInMillis();
-                measurementCount = 0;
+                measurementCount = 1;
             }
             else {
                 //String data_live = "X: " + 0 + "\nY: " + 0;
-                String data_max = "X Maximum: " + String.format("%.3d", xmax) + "\nX Minimum: " +
-                        String.format("%.3d", xmin) + "\n\nY Maximum: " + String.format("%.3d", ymax) + "\nY Minimum: " + String.format("%.3d", ymin);
+                String data_max = "X Maximum: " + String.format("%.3f", xmax) + "\nX Minimum: " +
+                        String.format("%.3f", xmin) + "\n\nY Maximum: " + String.format("%.3f", ymax) + "\nY Minimum: " + String.format("%.3f", ymin);
                 String data_live = "X: " + val_x + "\nY: " + val_y;
-                live_acceleration.setText(data_live);
+                //live_acceleration.setText(data_live);
                 max_acceleration.setText(data_max);
                 magnitude = (float) Math.sqrt(Math.pow(val_x, 2) + Math.pow(val_y, 2));
-                if (magnitude > threshold) {
+                if (magnitude >= threshold) {
                     val_x_ave += val_x;
                     val_y_ave += val_y;
                     x_jerk = (val_x - val_x_pre)*time;
