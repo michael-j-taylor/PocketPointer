@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -14,12 +15,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.example.testmouseapp.R;
 
 import com.example.testmouseapp.dataOperations.MovingAverage;
 import com.example.testmouseapp.dataOperations.Filter;
-import com.google.android.material.snackbar.Snackbar;
-
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -54,6 +55,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     float y_pad = 0;
 
     //bluetooth vars
+    boolean bt_capable = false;
+    boolean bt_enabled = false;
+    final int REQUEST_ENABLE_BT = 3;
 
 
     @Override
@@ -80,6 +84,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 activateCalibrate(v);
             }
         });
+
+
+        //Check whether device has Bluetooth hardware
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+
+        if (bluetoothAdapter == null) {
+            String noBtMsg = "Your device does not support Bluetooth. Please connect using a USB cable.";
+
+            Toast noBtToast = Toast.makeText(getApplicationContext(), noBtMsg, Toast.LENGTH_LONG);
+            noBtToast.show();
+        }
+        else {
+            bt_capable = true;
+            if (!bluetoothAdapter.isEnabled()) {
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+            }
+        }
     }
 
     //on sensor value change, display X and Z values
@@ -170,13 +193,33 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         if (bluetoothAdapter == null) {
             String noBtMsg = "Your device does not support Bluetooth. Please connect using a USB cable.";
-            Snackbar noBtSnackbar = Snackbar.make(findViewById(R.id.MainActivityCoordinator), noBtMsg, Snackbar.LENGTH_LONG);
-            noBtSnackbar.show();
+
+            Toast noBtToast = Toast.makeText(getApplicationContext(), noBtMsg, Toast.LENGTH_LONG);
+            noBtToast.show();
         }
         else {
-            String hasBtMsg = "Your device suppports Bluetooth.";
-            Snackbar hasBtSnackbar = Snackbar.make(findViewById(R.id.MainActivityCoordinator), hasBtMsg, Snackbar.LENGTH_LONG);
-            hasBtSnackbar.show();
+            String hasBtMsg = "Your device supports Bluetooth.";
+            Toast hasBtToast = Toast.makeText(getApplicationContext(), hasBtMsg, Toast.LENGTH_LONG);
+            hasBtToast.show();
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_ENABLE_BT) {
+            if (resultCode == RESULT_OK) {
+                String btEnabledMsg = "Thank you for activating Bluetooth.";
+
+                Toast noBtToast = Toast.makeText(getApplicationContext(), btEnabledMsg, Toast.LENGTH_LONG);
+                noBtToast.show();
+                bt_enabled = true;
+            }
+            else if (resultCode == RESULT_CANCELED) {
+                String btDisabledMsg = "You must enable Bluetooth for wireless connection.";
+
+                Toast noBtToast = Toast.makeText(getApplicationContext(), btDisabledMsg, Toast.LENGTH_LONG);
+                noBtToast.show();
+            }
         }
     }
 }
