@@ -16,22 +16,25 @@ public class MovingAverage {
         this.period = period;
     }
 
-    public void addToWindow(BigDecimal value) {
-        sum = sum.add(value);
-        window.add(value);
+    public void addToWindow(double value) {
+        BigDecimal BGval = BigDecimal.valueOf(value);
+        sum = sum.add(BGval);
+        window.add(BGval);
 
         if (window.size() > period) {
             sum = sum.subtract(window.remove());
         }
     }
 
-    public BigDecimal calculateAverage() {
+    //TODO: fix weird float-double-BigDecimal disparity across code
+    public float calculateAverage() {
         if (window.isEmpty()) {
-            return BigDecimal.ZERO;
+            return 0;
         }
 
         BigDecimal divisor = BigDecimal.valueOf(window.size());
-        return sum.divide(divisor, 2, RoundingMode.HALF_UP);
+        BigDecimal BGrslt =  sum.divide(divisor, 2, RoundingMode.HALF_UP);
+        return BGrslt.floatValue();
     }
 
 

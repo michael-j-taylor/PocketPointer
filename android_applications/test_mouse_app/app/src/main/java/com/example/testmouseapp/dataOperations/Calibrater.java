@@ -11,5 +11,5 @@ public class Calibrater {
         this.num_readings = num_readings;
     }
 
-    
+
 }
