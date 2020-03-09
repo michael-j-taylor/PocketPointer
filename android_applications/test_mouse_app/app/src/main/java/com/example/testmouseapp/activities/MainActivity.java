@@ -41,6 +41,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     float y_pos_bound;
     float y_neg_bound;
 
+    MovingAverage movingAverage_X = new MovingAverage(100);
+    MovingAverage movingAverage_Y = new MovingAverage(100);
+
     //printed accelerometer values
     float val_x, val_x_ave, val_x_pre;
     float val_y, val_y_ave, val_y_pre;
@@ -55,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     //calibration vars
     boolean calibrating = false;
     int num_readings = 0;
-    int readings_max = 100000;  //change this to determine how many readings the accelerometer calibrates on
+    int readings_max = 10000;  //change this to determine how many readings the accelerometer calibrates on
     float x_total;
     float y_total;
     float x_pad = 0;
@@ -85,9 +88,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
         //setup listener
-        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);  //can be changed to different delays //could use 1000000/polling_rate
+        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);  //can be changed to different delays //could use 1000000/polling_rate
 
         Log.d(TAG, "onCreate: Registered accelerometer listener");
+
+        //used to calculate moving average
+        MovingAverage movingAverage_X = new MovingAverage(100);
+        MovingAverage movingAverate_Y = new MovingAverage(100);
 
         Button calibrate = findViewById(R.id.calibrate);
         calibrate.setOnClickListener(new View.OnClickListener() {
@@ -100,6 +107,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     //on sensor value change, display X and Z values
     @Override
     public void onSensorChanged(SensorEvent event) {
+
+        //TODO: move the below objects out of this function - they don't need to be initialized every time the sensor updates
         TextView live_acceleration;
         TextView max_acceleration;
         TextView position;
@@ -117,6 +126,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             val_y = event.values[1] + y_pad;
             if (currentTime - startTime > time*1000) {
 
+                //ignore values if they're inside a set range
                 if (event.values[0] > xmax) {xmax = event.values[0];}
                 if (event.values[0] < xmin) {xmin = event.values[0];}
 
@@ -127,43 +137,61 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                 //val_x = averageAccel[0];
                 //val_y = averageAccel[1];
-                val_x = val_x_ave / measurementCount;
-                val_y = val_y_ave / measurementCount;
+
+                //val_x = val_x_ave / measurementCount;
+                val_x = movingAverage_X.calculateAverage();
+                //val_y = val_y_ave / measurementCount;
+                val_y = movingAverage_Y.calculateAverage();
+
                 val_x_ave = event.values[0] + x_pad;
                 val_y_ave = event.values[1] + y_pad;
                 magnitude = (float) Math.sqrt(Math.pow(val_x, 2) + Math.pow(val_y, 2));
 
                 if (magnitude < threshold) {
-                    val_x = 0;
-                    val_y = 0;
+                    val_x_ave = 0;
+                    val_y_ave = 0;
                 }
+
+                //calculate velocity
                 x_vel = x_vel + val_x * time;
                 y_vel = y_vel + val_y * time;
 
+                //calculate position
                 x_pos = x_pos + x_vel * time + .5 * val_x * time * time;
                 y_pos = y_pos + y_vel * time + .5 * val_y * time * time;
 
-                //Log.d(TAG, "onSensorChanged: X: " + event.values[0] + " Y: " + event.values[1] + " Z: " + event.values[2]);
                 String data_live = "X: " + val_x + "\nY: " + val_y;
-                String data_max = "X Maximum: " + String.format("%.3f", xmax) + "\nX Minimum: " +
-                        String.format("%.3f", xmin) + "\n\nY Maximum: " + String.format("%.3f", ymax) + "\nY Minimum: " + String.format("%.3f", ymin);
+                String data_max = "X Maximum: " +
+                        String.format("%.3f", xmax) + "\nX Minimum: " +
+                        String.format("%.3f", xmin) + "\n\nY Maximum: " +
+                        String.format("%.3f", ymax) + "\nY Minimum: " +
+                        String.format("%.3f", ymin);
+
                 live_acceleration.setText(data_live);
                 max_acceleration.setText(data_max);
                 position.setText("Position: " + String.format("%.3f",x_pos) + ", " + String.format("%.3f",y_pos));
                 startTime = Calendar.getInstance().getTimeInMillis();
-                measurementCount = 1;
+                measurementCount = 0;
             }
             else {
                 //String data_live = "X: " + 0 + "\nY: " + 0;
-                String data_max = "X Maximum: " + String.format("%.3f", xmax) + "\nX Minimum: " +
-                        String.format("%.3f", xmin) + "\n\nY Maximum: " + String.format("%.3f", ymax) + "\nY Minimum: " + String.format("%.3f", ymin);
+                String data_max = "X Maximum: " +
+                        String.format("%.3f", xmax) + "\nX Minimum: " +
+                        String.format("%.3f", xmin) + "\n\nY Maximum: " +
+                        String.format("%.3f", ymax) + "\nY Minimum: " +
+                        String.format("%.3f", ymin);
+
                 String data_live = "X: " + val_x + "\nY: " + val_y;
-                //live_acceleration.setText(data_live);
+
+                live_acceleration.setText(data_live);
                 max_acceleration.setText(data_max);
+
                 magnitude = (float) Math.sqrt(Math.pow(val_x, 2) + Math.pow(val_y, 2));
-                if (magnitude >= threshold) {
-                    val_x_ave += val_x;
-                    val_y_ave += val_y;
+                if (magnitude > threshold) {
+                    //val_x_ave += val_x;
+                    movingAverage_X.addToWindow(val_x);
+                    //val_y_ave += val_y;
+                    movingAverage_Y.addToWindow(val_y);
                     x_jerk = (val_x - val_x_pre)*time;
                     y_jerk = (val_y - val_y_pre)*time;
                 }
