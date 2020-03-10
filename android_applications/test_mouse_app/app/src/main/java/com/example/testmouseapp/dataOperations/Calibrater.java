@@ -10,7 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
-//used to calibrate acclerometer
+//used to calibrate accelerometer
 public class Calibrater {
 
     private int total_readings;
@@ -76,40 +76,22 @@ public class Calibrater {
         float y_avg = this.y_sum/this.num_readings;
 
         if (x_avg > 0) {
-            x_avg = averageTopReadings(this.x_readings, 10);
+            this.x_offset = averageTopReadings(this.x_readings, 10);
         }
         else {
-            x_avg = averageBottomReadings(this.x_readings, 10);
+            this.x_offset= averageBottomReadings(this.x_readings, 10);
         }
 
         if (y_avg > 0) {
-            y_avg = averageTopReadings(this.y_readings, 10);
+            this.y_offset = averageTopReadings(this.y_readings, 10);
         }
         else {
-            y_avg = averageBottomReadings(this.y_readings, 10);
+            this.y_offset = averageBottomReadings(this.y_readings, 10);
         }
 
-        this.x_offset = (float) adjustOffset(x_avg, 0.1);
-        this.y_offset = (float) adjustOffset(y_avg, 0.1);
-        this.magnitude_offset = calculateMagnitudeOffset(x_offset, y_offset);
-    }
-
-
-    private float calculateMagnitudeOffset(float x_offset, float y_offset) {
-        return (float) Math.sqrt(Math.pow(x_offset, 2) + Math.pow(y_offset, 2));
-
-    }
-
-
-    //adjust given x or y offset by percent (as a fraction of 1)
-    private double adjustOffset(float offset, double percent) {
-        if (offset > 0) {
-            return offset + (offset*percent);
-        }
-        else if (offset < 0) {
-            return offset - (offset*percent);
-        }
-        else return offset;
+        //this.x_offset = (float) adjustOffset(x_avg, 0.1);
+        //this.y_offset = (float) adjustOffset(y_avg, 0.1);
+        //this.magnitude_offset = calculateMagnitudeOffset(x_offset, y_offset);
     }
 
 
