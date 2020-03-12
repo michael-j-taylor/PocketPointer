@@ -57,10 +57,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     //bluetooth vars
     BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-    boolean bt_capable = false;
-    boolean bt_enabled = false;
     final int REQUEST_ENABLE_BT = 3;
-    final int REQUEST_BT_SETTINGS = 6;
+    final int OPEN_BT_SETTINGS = 6;
+    final int SHOW_DEVICES = 9;
 
 
     @Override
@@ -180,15 +179,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             noBtToast.show();
         }
         else {
-            bt_capable = true;
-            String btSettingsMsg = "Opening settings...";
-            Toast btSettingsToast = Toast.makeText(getApplicationContext(), btSettingsMsg, Toast.LENGTH_SHORT);
-            btSettingsToast.show();
-
-            Intent openBtSettings = new Intent(Settings.ACTION_BLUETOOTH_SETTINGS);
-            startActivityForResult(openBtSettings, REQUEST_BT_SETTINGS);
-                //Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                //startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+            if (!bluetoothAdapter.isEnabled()) {
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+            }
+            //Intent openBtSettings = new Intent(Settings.ACTION_BLUETOOTH_SETTINGS);
+            //startActivityForResult(openBtSettings, OPEN_BT_SETTINGS);
         }
     }
 
@@ -196,20 +192,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_ENABLE_BT) {
             if (resultCode == RESULT_OK) {
-                String btEnabledMsg = "Thank you for activating Bluetooth.";
-
-                Toast noBtToast = Toast.makeText(getApplicationContext(), btEnabledMsg, Toast.LENGTH_LONG);
-                noBtToast.show();
-                bt_enabled = true;
-            }
-            else if (resultCode == RESULT_CANCELED) {
+                //String btEnabledMsg = "Thank you for activating Bluetooth.";
+                //Toast noBtToast = Toast.makeText(getApplicationContext(), btEnabledMsg, Toast.LENGTH_LONG);
+                //noBtToast.show();
+                Intent showDevices = new Intent(this, DevicesActivity.class);
+                startActivityForResult(showDevices, SHOW_DEVICES);
+            } else if (resultCode == RESULT_CANCELED) {
                 String btDisabledMsg = "You must enable Bluetooth for wireless connection.";
-
                 Toast noBtToast = Toast.makeText(getApplicationContext(), btDisabledMsg, Toast.LENGTH_LONG);
                 noBtToast.show();
             }
         }
-        if (requestCode == REQUEST_BT_SETTINGS) {
+        if (requestCode == OPEN_BT_SETTINGS) {
             if (!bluetoothAdapter.isEnabled()) {
                 String btDisabledMsg = "You must enable Bluetooth for wireless connection.";
 
