@@ -50,7 +50,7 @@
                 android:layout_width="213dp"
                 android:layout_height="48dp"
                 android:layout_marginBottom="24dp"
-                android:onClick="connectBluetooth"
+                android:onClick="connectDevice"
                 android:text="Connect to Device"
                 app:layout_constraintBottom_toTopOf="@+id/calibrate"
                 app:layout_constraintEnd_toEndOf="parent"

@@ -1,10 +1,14 @@
 package com.example.testmouseapp.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -60,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     final int REQUEST_ENABLE_BT = 3;
     final int OPEN_BT_SETTINGS = 6;
     final int SHOW_DEVICES = 9;
+    final int REQUEST_COARSE_LOCATION = 12;
 
 
     @Override
@@ -171,7 +176,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
-    public void connectBluetooth(View view) {
+    public void connectDevice(View view) {
         if (bluetoothAdapter == null) {
             String noBtMsg = "Your device does not support Bluetooth. Please connect using a USB cable.";
 
@@ -179,12 +184,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             noBtToast.show();
         }
         else {
-            if (!bluetoothAdapter.isEnabled()) {
-                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_COARSE_LOCATION);
             }
-            //Intent openBtSettings = new Intent(Settings.ACTION_BLUETOOTH_SETTINGS);
-            //startActivityForResult(openBtSettings, OPEN_BT_SETTINGS);
+            else {
+                enableBluetooth();
+            }
+        }
+    }
+
+    public void enableBluetooth() {
+        if (!bluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        }
+        else {
+            Intent showDevices = new Intent(this, DevicesActivity.class);
+            startActivityForResult(showDevices, SHOW_DEVICES);
         }
     }
 
@@ -198,10 +214,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 Intent showDevices = new Intent(this, DevicesActivity.class);
                 startActivityForResult(showDevices, SHOW_DEVICES);
             } else if (resultCode == RESULT_CANCELED) {
-                String btDisabledMsg = "You must enable Bluetooth for wireless connection.";
-                Toast noBtToast = Toast.makeText(getApplicationContext(), btDisabledMsg, Toast.LENGTH_LONG);
-                noBtToast.show();
+                Toast.makeText(getApplicationContext(), "You must enable Bluetooth for wireless connection.", Toast.LENGTH_LONG).show();
             }
+        }
+        if (requestCode == REQUEST_COARSE_LOCATION) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                enableBluetooth();
+            }
+            else Toast.makeText(this, "You must enable location permissions to discover devices", Toast.LENGTH_LONG).show();
+
         }
         if (requestCode == OPEN_BT_SETTINGS) {
             if (!bluetoothAdapter.isEnabled()) {
