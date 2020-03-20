@@ -28,6 +28,7 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
 
     BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     ArrayList<String> availableDevices = new ArrayList<>();
+    ArrayList<String> pairedDevices = new ArrayList<>();
     Set<BluetoothDevice> unpairedDevices = bluetoothAdapter.getBondedDevices();
 
 
@@ -44,25 +45,34 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
         IntentFilter device_filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         registerReceiver(device_receiver, device_filter);
 
-        Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
+        Set<BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
 
-        if (pairedDevices.size() > 0) {
+        if (bondedDevices.size() > 0) {
             // There are paired devices. Get the name and address of each paired device.
-            for (BluetoothDevice device : pairedDevices) {
+            for (BluetoothDevice device : bondedDevices) {
                 String device_name = device.getName();
-                availableDevices.add(device_name);
+                pairedDevices.add(device_name);
             }
         }
 
-        // set up the RecyclerView
-        RecyclerView recyclerView = findViewById(R.id.devices_recyclerView);
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(linearLayoutManager);
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(), linearLayoutManager.getOrientation());
-        recyclerView.addItemDecoration(dividerItemDecoration);
+        // set up  pairedDevices_recyclerView
+        RecyclerView pairedDevices_recyclerView = findViewById(R.id.pairedDevices_recyclerView);
+        LinearLayoutManager paired_linearLayoutManager = new LinearLayoutManager(this);
+        pairedDevices_recyclerView.setLayoutManager(paired_linearLayoutManager);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(pairedDevices_recyclerView.getContext(), paired_linearLayoutManager.getOrientation());
+        pairedDevices_recyclerView.addItemDecoration(dividerItemDecoration);
+        adapter = new DevicesRecyclerViewAdapter(this, pairedDevices);
+        adapter.setClickListener(this);
+        pairedDevices_recyclerView.setAdapter(adapter);
+
+        // set up the availableDevices_recyclerView
+        RecyclerView availableDevices_recyclerView = findViewById(R.id.availableDevices_recyclerView);
+        LinearLayoutManager available_linearLayoutManager = new LinearLayoutManager(this);
+        availableDevices_recyclerView.setLayoutManager(available_linearLayoutManager);
+        availableDevices_recyclerView.addItemDecoration(dividerItemDecoration);
         adapter = new DevicesRecyclerViewAdapter(this, availableDevices);
         adapter.setClickListener(this);
-        recyclerView.setAdapter(adapter);
+        availableDevices_recyclerView.setAdapter(adapter);
 
         if (bluetoothAdapter.isDiscovering()) bluetoothAdapter.cancelDiscovery();
         bluetoothAdapter.startDiscovery();
@@ -104,7 +114,6 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
         Toast.makeText(this, "Discovery canceled", Toast.LENGTH_SHORT).show();
 
     }
-
 
     @Override
     public void onItemClick(View view, int position) {
