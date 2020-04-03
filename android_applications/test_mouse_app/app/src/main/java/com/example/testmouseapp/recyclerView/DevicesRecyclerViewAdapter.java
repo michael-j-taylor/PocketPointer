@@ -59,7 +59,7 @@ public class DevicesRecyclerViewAdapter extends RecyclerView.Adapter<DevicesRecy
 
         @Override
         public void onClick(View view) {
-            if (mClickListener != null) mClickListener.onItemClick(view, getAdapterPosition());
+            if (mClickListener != null) mClickListener.onItemClick(view, getAdapterPosition(), DevicesRecyclerViewAdapter.this);
         }
     }
 
@@ -75,6 +75,6 @@ public class DevicesRecyclerViewAdapter extends RecyclerView.Adapter<DevicesRecy
 
     // parent activity will implement this method to respond to click events
     public interface ItemClickListener {
-        void onItemClick(View view, int position);
+        void onItemClick(View view, int position, DevicesRecyclerViewAdapter adapter);
     }
 }

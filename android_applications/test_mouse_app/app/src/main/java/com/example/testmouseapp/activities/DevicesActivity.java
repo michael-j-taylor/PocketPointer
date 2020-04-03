@@ -129,8 +129,8 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
     }
 
     @Override
-    public void onItemClick(View view, int position) {
-        Toast.makeText(this, "You clicked " + available_adapter.getItem(position) + " on row number " + position, Toast.LENGTH_SHORT).show();
+    public void onItemClick(View view, int position, DevicesRecyclerViewAdapter adapter) {
+        Toast.makeText(this, "You clicked " + adapter.getItem(position) + " on row number " + position, Toast.LENGTH_SHORT).show();
     }
 
 
