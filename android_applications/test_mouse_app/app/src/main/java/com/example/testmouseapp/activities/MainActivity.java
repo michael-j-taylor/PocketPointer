@@ -1,6 +1,7 @@
 package com.example.testmouseapp.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -91,6 +92,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 activateCalibrate(v);
             }
         });
+
+        //Set up Action Bar
+        Toolbar toolbar = findViewById(R.id.main_toolbar);
+        setSupportActionBar(toolbar);
+        setTitle(R.string.app_name);
     }
 
     //on sensor value change, display X and Z values
