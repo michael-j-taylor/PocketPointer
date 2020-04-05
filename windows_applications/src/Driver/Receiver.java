@@ -18,6 +18,7 @@ public class Receiver extends JPanel
     public static void main(String args[])
     {
     	BluetoothServer server = new BluetoothServer();
+    	server.openServer();
     	
 //        JFrame frame = new JFrame(gc);
 //        frame.setTitle("PocketPointer Receiver");
