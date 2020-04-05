@@ -1,5 +1,10 @@
+package Driver;
+
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+
+import Bluetooth.BluetoothServer;
+
 //import javax.bluetooth.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -12,14 +17,16 @@ public class Receiver extends JPanel
 
     public static void main(String args[])
     {
-        JFrame frame = new JFrame(gc);
-        frame.setTitle("PocketPointer Receiver");
-        frame.setSize(800, 600);
-        frame.setVisible(true);
-        frame.setResizable(false);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        //TODO: initialize components. pass frame to method
-        robotTest();
+    	BluetoothServer server = new BluetoothServer();
+    	
+//        JFrame frame = new JFrame(gc);
+//        frame.setTitle("PocketPointer Receiver");
+//        frame.setSize(800, 600);
+//        frame.setVisible(true);
+//        frame.setResizable(false);
+//        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//        //TODO: initialize components. pass frame to method
+//        robotTest();
         //while(true)
         //TODO: main sequence
     }
