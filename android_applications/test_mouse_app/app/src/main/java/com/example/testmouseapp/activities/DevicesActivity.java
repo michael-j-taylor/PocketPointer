@@ -33,15 +33,16 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
 
     private static final UUID mm_uuid = UUID.fromString("97c337c7-a148-4a8d-9ccf-eeb76cb477a0");
 
-    DevicesRecyclerViewAdapter paired_adapter;
-    DevicesRecyclerViewAdapter available_adapter;
+    private DevicesRecyclerViewAdapter mm_paired_adapter;
+    private DevicesRecyclerViewAdapter mm_available_adapter;
+
+    private ArrayList<String> mm_available_names = new ArrayList<>();
+    private ArrayList<String> mm_paired_names = new ArrayList<>();
+    private ArrayList<String> mm_scanned_names = new ArrayList<>();
+    private ArrayList<BluetoothDevice> mm_available_devices = new ArrayList<BluetoothDevice>();
+    private ArrayList<BluetoothDevice> mm_scanned_devices = new ArrayList<BluetoothDevice>();
 
     BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-    ArrayList<String> available_devices = new ArrayList<>();
-    ArrayList<String> paired_devices = new ArrayList<>();
-    ArrayList<String> unpaired_devices = new ArrayList<>();
-    ArrayList<BluetoothDevice> device_list = new ArrayList<BluetoothDevice>();
-
 
 
     @Override
@@ -74,7 +75,7 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
                 ParcelUuid[] device_uuids = device.getUuids();
                 for (ParcelUuid u : device_uuids) {
                     if (u.getUuid().equals(mm_uuid)) {
-                        paired_devices.add(device_name);
+                        mm_paired_names.add(device_name);
                         break;
                     }
                 }
@@ -87,23 +88,21 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
         pairedDevices_recyclerView.setLayoutManager(paired_linearLayoutManager);
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(pairedDevices_recyclerView.getContext(), paired_linearLayoutManager.getOrientation());
         pairedDevices_recyclerView.addItemDecoration(dividerItemDecoration);
-        paired_adapter = new DevicesRecyclerViewAdapter(this, paired_devices);
-        paired_adapter.setClickListener(this);
-        pairedDevices_recyclerView.setAdapter(paired_adapter);
+        mm_paired_adapter = new DevicesRecyclerViewAdapter(this, mm_paired_names);
+        mm_paired_adapter.setClickListener(this);
+        pairedDevices_recyclerView.setAdapter(mm_paired_adapter);
 
         // set up the availableDevices_recyclerView
         RecyclerView availableDevices_recyclerView = findViewById(R.id.availableDevices_recyclerView);
         LinearLayoutManager available_linearLayoutManager = new LinearLayoutManager(this);
         availableDevices_recyclerView.setLayoutManager(available_linearLayoutManager);
         availableDevices_recyclerView.addItemDecoration(dividerItemDecoration);
-        available_adapter = new DevicesRecyclerViewAdapter(this, available_devices);
-        available_adapter.setClickListener(this);
-        availableDevices_recyclerView.setAdapter(available_adapter);
+        mm_available_adapter = new DevicesRecyclerViewAdapter(this, mm_available_names);
+        mm_available_adapter.setClickListener(this);
+        availableDevices_recyclerView.setAdapter(mm_available_adapter);
 
         if (bluetoothAdapter.isDiscovering()) bluetoothAdapter.cancelDiscovery();
         bluetoothAdapter.startDiscovery();
-
-        Toast.makeText(this, mm_uuid.toString(), Toast.LENGTH_SHORT).show();
 
         CheckDeviceList c = new CheckDeviceList();
         c.start();
@@ -117,16 +116,16 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 assert device != null;
-                if (unpaired_devices.indexOf(device.getName()) == -1) {
-                    device_list.add(device);
-                    unpaired_devices.add(device.getName());
+                if (mm_scanned_names.indexOf(device.getName()) == -1) {
+                    mm_scanned_devices.add(device);
+                    mm_scanned_names.add(device.getName());
                 }
 
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 Toast.makeText(context, "Discovery canceled", Toast.LENGTH_SHORT).show();
                 // discovery has finished, give a call to fetchUuidsWithSdp on first device in list.
-                if (!device_list.isEmpty()) {
-                    BluetoothDevice device = device_list.remove(0);
+                if (!mm_scanned_devices.isEmpty()) {
+                    BluetoothDevice device = mm_scanned_devices.remove(0);
                     boolean result = device.fetchUuidsWithSdp();
                 }
 
@@ -140,22 +139,19 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
                     for (Parcelable p : uuidExtra) {
                         ParcelUuid uuid = (ParcelUuid) p;
                         if (uuid.getUuid().equals(mm_uuid)) {
-                            Toast.makeText(context, "uuid matches", Toast.LENGTH_SHORT).show();
                             assert deviceExtra != null;
+                            mm_available_devices.add(deviceExtra);
                             String device_name = deviceExtra.getName();
-                            if (available_devices.indexOf(device_name) == -1) {
+                            if (mm_available_names.indexOf(device_name) == -1) {
                                 assert device_name != null;
-                                available_devices.add(device_name);
-                                available_adapter.notifyItemInserted(available_devices.indexOf(device_name));
+                                mm_available_names.add(device_name);
+                                mm_available_adapter.notifyItemInserted(mm_available_names.indexOf(device_name));
                             }
                         }
-                        else Toast.makeText(context, deviceExtra.getName() + " - " + ((ParcelUuid)p).getUuid().toString(), Toast.LENGTH_SHORT).show();
                     }
-                } else {
-                    Toast.makeText(context, "uuidExtra is still null", Toast.LENGTH_SHORT).show();
                 }
-                if (!device_list.isEmpty()) {
-                    BluetoothDevice device = device_list.remove(0);
+                if (!mm_scanned_devices.isEmpty()) {
+                    BluetoothDevice device = mm_scanned_devices.remove(0);
                     boolean result = device.fetchUuidsWithSdp();
                 } else bluetoothAdapter.startDiscovery();
             }
@@ -192,7 +188,12 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
 
     @Override
     public void onItemClick(View view, int position, DevicesRecyclerViewAdapter adapter) {
-        Toast.makeText(this, "You clicked " + adapter.getItem(position) + " on row number " + position, Toast.LENGTH_SHORT).show();
+        String name = adapter.getItem(position);
+        for (BluetoothDevice d : mm_available_devices) {
+            if (d.getName().equals(name)) {
+                Toast.makeText(this, "You clicked " + d.getName() + ". Device is " + d.toString(), Toast.LENGTH_SHORT).show();
+            } else Toast.makeText(this, "Device not found in list" + position, Toast.LENGTH_SHORT).show();
+        }
     }
 
 
@@ -209,7 +210,7 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
                 try {
 
                     sleep(1000);
-                    if (!device_list.isEmpty()) {
+                    if (!mm_scanned_devices.isEmpty()) {
 
                         bluetoothAdapter.cancelDiscovery();
                         sleep(500);
