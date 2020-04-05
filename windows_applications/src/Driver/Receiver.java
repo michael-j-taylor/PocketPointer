@@ -1,5 +1,6 @@
 package Driver;
 
+import javax.bluetooth.BluetoothStateException;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -9,6 +10,7 @@ import Bluetooth.BluetoothServer;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.*;
+import java.util.concurrent.TimeoutException;
 
 
 public class Receiver extends JPanel
@@ -18,7 +20,16 @@ public class Receiver extends JPanel
     public static void main(String args[])
     {
     	BluetoothServer server = new BluetoothServer();
-    	server.openServer();
+    	try {
+    		server.openServer();
+    	} catch (Exception e) {
+    		if (e.getClass() == TimeoutException.class) {
+    			System.out.println("In receiver, Timed out");
+    		} else if (e.getClass() == BluetoothStateException.class) {
+    			System.out.println("In receiver, failed to use Bluetooth");
+    		} else
+    			System.out.println("Exception from openServer:\n" + e + e.getMessage() + "\n");
+    	}
     	
 //        JFrame frame = new JFrame(gc);
 //        frame.setTitle("PocketPointer Receiver");
