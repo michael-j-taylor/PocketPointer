@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -23,6 +24,7 @@ import androidx.appcompat.widget.Toolbar;
 import com.example.testmouseapp.R;
 import com.example.testmouseapp.recyclerView.DevicesRecyclerViewAdapter;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Set;
@@ -192,6 +194,8 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
         for (BluetoothDevice d : mm_available_devices) {
             if (d.getName().equals(name)) {
                 Toast.makeText(this, "You clicked " + d.getName() + ". Device is " + d.toString(), Toast.LENGTH_SHORT).show();
+                ConnectThread connectThread = new ConnectThread(d, this);
+                connectThread.start();
             } else Toast.makeText(this, "Device not found in list" + position, Toast.LENGTH_SHORT).show();
         }
     }
@@ -202,7 +206,7 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
     }
 
 
-    class CheckDeviceList extends Thread {
+    private class CheckDeviceList extends Thread {
         private boolean running = true;
 
         public void run() {
@@ -228,4 +232,59 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
         }
     }
 
+
+    private class ConnectThread extends Thread {
+        private final BluetoothSocket mmSocket;
+        private final BluetoothDevice mmDevice;
+        private final Context context;
+
+        public ConnectThread(BluetoothDevice device, Context context) {
+            // Use a temporary object that is later assigned to mmSocket
+            // because mmSocket is final.
+            BluetoothSocket tmp = null;
+            mmDevice = device;
+            this.context = context;
+
+            try {
+                // Get a BluetoothSocket to connect with the given BluetoothDevice based on the program's UUID
+                tmp = device.createRfcommSocketToServiceRecord(mm_uuid);
+            } catch (IOException e) {
+                Toast.makeText(context, "Socket's create() method failed", Toast.LENGTH_SHORT).show();
+            }
+            mmSocket = tmp;
+        }
+
+        public void run() {
+            // Cancel discovery because it otherwise slows down the connection.
+            bluetoothAdapter.cancelDiscovery();
+
+            try {
+                // Connect to the remote device through the socket. This call blocks until it succeeds or throws an exception.
+                mmSocket.connect();
+            } catch (IOException connectException) {
+                // Unable to connect; close the socket and return.
+                try {
+                    mmSocket.close();
+                } catch (IOException closeException) {
+                    Toast.makeText(context, "Could not close the client socket", Toast.LENGTH_SHORT).show();
+                }
+                return;
+            }
+
+            // The connection attempt succeeded. Perform work associated with the connection in a separate thread.
+            manageMyConnectedSocket(mmSocket);
+        }
+
+        // Closes the client socket and causes the thread to finish.
+        public void cancel() {
+            try {
+                mmSocket.close();
+            } catch (IOException e) {
+                Toast.makeText(context, "Could not close the client socket", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
 }
+
+
