@@ -34,7 +34,7 @@ import android.widget.Toast;
 import com.example.testmouseapp.R;
 
 import com.example.testmouseapp.dataOperations.MovingAverage;
-import com.example.testmouseapp.dataOperations.Filter;
+
 import com.example.testmouseapp.threads.CommunicationThread;
 import com.example.testmouseapp.threads.ConnectThread;
 import androidx.appcompat.app.AppCompatActivity;
@@ -149,7 +149,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);  //can be changed to different delays //could use 1000000/polling_rate
 
         Log.d(TAG, "onCreate: Registered accelerometer listener");
-
 
 
         Button calibrate = findViewById(R.id.calibrate);
