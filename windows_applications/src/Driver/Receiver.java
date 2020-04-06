@@ -22,6 +22,8 @@ public class Receiver extends JPanel
     	BluetoothServer server = new BluetoothServer();
     	try {
     		server.openServer();
+    		while (!server.isConnected());
+    		server.simulateMessage();
     	} catch (Exception e) {
     		if (e.getClass() == TimeoutException.class) {
     			System.out.println("In receiver, Timed out");
