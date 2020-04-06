@@ -150,9 +150,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         Log.d(TAG, "onCreate: Registered accelerometer listener");
 
-        //used to calculate moving average
-        MovingAverage movingAverage_X = new MovingAverage(100);
-        MovingAverage movingAverate_Y = new MovingAverage(100);
+
 
         Button calibrate = findViewById(R.id.calibrate);
         calibrate.setOnClickListener(new View.OnClickListener() {
