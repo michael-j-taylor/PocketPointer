@@ -1,6 +1,5 @@
 package com.example.testmouseapp.activities;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -8,13 +7,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.os.ParcelUuid;
 import android.os.Parcelable;
 import android.view.View;
@@ -23,8 +22,8 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.example.testmouseapp.R;
 import com.example.testmouseapp.recyclerView.DevicesRecyclerViewAdapter;
+import com.example.testmouseapp.threads.ConnectThread;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Set;
@@ -32,17 +31,21 @@ import java.util.UUID;
 
 
 public class DevicesActivity extends AppCompatActivity implements DevicesRecyclerViewAdapter.ItemClickListener {
+    public static boolean active = false;
 
-    private static final UUID mm_uuid = UUID.fromString("97c337c7-a148-4a8d-9ccf-eeb76cb477a0");
+    private static final UUID mm_uuid= UUID.fromString("97c337c7-a148-4a8d-9ccf-eeb76cb477a0");
 
+    private Handler mm_handler = null;
     private DevicesRecyclerViewAdapter mm_paired_adapter;
     private DevicesRecyclerViewAdapter mm_available_adapter;
 
     private ArrayList<String> mm_available_names = new ArrayList<>();
     private ArrayList<String> mm_paired_names = new ArrayList<>();
     private ArrayList<String> mm_scanned_names = new ArrayList<>();
-    private ArrayList<BluetoothDevice> mm_available_devices = new ArrayList<BluetoothDevice>();
-    private ArrayList<BluetoothDevice> mm_scanned_devices = new ArrayList<BluetoothDevice>();
+    private ArrayList<BluetoothDevice> mm_available_devices = new ArrayList<>();
+    private ArrayList<BluetoothDevice> mm_paired_devices = new ArrayList<>();
+    private ArrayList<BluetoothDevice> mm_scanned_devices = new ArrayList<>();
+    private CheckDeviceList check_devices = new CheckDeviceList();
 
     BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -51,6 +54,17 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_devices);
+        active = true;
+
+        //Get caller's message handler
+        Bundle b = getIntent().getExtras();
+        if (b != null) {
+            Message m = b.getParcelable("handlerMessage");
+            if (m != null) {
+                mm_handler = m.getTarget();
+                Toast.makeText(this, m.getTarget().toString(), Toast.LENGTH_SHORT).show();
+            } else Toast.makeText(this, "Message is null", Toast.LENGTH_SHORT).show();
+        } else Toast.makeText(this, "Bundle is null", Toast.LENGTH_SHORT).show();
 
         //Set up toolbar for this activity
         Toolbar toolbar = findViewById(R.id.devices_toolbar);
@@ -78,6 +92,7 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
                 for (ParcelUuid u : device_uuids) {
                     if (u.getUuid().equals(mm_uuid)) {
                         mm_paired_names.add(device_name);
+                        mm_paired_devices.add(device);
                         break;
                     }
                 }
@@ -106,8 +121,7 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
         if (bluetoothAdapter.isDiscovering()) bluetoothAdapter.cancelDiscovery();
         bluetoothAdapter.startDiscovery();
 
-        CheckDeviceList c = new CheckDeviceList();
-        c.start();
+        check_devices.start();
     }
 
     // Create a BroadcastReceiver for ACTION_FOUND.
@@ -128,7 +142,7 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
                 // discovery has finished, give a call to fetchUuidsWithSdp on first device in list.
                 if (!mm_scanned_devices.isEmpty()) {
                     BluetoothDevice device = mm_scanned_devices.remove(0);
-                    boolean result = device.fetchUuidsWithSdp();
+                    device.fetchUuidsWithSdp();
                 }
 
             } else if (BluetoothDevice.ACTION_UUID.equals(action)) {
@@ -154,55 +168,63 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
                 }
                 if (!mm_scanned_devices.isEmpty()) {
                     BluetoothDevice device = mm_scanned_devices.remove(0);
-                    boolean result = device.fetchUuidsWithSdp();
+                    device.fetchUuidsWithSdp();
                 } else bluetoothAdapter.startDiscovery();
-            }
-
-
-                /*if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                // Discovery has found a device. Get the BluetoothDevice
-                // object and its info from the Intent.
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                assert device != null;
-                String device_name = device.getName();
-                ParcelUuid[] uuids = device.getUuids();
-                if (uuids != null) {
-                    Toast.makeText(context, "UUID: " + uuids[0].getUuid().toString(), Toast.LENGTH_SHORT).show();
-                } else Toast.makeText(context, "uuids is null", Toast.LENGTH_SHORT).show();
-                assert device_name != null;
-                available_devices.add(device_name);
-                available_adapter.notifyItemInserted(available_devices.indexOf(device_name));
-
-            } */ else if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
+            } else if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
                 if (!bluetoothAdapter.isEnabled()) finish();
                 Toast.makeText(context, "You must keep Bluetooth enabled", Toast.LENGTH_SHORT).show();
             }
         }
     };
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (bluetoothAdapter.isDiscovering()) bluetoothAdapter.cancelDiscovery();
-        unregisterReceiver(receiver);
-
+    public static UUID getUuid() {
+        return mm_uuid;
     }
+
 
     @Override
     public void onItemClick(View view, int position, DevicesRecyclerViewAdapter adapter) {
         String name = adapter.getItem(position);
-        for (BluetoothDevice d : mm_available_devices) {
+        ArrayList<BluetoothDevice> devices;
+        if (adapter.equals(mm_paired_adapter)) devices = mm_paired_devices;
+        else devices = mm_available_devices;
+
+        for (BluetoothDevice d : devices) {
             if (d.getName().equals(name)) {
+                check_devices.stopChecking();
                 Toast.makeText(this, "You clicked " + d.getName() + ". Device is " + d.toString(), Toast.LENGTH_SHORT).show();
-                ConnectThread connectThread = new ConnectThread(d, this);
+                ConnectThread connectThread = new ConnectThread(d, mm_handler);
                 connectThread.start();
+
+                //Wait to exit activity until comm channel has been established or connection fails
+//                while (connectThread.isRunning() && !connectThread.isConnected());
+
+                //If the connection was successful, return to main activity with connectThread
+//                if (connectThread.isConnected()) {
+//                    if (mm_handler == null) {
+//                        Toast.makeText(this, "handler is null", Toast.LENGTH_SHORT).show();
+
+//                    }
+
+                    Message conn_obj = mm_handler.obtainMessage(MainActivity.MessageConstants.CONNECTION_OBJ, connectThread);
+                    conn_obj.sendToTarget();
+                    finish();
+//                }
+                //Otherwise, stay, throw error toast, and continue checking for devices
+//                Toast.makeText(this, "Failed to connect to " + d.getName(), Toast.LENGTH_SHORT).show();
+//                check_devices.start();
             } else Toast.makeText(this, "Device not found in list" + position, Toast.LENGTH_SHORT).show();
         }
     }
 
-
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onDestroy() {
+        super.onDestroy();
+        active = false;
+
+        if (bluetoothAdapter.isDiscovering()) bluetoothAdapter.cancelDiscovery();
+        unregisterReceiver(receiver);
+
     }
 
 
@@ -227,61 +249,8 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
             }
         }
 
-        public void stopChecking() {
+        void stopChecking() {
             running = false;
-        }
-    }
-
-
-    private class ConnectThread extends Thread {
-        private final BluetoothSocket mmSocket;
-        private final BluetoothDevice mmDevice;
-        private final Context context;
-
-        public ConnectThread(BluetoothDevice device, Context context) {
-            // Use a temporary object that is later assigned to mmSocket
-            // because mmSocket is final.
-            BluetoothSocket tmp = null;
-            mmDevice = device;
-            this.context = context;
-
-            try {
-                // Get a BluetoothSocket to connect with the given BluetoothDevice based on the program's UUID
-                tmp = device.createRfcommSocketToServiceRecord(mm_uuid);
-            } catch (IOException e) {
-                Toast.makeText(context, "Socket's create() method failed", Toast.LENGTH_SHORT).show();
-            }
-            mmSocket = tmp;
-        }
-
-        public void run() {
-            // Cancel discovery because it otherwise slows down the connection.
-            bluetoothAdapter.cancelDiscovery();
-
-            try {
-                // Connect to the remote device through the socket. This call blocks until it succeeds or throws an exception.
-                mmSocket.connect();
-            } catch (IOException connectException) {
-                // Unable to connect; close the socket and return.
-                try {
-                    mmSocket.close();
-                } catch (IOException closeException) {
-                    Toast.makeText(context, "Could not close the client socket", Toast.LENGTH_SHORT).show();
-                }
-                return;
-            }
-
-            // The connection attempt succeeded. Perform work associated with the connection in a separate thread.
-            manageMyConnectedSocket(mmSocket);
-        }
-
-        // Closes the client socket and causes the thread to finish.
-        public void cancel() {
-            try {
-                mmSocket.close();
-            } catch (IOException e) {
-                Toast.makeText(context, "Could not close the client socket", Toast.LENGTH_SHORT).show();
-            }
         }
     }
 

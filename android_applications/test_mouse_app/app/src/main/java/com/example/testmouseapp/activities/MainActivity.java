@@ -6,6 +6,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
@@ -15,6 +16,9 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.os.Parcelable;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
@@ -27,6 +31,8 @@ import com.example.testmouseapp.R;
 
 import com.example.testmouseapp.dataOperations.MovingAverage;
 import com.example.testmouseapp.dataOperations.Filter;
+import com.example.testmouseapp.threads.CommunicationThread;
+import com.example.testmouseapp.threads.ConnectThread;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -60,12 +66,43 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     float x_pad = 0;
     float y_pad = 0;
 
+    //Used to interpret Bluetooth messages
+    public interface MessageConstants {
+        int CONNECTION_OBJ = 0;
+        int MESSAGE_READ = 1;
+        int MESSAGE_WRITE = 2;
+        int MESSAGE_TOAST = 3;
+    }
+
     //bluetooth vars
     BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+    private CommunicationThread mm_coms = null;
+    private ConnectThread mm_connection = null;
     final int REQUEST_ENABLE_BT = 3;
     final int OPEN_BT_SETTINGS = 6;
     final int SHOW_DEVICES = 9;
     final int REQUEST_COARSE_LOCATION = 12;
+    @SuppressLint("HandlerLeak")
+    public Handler mm_handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            if (msg.what == MessageConstants.CONNECTION_OBJ) {
+                mm_connection = (ConnectThread) msg.obj;
+                execute();
+            } else if (msg.what == MessageConstants.MESSAGE_READ) {
+                if (!msg.obj.toString().contains("CON: ")) {
+                    Toast.makeText(getApplicationContext(), "Received message: " + msg.obj.toString(), Toast.LENGTH_LONG).show();
+                }
+            } else if (msg.what == MessageConstants.MESSAGE_WRITE) {
+                Toast.makeText(getApplicationContext(), "Message \"" + msg.obj.toString() + "\" sent", Toast.LENGTH_SHORT).show();
+            } else if (msg.what == MessageConstants.MESSAGE_TOAST) {
+                Toast.makeText(getApplicationContext(), msg.obj.toString(), Toast.LENGTH_SHORT).show();
+            } else {
+                Log.e(TAG, "Received bad message code from handler: " + msg.what);
+            }
+        }
+    };
+
 
 
     @Override
@@ -206,9 +243,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
         else {
             Intent showDevices = new Intent(this, DevicesActivity.class);
+            Message m = mm_handler.obtainMessage();
+            Toast.makeText(this, m.getTarget().toString(), Toast.LENGTH_SHORT).show();
+            showDevices.putExtra("android.os.Message", m);
             startActivityForResult(showDevices, SHOW_DEVICES);
         }
     }
+
+    public void execute() {
+        //Send messages to server here
+        String test1 = "Test message 1 from client";
+        mm_coms.write(test1.getBytes());
+        String test2 = "Test message 2 from client";
+        mm_coms.write(test2.getBytes());
+
+        //
+    }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -218,6 +269,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 //Toast noBtToast = Toast.makeText(getApplicationContext(), btEnabledMsg, Toast.LENGTH_LONG);
                 //noBtToast.show();
                 Intent showDevices = new Intent(this, DevicesActivity.class);
+                Message m = mm_handler.obtainMessage();
+                showDevices.putExtra("handlerMessage", m);
                 startActivityForResult(showDevices, SHOW_DEVICES);
             } else if (resultCode == RESULT_CANCELED) {
                 Toast.makeText(getApplicationContext(), "You must enable Bluetooth for wireless connection.", Toast.LENGTH_LONG).show();
@@ -239,5 +292,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         }
     }
+
+    public void onDestroy() {
+        Toast.makeText(this, "Shutting down", Toast.LENGTH_SHORT).show();
+        //Shut down communicationsThread and connectThread
+        mm_coms = null;
+        if (mm_connection != null)
+            mm_connection.cancel();
+        super.onDestroy();
+    }
+
 }
 
