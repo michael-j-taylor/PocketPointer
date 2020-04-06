@@ -9,6 +9,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -16,6 +17,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -28,13 +30,20 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
 import com.example.testmouseapp.R;
 
 import com.example.testmouseapp.dataOperations.MovingAverage;
 import com.example.testmouseapp.dataOperations.Filter;
 import com.example.testmouseapp.threads.CommunicationThread;
 import com.example.testmouseapp.threads.ConnectThread;
+import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.testmouseapp.dataOperations.*;
+
+import java.util.Calendar;
+
+@TargetApi(Build.VERSION_CODES.M)
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
     private static final String TAG = "MainActivity";
@@ -54,18 +63,34 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     float y_pos_bound;
     float y_neg_bound;
 
-    //printed accelerometer values
-    float val_x;
-    float val_y;
+    MovingAverage movingAverage_X = new MovingAverage(100);
+    MovingAverage movingAverage_Y = new MovingAverage(100);
 
+    //printed accelerometer values
+    float val_x, val_x_ave, val_x_pre;
+    float val_y, val_y_ave, val_y_pre;
+    float magnitude;
+    int measurementCount = 0;
+    long startTime = 0;
+    long currentTime;
+
+    final float threshold = 0.2f;
+    final int polling_rate = 60; //in Hz
+    float time;
     //calibration vars
     boolean calibrating = false;
     int num_readings = 0;
-    int readings_max = 10000;  //change this to determine how many readings the accelerometer calibrates on
+    int readings_max = 100000;  //change this to determine how many readings the accelerometer calibrates on
     float x_total;
     float y_total;
     float x_pad = 0;
     float y_pad = 0;
+    double x_pos = 0;
+    double y_pos = 0;
+    double x_vel = 0;
+    double y_vel = 0;
+    double x_jerk = 0;
+    double y_jerk = 0;
 
     //Used to interpret Bluetooth messages
     public interface MessageConstants {
@@ -107,6 +132,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        time = 1.f/polling_rate;
+
+        TextView threshold_text = findViewById(R.id.threshold);
+        threshold_text.setText("Acceleration threshold: " + Float.toString(threshold));
 
         Log.d(TAG, "onCreate: Initializing accelerometer");
 
@@ -117,9 +146,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
         //setup listener
-        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);  //can be changed to different delays
+        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);  //can be changed to different delays //could use 1000000/polling_rate
 
         Log.d(TAG, "onCreate: Registered accelerometer listener");
+
+        //used to calculate moving average
+        MovingAverage movingAverage_X = new MovingAverage(100);
+        MovingAverage movingAverate_Y = new MovingAverage(100);
 
         Button calibrate = findViewById(R.id.calibrate);
         calibrate.setOnClickListener(new View.OnClickListener() {
@@ -138,49 +171,104 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onSensorChanged(SensorEvent event) {
 
+        //TODO: move the below objects out of this function - they don't need to be initialized every time the sensor updates
         TextView live_acceleration;
         TextView max_acceleration;
-
+        TextView position;
         live_acceleration = findViewById(R.id.acceleration);
         max_acceleration = findViewById(R.id.maximums);
+        position = findViewById(R.id.position);
 
+        currentTime = Calendar.getInstance().getTimeInMillis();
         if (calibrating) {
             live_acceleration.setText("Calibrating");
             calibrateAccelerometer(event);
         }
-
         else {
+            val_x = event.values[0] + x_pad;
+            val_y = event.values[1] + y_pad;
+            if (currentTime - startTime > time*1000) {
 
-            //if (event.values[0] > 0.0254 || event.values[0] < -0.0254) {  //attempt to ignore small values
-            if (true) {
-
+                //ignore values if they're inside a set range
                 if (event.values[0] > xmax) {xmax = event.values[0];}
                 if (event.values[0] < xmin) {xmin = event.values[0];}
 
                 if (event.values[1] > ymax) { ymax = event.values[1];}
                 if (event.values[1] < ymin) { ymin = event.values[1];}
 
-                val_x = event.values[0] + x_pad;
-                val_y = event.values[1] + y_pad;
+                //float averageAccel[] = MovementCalculation.averageAccel(event, polling_rate);
 
-                //Log.d(TAG, "onSensorChanged: X: " + event.values[0] + " Y: " + event.values[1] + " Z: " + event.values[2]);
+                //val_x = averageAccel[0];
+                //val_y = averageAccel[1];
+
+                //val_x = val_x_ave / measurementCount;
+                val_x = movingAverage_X.calculateAverage();
+                //val_y = val_y_ave / measurementCount;
+                val_y = movingAverage_Y.calculateAverage();
+
+                val_x_ave = event.values[0] + x_pad;
+                val_y_ave = event.values[1] + y_pad;
+                magnitude = (float) Math.sqrt(Math.pow(val_x, 2) + Math.pow(val_y, 2));
+
+                if (magnitude < threshold) {
+                    val_x_ave = 0;
+                    val_y_ave = 0;
+                }
+
+                //calculate velocity
+                x_vel = x_vel + val_x * time;
+                y_vel = y_vel + val_y * time;
+
+                //calculate position
+                x_pos = x_pos + x_vel * time + .5 * val_x * time * time;
+                y_pos = y_pos + y_vel * time + .5 * val_y * time * time;
+
                 String data_live = "X: " + val_x + "\nY: " + val_y;
-                String data_max = "X Maximum: " + xmax + "\nX Minimum: " + xmin + "\n\nY Maximum: " + ymax + "\nY Minimum: " + ymin;
+                String data_max = "X Maximum: " +
+                        String.format("%.3f", xmax) + "\nX Minimum: " +
+                        String.format("%.3f", xmin) + "\n\nY Maximum: " +
+                        String.format("%.3f", ymax) + "\nY Minimum: " +
+                        String.format("%.3f", ymin);
 
                 live_acceleration.setText(data_live);
                 max_acceleration.setText(data_max);
+                position.setText("Position: " + String.format("%.3f",x_pos) + ", " + String.format("%.3f",y_pos));
+                startTime = Calendar.getInstance().getTimeInMillis();
+                measurementCount = 0;
             }
-
             else {
+                //String data_live = "X: " + 0 + "\nY: " + 0;
+                String data_max = "X Maximum: " +
+                        String.format("%.3f", xmax) + "\nX Minimum: " +
+                        String.format("%.3f", xmin) + "\n\nY Maximum: " +
+                        String.format("%.3f", ymax) + "\nY Minimum: " +
+                        String.format("%.3f", ymin);
 
-                String data_live = "X: " + 0 + "\nY: " + 0;
-                String data_max = "X Maximum: " + xmax + "\nX Minimum: " + xmin + "\n\nY Maximum: " + ymax + "\nY Minimum: " + ymin;
+                String data_live = "X: " + val_x + "\nY: " + val_y;
 
                 live_acceleration.setText(data_live);
                 max_acceleration.setText(data_max);
+
+                magnitude = (float) Math.sqrt(Math.pow(val_x, 2) + Math.pow(val_y, 2));
+                if (magnitude > threshold) {
+                    //val_x_ave += val_x;
+                    movingAverage_X.addToWindow(val_x);
+                    //val_y_ave += val_y;
+                    movingAverage_Y.addToWindow(val_y);
+                    x_jerk = (val_x - val_x_pre)*time;
+                    y_jerk = (val_y - val_y_pre)*time;
+                }
+                measurementCount++;
             }
         }
-
+       /* try
+        {
+            Thread.sleep(0,1000000/polling_rate);
+        }
+        catch (Exception e)
+        {
+            System.out.print(e);
+        }*/
     }
 
     public void calibrateAccelerometer(SensorEvent event) {
@@ -189,6 +277,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         ymax = 0;
         xmin = 0;
         ymin = 0;
+        x_vel = 0;
+        y_vel = 0;
+        x_pos = 0;
+        y_pos = 0;
 
         if (num_readings > readings_max) {
             x_total += event.values[0];
@@ -216,106 +308,5 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
     }
-
-    public void connectDevice(View view) {
-        if (bluetoothAdapter == null) {
-            String noBtMsg = "Your device does not support Bluetooth. Please connect using a USB cable.";
-
-            Toast noBtToast = Toast.makeText(getApplicationContext(), noBtMsg, Toast.LENGTH_LONG);
-            noBtToast.show();
-        }
-        else {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_COARSE_LOCATION);
-            }
-            else {
-                enableBluetooth();
-            }
-        }
-    }
-
-    public void enableBluetooth() {
-        if (!bluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-        }
-        else {
-            Intent showDevices = new Intent(this, DevicesActivity.class);
-            startActivityForResult(showDevices, SHOW_DEVICES);
-        }
-    }
-
-    public void execute() {
-        //Send messages to server here
-        String test1 = "Test message 1 from client\n";
-        mm_coms.write(test1.getBytes());
-        String test2 = "Test message 2 from client\n";
-        mm_coms.write(test2.getBytes());
-    }
-
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_ENABLE_BT) {
-            if (resultCode == RESULT_OK) {
-                //String btEnabledMsg = "Thank you for activating Bluetooth.";
-                //Toast noBtToast = Toast.makeText(getApplicationContext(), btEnabledMsg, Toast.LENGTH_LONG);
-                //noBtToast.show();
-                Intent showDevices = new Intent(this, DevicesActivity.class);
-                startActivityForResult(showDevices, SHOW_DEVICES);
-            } else if (resultCode == RESULT_CANCELED) {
-                Toast.makeText(getApplicationContext(), "You must enable Bluetooth for wireless connection.", Toast.LENGTH_LONG).show();
-            }
-        }
-        if (requestCode == REQUEST_COARSE_LOCATION) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                enableBluetooth();
-            }
-            else Toast.makeText(this, "You must enable location permissions to discover devices", Toast.LENGTH_LONG).show();
-
-        }
-        if (requestCode == OPEN_BT_SETTINGS) {
-            if (!bluetoothAdapter.isEnabled()) {
-                String btDisabledMsg = "You must enable Bluetooth for wireless connection.";
-
-                Toast noBtToast = Toast.makeText(getApplicationContext(), btDisabledMsg, Toast.LENGTH_LONG);
-                noBtToast.show();
-            }
-        }
-        if (requestCode == SHOW_DEVICES) {
-            if (resultCode == RESULT_OK) {
-                BluetoothDevice d = data.getParcelableExtra("device");
-
-                mm_connection = new ConnectThread(d, mm_handler);
-                mm_connection.start();
-
-                //Ensure comm channel has been established before moving on
-                while (mm_connection.isRunning() && !mm_connection.isConnected());
-
-                //If the connection was successful, move on
-                if (mm_connection.isConnected()) {
-                    mm_coms = mm_connection.getCommunicationThread();
-                    //TODO Uncomment call
-                    //execute();
-                } else {
-                    //Otherwise, return to devices activity and throw error toast
-                    mm_connection.cancel();
-                    Toast.makeText(this, "Failed to connect to " + d.getName(), Toast.LENGTH_SHORT).show();
-                    Intent showDevices = new Intent(this, DevicesActivity.class);
-                    startActivityForResult(showDevices, SHOW_DEVICES);
-                }
-            }
-        }
-    }
-
-    public void onDestroy() {
-        Toast.makeText(this, "Shutting down", Toast.LENGTH_SHORT).show();
-        //Shut down communicationsThread and connectThread
-        mm_coms = null;
-        if (mm_connection != null)
-            mm_connection.cancel();
-        super.onDestroy();
-    }
-
 }
 
