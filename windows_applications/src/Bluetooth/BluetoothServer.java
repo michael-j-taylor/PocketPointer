@@ -75,7 +75,7 @@ public class BluetoothServer {
 	
 	public void simulateMessage() {
 		while (!isConnected());
-		mm_communication_thread.simulateMessage();
+		mm_communication_thread.write("Test message from Windows");
 	}
 	
 	public boolean isConnected() {
@@ -199,10 +199,8 @@ public class BluetoothServer {
                     if (!command.contains("CON: ")) {	
 	                    // respond
 	                    String response = "CON: " + command;
-	                    System.out.println("Response: " + response);
-	                    IOUtils.write(response, mm_output_stream, "UTF-8");
-	                    mm_output_stream.flush();
-	                    System.out.println("Sent");
+	                    System.out.println("Response: \"" + response + "\"");
+	                    write(response);
                     }
                     
                     sleep(100);
@@ -221,19 +219,16 @@ public class BluetoothServer {
             }
         }
 
-        public void simulateMessage() {
+        public void write(String message) {
             try {
 
-                System.out.println("Simulating");
-
-                String message = "Test message from Windows app";
                 IOUtils.write(message, mm_output_stream, "UTF-8");
                 mm_output_stream.flush();
-                System.out.println("Sending:\n" + message + "\n");
+                System.out.println("Sent:\n" + message + "\n");
 
             } catch (IOException e) {
                 e.printStackTrace();
-                System.out.println("Failure in simulate message:\n" + e + "\n");
+                System.out.println("Failure in write:\n" + e + "\n");
             }
         }
 

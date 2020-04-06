@@ -16,21 +16,12 @@
 	</natures>
 	<filteredResources>
 		<filter>
-			<id>1586206921526</id>
+			<id>1586210865623</id>
 			<name></name>
 			<type>5</type>
 			<matcher>
 				<id>org.eclipse.ui.ide.multiFilter</id>
-				<arguments>1.0-name-matches-false-false-bluecove-2.1.1.jar</arguments>
-			</matcher>
-		</filter>
-		<filter>
-			<id>1586206921531</id>
-			<name></name>
-			<type>5</type>
-			<matcher>
-				<id>org.eclipse.ui.ide.multiFilter</id>
-				<arguments>1.0-name-matches-false-false-commons-io-2.6.jar</arguments>
+				<arguments>1.0-name-matches-false-false-*</arguments>
 			</matcher>
 		</filter>
 	</filteredResources>

@@ -20,9 +20,8 @@ public class Receiver extends JPanel
     {
     	BluetoothServer server = new BluetoothServer();
     	try {
-    		server.openServer();
-    		while (!server.isConnected());
-    		server.simulateMessage();
+    		//server.openServer();
+    		//server.simulateMessage();
     	} catch (Exception e) {
     		if (e.getClass() == TimeoutException.class) {
     			System.out.println("In receiver, Timed out");
@@ -32,14 +31,14 @@ public class Receiver extends JPanel
     			System.out.println("Exception from openServer:\n" + e + e.getMessage() + "\n");
     	}
     	
-//        JFrame frame = new JFrame(gc);
-//        frame.setTitle("PocketPointer Receiver");
-//        frame.setSize(800, 600);
-//        frame.setVisible(true);
-//        frame.setResizable(false);
-//        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//        //TODO: initialize components. pass frame to method
-//        robotTest();
+        JFrame frame = new JFrame(gc);
+        frame.setTitle("PocketPointer Receiver");
+        frame.setSize(800, 600);
+        frame.setVisible(true);
+        frame.setResizable(false);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        //TODO: initialize components. pass frame to method
+        robotTest();
         //while(true)
         //TODO: main sequence
     }
@@ -53,6 +52,12 @@ public class Receiver extends JPanel
             run.exec(command);
             Thread.sleep(2000);
             robot = new Robot();
+            
+            // Press keys using robot. A gap of
+            // of 500 mili seconds is added after
+            // every key press
+            robot.keyPress(KeyEvent.VK_F);
+            MouseRobot.powerPoint(2);
         }
         catch (InterruptedException e)
         {
@@ -70,9 +75,6 @@ public class Receiver extends JPanel
         // Create an instance of Robot class
 
 
-        // Press keys using robot. A gap of
-        // of 500 mili seconds is added after
-        // every key press
-        robot.keyPress(KeyEvent.VK_F);
+        
     }
 }
