@@ -70,6 +70,7 @@ public class CommunicationThread extends Thread {
         try {
             //Send message to client
             mmOutStream.write(bytes);
+            sleep(100);
             mmOutStream.flush();
             Log.d(TAG, "Flushed output");
 
@@ -77,13 +78,17 @@ public class CommunicationThread extends Thread {
             Message writtenMsg = mmHandler.obtainMessage(
                     MainActivity.MessageConstants.MESSAGE_WRITE, -1, -1, bytes);
             writtenMsg.sendToTarget();
-        } catch (IOException e) {
-            Log.e(TAG, "Error occurred when sending data", e);
+        } catch (Exception e) {
+            if (e.equals(IOException.class)) {
+                Log.e(TAG, "Error occurred when sending data", e);
 
-            // Send a failure message back to the activity.
-            Message writeErrorMsg = mmHandler.obtainMessage(
-                    MainActivity.MessageConstants.MESSAGE_TOAST, "Couldn't send data to the other device");
-            mmHandler.sendMessage(writeErrorMsg);
+                // Send a failure message back to the activity.
+                Message writeErrorMsg = mmHandler.obtainMessage(
+                        MainActivity.MessageConstants.MESSAGE_TOAST, "Couldn't send data to the other device");
+                mmHandler.sendMessage(writeErrorMsg);
+            } else if (e.equals(InterruptedException.class)) {
+                //Do nothing
+            }
         }
     }
 
