@@ -305,5 +305,105 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
     }
+
+    public void connectDevice(View view) {
+        if (bluetoothAdapter == null) {
+            String noBtMsg = "Your device does not support Bluetooth. Please connect using a USB cable.";
+
+            Toast noBtToast = Toast.makeText(getApplicationContext(), noBtMsg, Toast.LENGTH_LONG);
+            noBtToast.show();
+        }
+        else {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_COARSE_LOCATION);
+            }
+            else {
+                enableBluetooth();
+            }
+        }
+    }
+
+    public void enableBluetooth() {
+        if (!bluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        }
+        else {
+            Intent showDevices = new Intent(this, DevicesActivity.class);
+            startActivityForResult(showDevices, SHOW_DEVICES);
+        }
+    }
+
+    public void execute() {
+        //Send messages to server here
+        String test1 = "Test message 1 from client\n";
+        mm_coms.write(test1.getBytes());
+        String test2 = "Test message 2 from client\n";
+        mm_coms.write(test2.getBytes());
+    }
+
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_ENABLE_BT) {
+            if (resultCode == RESULT_OK) {
+                //String btEnabledMsg = "Thank you for activating Bluetooth.";
+                //Toast noBtToast = Toast.makeText(getApplicationContext(), btEnabledMsg, Toast.LENGTH_LONG);
+                //noBtToast.show();
+                Intent showDevices = new Intent(this, DevicesActivity.class);
+                startActivityForResult(showDevices, SHOW_DEVICES);
+            } else if (resultCode == RESULT_CANCELED) {
+                Toast.makeText(getApplicationContext(), "You must enable Bluetooth for wireless connection.", Toast.LENGTH_LONG).show();
+            }
+        }
+        if (requestCode == REQUEST_COARSE_LOCATION) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                enableBluetooth();
+            }
+            else Toast.makeText(this, "You must enable location permissions to discover devices", Toast.LENGTH_LONG).show();
+
+        }
+        if (requestCode == OPEN_BT_SETTINGS) {
+            if (!bluetoothAdapter.isEnabled()) {
+                String btDisabledMsg = "You must enable Bluetooth for wireless connection.";
+
+                Toast noBtToast = Toast.makeText(getApplicationContext(), btDisabledMsg, Toast.LENGTH_LONG);
+                noBtToast.show();
+            }
+        }
+        if (requestCode == SHOW_DEVICES) {
+            if (resultCode == RESULT_OK) {
+                BluetoothDevice d = data.getParcelableExtra("device");
+
+                mm_connection = new ConnectThread(d, mm_handler);
+                mm_connection.start();
+
+                //Ensure comm channel has been established before moving on
+                while (mm_connection.isRunning() && !mm_connection.isConnected());
+
+                //If the connection was successful, move on
+                if (mm_connection.isConnected()) {
+                    mm_coms = mm_connection.getCommunicationThread();
+                    //TODO Uncomment call
+                    //execute();
+                } else {
+                    //Otherwise, return to devices activity and throw error toast
+                    mm_connection.cancel();
+                    Toast.makeText(this, "Failed to connect to " + d.getName(), Toast.LENGTH_SHORT).show();
+                    Intent showDevices = new Intent(this, DevicesActivity.class);
+                    startActivityForResult(showDevices, SHOW_DEVICES);
+                }
+            }
+        }
+    }
+
+    public void onDestroy() {
+        Toast.makeText(this, "Shutting down", Toast.LENGTH_SHORT).show();
+        //Shut down communicationsThread and connectThread
+        mm_coms = null;
+        if (mm_connection != null)
+            mm_connection.cancel();
+        super.onDestroy();
+    }
 }
 
