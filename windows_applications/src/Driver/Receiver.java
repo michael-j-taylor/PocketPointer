@@ -6,7 +6,6 @@ import javax.swing.JPanel;
 
 import Bluetooth.BluetoothServer;
 
-//import javax.bluetooth.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.*;
