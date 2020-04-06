@@ -89,6 +89,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         Log.d(TAG, "onCreate: Registered accelerometer listener");
 
+
+
         Button calibrate = findViewById(R.id.calibrate);
         calibrate.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
