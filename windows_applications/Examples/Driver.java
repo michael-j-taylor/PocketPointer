@@ -1,7 +1,4 @@
-/******************************
- * Fortnite Challenge		  *
- * Ryan Atkinson			  *
- ******************************/
+
  
 import java.awt.*;
 import java.awt.image.BufferedImage;

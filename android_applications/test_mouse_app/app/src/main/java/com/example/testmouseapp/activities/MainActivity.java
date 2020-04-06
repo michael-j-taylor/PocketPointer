@@ -1,20 +1,42 @@
 package com.example.testmouseapp.activities;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.os.Parcelable;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
 
 import com.example.testmouseapp.R;
 
+import com.example.testmouseapp.dataOperations.MovingAverage;
+import com.example.testmouseapp.dataOperations.Filter;
+import com.example.testmouseapp.threads.CommunicationThread;
+import com.example.testmouseapp.threads.ConnectThread;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.testmouseapp.dataOperations.*;
@@ -58,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     //calibration vars
     boolean calibrating = false;
     int num_readings = 0;
-    int readings_max = 10000;  //change this to determine how many readings the accelerometer calibrates on
+    int readings_max = 100000;  //change this to determine how many readings the accelerometer calibrates on
     float x_total;
     float y_total;
     float x_pad = 0;
@@ -69,6 +91,42 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     double y_vel = 0;
     double x_jerk = 0;
     double y_jerk = 0;
+
+    //Used to interpret Bluetooth messages
+    public interface MessageConstants {
+        int MESSAGE_READ = 0;
+        int MESSAGE_WRITE = 1;
+        int MESSAGE_TOAST = 2;
+    }
+
+    //bluetooth vars
+    BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+    private CommunicationThread mm_coms = null;
+    private ConnectThread mm_connection = null;
+    final int REQUEST_ENABLE_BT = 3;
+    final int OPEN_BT_SETTINGS = 6;
+    final int SHOW_DEVICES = 9;
+    final int REQUEST_COARSE_LOCATION = 12;
+    @SuppressLint("HandlerLeak")
+    public Handler mm_handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            if (msg.what == MessageConstants.MESSAGE_READ) {
+                Log.d(TAG, "Got: " + msg.obj);
+                if (!msg.obj.toString().contains("CON: ")) {
+                    mm_coms.write(("CON: " + msg.obj).getBytes());
+                }
+            } else if (msg.what == MessageConstants.MESSAGE_WRITE) {
+                Log.d(TAG, "Sent: \"" + msg.obj + "\"");
+            } else if (msg.what == MessageConstants.MESSAGE_TOAST) {
+                Toast.makeText(getApplicationContext(), msg.obj.toString(), Toast.LENGTH_SHORT).show();
+            } else {
+                Log.e(TAG, "Received bad message code from handler: " + msg.what);
+            }
+        }
+    };
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +160,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 activateCalibrate(v);
             }
         });
+
+        //Set up Action Bar
+        Toolbar toolbar = findViewById(R.id.main_toolbar);
+        setSupportActionBar(toolbar);
+        setTitle(R.string.app_name);
     }
 
     //on sensor value change, display X and Z values
