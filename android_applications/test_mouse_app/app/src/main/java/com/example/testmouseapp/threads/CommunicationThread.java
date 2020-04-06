@@ -14,7 +14,7 @@ import java.io.OutputStream;
 public class CommunicationThread extends Thread {
     private static final String TAG = "CommunicationThread";
     private final BluetoothSocket mmSocket;
-    private final Handler mmHandler;
+    private Handler mmHandler;
     private final InputStream mmInStream;
     private final OutputStream mmOutStream;
     private boolean running = true;
@@ -58,7 +58,7 @@ public class CommunicationThread extends Thread {
                         MainActivity.MessageConstants.MESSAGE_READ, numBytes, -1,
                         mmBuffer);
                 readMsg.sendToTarget();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 Log.e(TAG, "Input stream was disconnected", e);
                 break;
             }
@@ -70,10 +70,12 @@ public class CommunicationThread extends Thread {
         try {
             //Send message to client
             mmOutStream.write(bytes);
+            mmOutStream.flush();
+            Log.d(TAG, "Flushed output");
 
             // Share the sent message with the UI activity.
             Message writtenMsg = mmHandler.obtainMessage(
-                    MainActivity.MessageConstants.MESSAGE_WRITE, -1, -1, mmBuffer);
+                    MainActivity.MessageConstants.MESSAGE_WRITE, -1, -1, bytes);
             writtenMsg.sendToTarget();
         } catch (IOException e) {
             Log.e(TAG, "Error occurred when sending data", e);
@@ -84,6 +86,7 @@ public class CommunicationThread extends Thread {
             mmHandler.sendMessage(writeErrorMsg);
         }
     }
+
 
     boolean isRunning() {
         return running;

@@ -12,8 +12,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.os.ParcelUuid;
 import android.os.Parcelable;
 import android.view.View;
@@ -22,7 +20,6 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.example.testmouseapp.R;
 import com.example.testmouseapp.recyclerView.DevicesRecyclerViewAdapter;
-import com.example.testmouseapp.threads.ConnectThread;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -35,7 +32,6 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
 
     private static final UUID mm_uuid= UUID.fromString("97c337c7-a148-4a8d-9ccf-eeb76cb477a0");
 
-    private Handler mm_handler = null;
     private DevicesRecyclerViewAdapter mm_paired_adapter;
     private DevicesRecyclerViewAdapter mm_available_adapter;
 
@@ -55,16 +51,6 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_devices);
         active = true;
-
-        //Get caller's message handler
-        Bundle b = getIntent().getExtras();
-        if (b != null) {
-            Message m = b.getParcelable("handlerMessage");
-            if (m != null) {
-                mm_handler = m.getTarget();
-                Toast.makeText(this, m.getTarget().toString(), Toast.LENGTH_SHORT).show();
-            } else Toast.makeText(this, "Message is null", Toast.LENGTH_SHORT).show();
-        } else Toast.makeText(this, "Bundle is null", Toast.LENGTH_SHORT).show();
 
         //Set up toolbar for this activity
         Toolbar toolbar = findViewById(R.id.devices_toolbar);
@@ -193,26 +179,11 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
             if (d.getName().equals(name)) {
                 check_devices.stopChecking();
                 Toast.makeText(this, "You clicked " + d.getName() + ". Device is " + d.toString(), Toast.LENGTH_SHORT).show();
-                ConnectThread connectThread = new ConnectThread(d, mm_handler);
-                connectThread.start();
 
-                //Wait to exit activity until comm channel has been established or connection fails
-//                while (connectThread.isRunning() && !connectThread.isConnected());
-
-                //If the connection was successful, return to main activity with connectThread
-//                if (connectThread.isConnected()) {
-//                    if (mm_handler == null) {
-//                        Toast.makeText(this, "handler is null", Toast.LENGTH_SHORT).show();
-
-//                    }
-
-                    Message conn_obj = mm_handler.obtainMessage(MainActivity.MessageConstants.CONNECTION_OBJ, connectThread);
-                    conn_obj.sendToTarget();
-                    finish();
-//                }
-                //Otherwise, stay, throw error toast, and continue checking for devices
-//                Toast.makeText(this, "Failed to connect to " + d.getName(), Toast.LENGTH_SHORT).show();
-//                check_devices.start();
+                Intent resultIntent = new Intent();
+                resultIntent.putExtra("device", d);
+                setResult(RESULT_OK, resultIntent);
+                finish();
             } else Toast.makeText(this, "Device not found in list" + position, Toast.LENGTH_SHORT).show();
         }
     }

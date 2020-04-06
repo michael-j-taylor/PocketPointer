@@ -22,8 +22,8 @@ public class ConnectThread extends Thread {
     public ConnectThread(BluetoothDevice device, Handler handler) {
         // Use a temporary object that is later assigned to mmSocket
         // because mmSocket is final.
-        BluetoothSocket tmp = null;
         mmHandler = handler;
+        BluetoothSocket tmp = null;
 
         try {
             // Get a BluetoothSocket to connect with the given BluetoothDevice based on the program's UUID
@@ -47,11 +47,10 @@ public class ConnectThread extends Thread {
                 }
                 // Connect to the remote device through the socket. This call blocks until it succeeds or throws an exception.
                 mmSocket.connect();
-                connected = true;
-
                 // The connection attempt succeeded. Perform work associated with the connection in a separate thread.
                 mmCommunicationThread = new CommunicationThread(mmSocket, mmHandler);
                 mmCommunicationThread.start();
+                connected = true;
             }
         } catch (Exception connectException) {
             // Unable to connect; close the socket and return

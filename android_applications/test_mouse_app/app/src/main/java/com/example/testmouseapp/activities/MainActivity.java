@@ -8,6 +8,7 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -68,10 +69,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     //Used to interpret Bluetooth messages
     public interface MessageConstants {
-        int CONNECTION_OBJ = 0;
-        int MESSAGE_READ = 1;
-        int MESSAGE_WRITE = 2;
-        int MESSAGE_TOAST = 3;
+        int MESSAGE_READ = 0;
+        int MESSAGE_WRITE = 1;
+        int MESSAGE_TOAST = 2;
     }
 
     //bluetooth vars
@@ -86,15 +86,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public Handler mm_handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            if (msg.what == MessageConstants.CONNECTION_OBJ) {
-                mm_connection = (ConnectThread) msg.obj;
-                execute();
-            } else if (msg.what == MessageConstants.MESSAGE_READ) {
+            if (msg.what == MessageConstants.MESSAGE_READ) {
+                Log.d(TAG, "Got: " + msg.obj);
                 if (!msg.obj.toString().contains("CON: ")) {
-                    Toast.makeText(getApplicationContext(), "Received message: " + msg.obj.toString(), Toast.LENGTH_LONG).show();
+                    mm_coms.write(("CON: " + msg.obj).getBytes());
                 }
             } else if (msg.what == MessageConstants.MESSAGE_WRITE) {
-                Toast.makeText(getApplicationContext(), "Message \"" + msg.obj.toString() + "\" sent", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "Sent: \"" + msg.obj + "\"");
             } else if (msg.what == MessageConstants.MESSAGE_TOAST) {
                 Toast.makeText(getApplicationContext(), msg.obj.toString(), Toast.LENGTH_SHORT).show();
             } else {
@@ -243,21 +241,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
         else {
             Intent showDevices = new Intent(this, DevicesActivity.class);
-            Message m = mm_handler.obtainMessage();
-            Toast.makeText(this, m.getTarget().toString(), Toast.LENGTH_SHORT).show();
-            showDevices.putExtra("android.os.Message", m);
             startActivityForResult(showDevices, SHOW_DEVICES);
         }
     }
 
     public void execute() {
         //Send messages to server here
-        String test1 = "Test message 1 from client";
+        String test1 = "Test message 1 from client\n";
         mm_coms.write(test1.getBytes());
-        String test2 = "Test message 2 from client";
+        String test2 = "Test message 2 from client\n";
         mm_coms.write(test2.getBytes());
-
-        //
     }
 
 
@@ -269,8 +262,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 //Toast noBtToast = Toast.makeText(getApplicationContext(), btEnabledMsg, Toast.LENGTH_LONG);
                 //noBtToast.show();
                 Intent showDevices = new Intent(this, DevicesActivity.class);
-                Message m = mm_handler.obtainMessage();
-                showDevices.putExtra("handlerMessage", m);
                 startActivityForResult(showDevices, SHOW_DEVICES);
             } else if (resultCode == RESULT_CANCELED) {
                 Toast.makeText(getApplicationContext(), "You must enable Bluetooth for wireless connection.", Toast.LENGTH_LONG).show();
@@ -289,6 +280,30 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                 Toast noBtToast = Toast.makeText(getApplicationContext(), btDisabledMsg, Toast.LENGTH_LONG);
                 noBtToast.show();
+            }
+        }
+        if (requestCode == SHOW_DEVICES) {
+            if (resultCode == RESULT_OK) {
+                BluetoothDevice d = data.getParcelableExtra("device");
+
+                mm_connection = new ConnectThread(d, mm_handler);
+                mm_connection.start();
+
+                //Ensure comm channel has been established before moving on
+                while (mm_connection.isRunning() && !mm_connection.isConnected());
+
+                //If the connection was successful, move on
+                if (mm_connection.isConnected()) {
+                    mm_coms = mm_connection.getCommunicationThread();
+                    //TODO Uncomment call
+                    //execute();
+                } else {
+                    //Otherwise, return to devices activity and throw error toast
+                    mm_connection.cancel();
+                    Toast.makeText(this, "Failed to connect to " + d.getName(), Toast.LENGTH_SHORT).show();
+                    Intent showDevices = new Intent(this, DevicesActivity.class);
+                    startActivityForResult(showDevices, SHOW_DEVICES);
+                }
             }
         }
     }
