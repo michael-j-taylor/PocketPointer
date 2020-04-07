@@ -112,16 +112,35 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         @Override
         public void handleMessage(Message msg) {
             if (msg.what == MessageConstants.MESSAGE_READ) {
-                //Log message
+                //Get message parts for log
+                String type = PPMessage.toString((byte) msg.arg2);
                 String text = (String) msg.obj;
-                Toast.makeText(getApplicationContext(), "Got: " + text, Toast.LENGTH_SHORT).show();
-                Log.d(TAG, "Got: " + text);
+
+                //Log message
+                Toast.makeText(getApplicationContext(), "Got: " + type + text, Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "Got: " + type + text);
+
+
+                PPMessage m = new PPMessage((byte) msg.arg2, text);
+                //TODO Do something with the message here.
+
+                //If message is notification to terminate, do so
+                if (m.what == PPMessage.Command.END) {
+                    Toast.makeText(getApplicationContext(), "Bluetooth device disconnected", Toast.LENGTH_SHORT).show();
+                    //Shut down communicationsThread and connectThread
+                    mm_coms = null;
+                    if (mm_connection != null)
+                        mm_connection.cancel();
+                }
 
             } else if (msg.what == MessageConstants.MESSAGE_WRITE) {
-                //Log that message was sent
+                //Get message parts for log
+                String type = PPMessage.toString((byte) msg.arg2);
                 String text = (String) msg.obj;
-                Toast.makeText(getApplicationContext(), "Sent: \"" + text + "\"", Toast.LENGTH_SHORT).show();
-                Log.d(TAG, "Sent: \"" + text + "\"");
+
+                //Log message
+                Toast.makeText(getApplicationContext(), "Sent: " + type + text, Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "Sent: " + type + text);
 
             } else if (msg.what == MessageConstants.MESSAGE_TOAST) {
                 Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_SHORT).show();
@@ -340,12 +359,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
-    public void execute(View view) {
+    public void execute() {
+        //TODO Write to coms here. See example in testMessages(View)
+
+    }
+
+    public void testMessages(View view) {
         //Send messages to server here
-        String test1 = "Test message 1 from client\n";
-        mm_coms.write(test1);
-        String test2 = "Test message 2 from client\n";
-        mm_coms.write(test2);
+        mm_coms.write(new PPMessage(PPMessage.Command.STRING, "Test message 1 from client"));
+        mm_coms.write(new PPMessage(PPMessage.Command.STRING, "Test message 2 from client\n"));
     }
 
 
@@ -390,8 +412,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 //If the connection was successful, move on
                 if (mm_connection.isConnected()) {
                     mm_coms = mm_connection.getCommunicationThread();
-                    //TODO Uncomment call
-                    //execute();
+                    execute();
                 } else {
                     //Otherwise, return to devices activity and throw error toast
                     mm_connection.cancel();
@@ -405,6 +426,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void onDestroy() {
         Toast.makeText(this, "Shutting down", Toast.LENGTH_SHORT).show();
+        if (mm_coms != null) {
+            mm_coms.write(new PPMessage(PPMessage.Command.END, "Client ending activity"));
+        }
         //Shut down communicationsThread and connectThread
         mm_coms = null;
         if (mm_connection != null)

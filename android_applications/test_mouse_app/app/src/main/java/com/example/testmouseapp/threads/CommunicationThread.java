@@ -61,13 +61,19 @@ public class CommunicationThread extends Thread {
                         this.cancel();
                         return;
                     }
-                    Log.e(TAG, "Only read " + numBytes + ", not " + PPMessage.MESSAGE_SIZE);
+                    //Log.d(TAG, "Only read " + numBytes + ", not " + PPMessage.MESSAGE_SIZE);
                 }
 
-                String text = new String(mmBuffer, StandardCharsets.UTF_8);
+                //Get message from buffer
+                byte what = mmBuffer[0];
+                //Got null message. Discard and continue
+                if (what == PPMessage.Command.NULL) continue;
+
+                String text = new String(mmBuffer, 1, PPMessage.MESSAGE_SIZE-1, StandardCharsets.UTF_8);
+
                 // Send the obtained bytes to the UI activity.
                 Message readMsg = mmHandler.obtainMessage(
-                        MainActivity.MessageConstants.MESSAGE_READ, numBytes, -1,
+                        MainActivity.MessageConstants.MESSAGE_READ, -1, what,
                         text);
                 readMsg.sendToTarget();
 
@@ -80,20 +86,30 @@ public class CommunicationThread extends Thread {
     }
 
     // Call this from the main activity to send data to the remote device.
-    public void write(String message) {
+    public void write(PPMessage message) throws IllegalArgumentException{
         try {
             //Send message to client
+
             byte[] b = new byte[PPMessage.MESSAGE_SIZE];
-            b = message.getBytes(StandardCharsets.UTF_8);
+
+            //Convert message to byte[]
+            //Message type is first byte
+            b[0] = message.what;
+            //Rest of buffer is message text
+            byte[] text = message.text.getBytes(StandardCharsets.UTF_8);
+            if (text.length > PPMessage.MESSAGE_SIZE-1) {
+                //Throw exception if text is too long
+                throw new IllegalArgumentException();
+            }
+            System.arraycopy(text, 0, b, 1, text.length);
+
             mmOutStream.write(b);
-            Log.d(TAG, "Loaded output");
             sleep(500);
             mmOutStream.flush();
-            Log.d(TAG, "Flushed output");
 
             // Share the sent message with the UI activity.
             Message writtenMsg = mmHandler.obtainMessage(
-                    MainActivity.MessageConstants.MESSAGE_WRITE, -1, -1, message);
+                    MainActivity.MessageConstants.MESSAGE_WRITE, -1, message.what, message.text);
             writtenMsg.sendToTarget();
         } catch (Exception e) {
             if (e.equals(IOException.class)) {
