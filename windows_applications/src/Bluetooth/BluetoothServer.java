@@ -50,7 +50,7 @@ public class BluetoothServer {
 		} catch (Exception e) {
 			System.out.println("Failure in openServer:\n" + e + "\n");
             System.out.println("Error " + e.getMessage() + "\n");
-            stop();
+            end();
             throw new BluetoothStateException();
 		}
 		
@@ -65,7 +65,7 @@ public class BluetoothServer {
         
 			if (!mm_connected) {
 				System.out.println("Device has been discoverable for 1 minute without connecting. Stopping");
-				stop();
+				end();
 				throw new TimeoutException();
 			}
 			
@@ -76,15 +76,15 @@ public class BluetoothServer {
 	
 	public void simulateMessage() {
 		while (!this.isConnected());
-		mm_communication_thread.write("Test message from Windows");
+		mm_communication_thread.write(new PPMessage(PPMessage.Command.STRING, "Test message from Windows\n"));
 	}
 	
 	public boolean isConnected() {
-		return mm_connected;
+		return mm_connected;	
 	}
 	
 	
-	public void stop() {
+	public void end() {
 		System.out.println("Stop server");
 		
 		//Shut down threads
@@ -213,17 +213,33 @@ public class BluetoothServer {
                 	//Read from InputStream
                 	numBytes = mm_input_stream.read(buffer);
                 	if (numBytes < PPMessage.MESSAGE_SIZE) {
-                		//TODO if numBytes is -1, connection broke
                 		if (numBytes == -1) {
                 			//Connection broke so close socket
                 			this.cancel();
                 			return;
                 		}
-                		System.out.println("Only read " + numBytes + ", not " + PPMessage.MESSAGE_SIZE);
+                		//System.out.println("Only read " + numBytes + ", not " + PPMessage.MESSAGE_SIZE);
                 	}
                 	
-                	String message = new String(buffer, StandardCharsets.UTF_8);
-                    System.out.println("Got: " + message);
+                	//Get message from buffer
+                    byte what = buffer[0];
+                    //Got null message. Discard and continue
+                    if (what == PPMessage.Command.NULL) continue;
+                    
+                    String text = new String(buffer, 1, PPMessage.MESSAGE_SIZE-1, StandardCharsets.UTF_8);
+
+
+                	
+                    System.out.println("Got: " + PPMessage.toString(what) + text);
+                    
+                    
+                    PPMessage m = new PPMessage(what, text);
+                    //TODO Do something with message here
+                    
+                    //If message is notification to terminate, do so
+                    if (m.what == PPMessage.Command.END) {
+                    	end();
+                    }
 	                    
                     sleep(100);
                 }
@@ -239,14 +255,25 @@ public class BluetoothServer {
             }
         }
 
-        public void write(String message) {
+        public void write(PPMessage message) {
             try {
             	
             	byte[] b = new byte[PPMessage.MESSAGE_SIZE];
-            	b = message.getBytes(StandardCharsets.UTF_8);
+            	
+            	//Convert message to byte[]
+            	//Message type is first byte
+                b[0] = message.what;
+                //Rest of buffer is message text
+                byte[] text = message.text.getBytes(StandardCharsets.UTF_8);
+                if (text.length > PPMessage.MESSAGE_SIZE-1) {
+                	//Throw exception if text is too long
+                    throw new IllegalArgumentException();
+                }
+                System.arraycopy(text, 0, b, 1, text.length);
+                
                 mm_output_stream.write(b);
                 mm_output_stream.flush();
-                System.out.println("Sent:\n" + message + "\n");
+                System.out.println("Sent: " + PPMessage.toString(message.what) + message.text);
 
             } catch (IOException e) {
                 System.out.println("Failure in write:");
