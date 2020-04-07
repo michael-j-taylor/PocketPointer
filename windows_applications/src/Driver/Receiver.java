@@ -20,8 +20,8 @@ public class Receiver extends JPanel
     {
     	BluetoothServer server = new BluetoothServer();
     	try {
-    		//server.openServer();
-    		//server.simulateMessage();
+    		server.openServer();
+    		server.simulateMessage();
     	} catch (Exception e) {
     		if (e.getClass() == TimeoutException.class) {
     			System.out.println("In receiver, Timed out");
@@ -31,14 +31,14 @@ public class Receiver extends JPanel
     			System.out.println("Exception from openServer:\n" + e + e.getMessage() + "\n");
     	}
     	
-        JFrame frame = new JFrame(gc);
-        frame.setTitle("PocketPointer Receiver");
-        frame.setSize(800, 600);
-        frame.setVisible(true);
-        frame.setResizable(false);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//        JFrame frame = new JFrame(gc);
+//        frame.setTitle("PocketPointer Receiver");
+//        frame.setSize(800, 600);
+//        frame.setVisible(true);
+//        frame.setResizable(false);
+//        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //TODO: initialize components. pass frame to method
-        robotTest();
+//        robotTest();
         //while(true)
         //TODO: main sequence
     }

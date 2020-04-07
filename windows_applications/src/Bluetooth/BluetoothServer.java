@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeoutException;
 
 import javax.bluetooth.BluetoothStateException;
@@ -74,7 +75,7 @@ public class BluetoothServer {
 	}
 	
 	public void simulateMessage() {
-		while (!isConnected());
+		while (!this.isConnected());
 		mm_communication_thread.write("Test message from Windows");
 	}
 	
@@ -88,12 +89,8 @@ public class BluetoothServer {
 		
 		//Shut down threads
         if (mm_connect_thread != null) {
-        	mm_connect_thread.stopListening();
-        	mm_connect_thread.interrupt();
+        	mm_connect_thread.cancel();
         	System.out.println("Stop connect thread");
-        }
-        if (mm_communication_thread != null) {
-            mm_communication_thread.interrupt();
         }
         
         //Shut down notifier
@@ -160,14 +157,27 @@ public class BluetoothServer {
                 	} else {
                 		System.out.println("Failure in connect thread:\n" + e + e.getMessage() + "\n");
                 	}
-                    stopListening();
+                    cancel();
                     return;
                 }
             }
         }
 
-        public void stopListening() {
+        public void cancel() {
             running = false;
+            
+            if (mm_communication_thread != null) {
+                mm_communication_thread.cancel();
+            }
+            
+            //Shut down notifier
+            if (notifier != null) {
+            	try {
+    				notifier.close();
+    			} catch (IOException e) {
+    				System.out.println("Warning: notifier was waiting for connection" + e + "\n");
+    			}
+            }
         }
     }
 
@@ -181,28 +191,40 @@ public class BluetoothServer {
         public CommunicationThread(StreamConnection a_connection) {
             super();
             mm_connection = a_connection;
+            
+            try {
+				mm_input_stream = connection.openInputStream();
+				mm_output_stream = connection.openOutputStream();
+			} catch (IOException e) {
+				System.out.println("Failed to open streams");
+				e.printStackTrace();
+			}
         }
 
         @Override
         public void run() {
             mm_running = true;
             try {
-            	
-                mm_input_stream = connection.openInputStream();
-                mm_output_stream = connection.openOutputStream();
 
                 while (mm_running) {
+                	byte[] buffer = new byte[PPMessage.MESSAGE_SIZE];
+                	int numBytes;
 
-                	// read
-                    String command = IOUtils.toString(mm_input_stream, "UTF-8");
-                    System.out.println("Got: " + command);
-                    if (!command.contains("CON: ")) {	
-	                    // respond
-	                    String response = "CON: " + command;
-	                    System.out.println("Response: \"" + response + "\"");
-	                    write(response);
-                    }
-                    
+                	//Read from InputStream
+                	numBytes = mm_input_stream.read(buffer);
+                	if (numBytes < PPMessage.MESSAGE_SIZE) {
+                		//TODO if numBytes is -1, connection broke
+                		if (numBytes == -1) {
+                			//Connection broke so close socket
+                			this.cancel();
+                			return;
+                		}
+                		System.out.println("Only read " + numBytes + ", not " + PPMessage.MESSAGE_SIZE);
+                	}
+                	
+                	String message = new String(buffer, StandardCharsets.UTF_8);
+                    System.out.println("Got: " + message);
+	                    
                     sleep(100);
                 }
             } catch (Exception e) {
@@ -214,21 +236,21 @@ public class BluetoothServer {
                     e1.printStackTrace();
                 }
                 System.out.println("Connection closed:");
-            } finally {
-                mm_running = false;
             }
         }
 
         public void write(String message) {
             try {
-
-                IOUtils.write(message, mm_output_stream, "UTF-8");
+            	
+            	byte[] b = new byte[PPMessage.MESSAGE_SIZE];
+            	b = message.getBytes(StandardCharsets.UTF_8);
+                mm_output_stream.write(b);
                 mm_output_stream.flush();
                 System.out.println("Sent:\n" + message + "\n");
 
             } catch (IOException e) {
+                System.out.println("Failure in write:");
                 e.printStackTrace();
-                System.out.println("Failure in write:\n" + e + "\n");
             }
         }
 
@@ -238,6 +260,16 @@ public class BluetoothServer {
 
         public void setRunning(boolean running) {
             mm_running = running;
+        }
+        
+        public void cancel() {
+            mm_running = false;
+            
+            try {
+                mm_connection.close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
         }
     }
 }
