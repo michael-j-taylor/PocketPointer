@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeoutException;
 
 import javax.bluetooth.BluetoothStateException;
@@ -49,7 +50,7 @@ public class BluetoothServer {
 		} catch (Exception e) {
 			System.out.println("Failure in openServer:\n" + e + "\n");
             System.out.println("Error " + e.getMessage() + "\n");
-            stop();
+            end();
             throw new BluetoothStateException();
 		}
 		
@@ -64,7 +65,7 @@ public class BluetoothServer {
         
 			if (!mm_connected) {
 				System.out.println("Device has been discoverable for 1 minute without connecting. Stopping");
-				stop();
+				end();
 				throw new TimeoutException();
 			}
 			
@@ -74,26 +75,22 @@ public class BluetoothServer {
 	}
 	
 	public void simulateMessage() {
-		while (!isConnected());
-		mm_communication_thread.simulateMessage();
+		while (!this.isConnected());
+		mm_communication_thread.write(new PPMessage(PPMessage.Command.STRING, "Test message from Windows\n"));
 	}
 	
 	public boolean isConnected() {
-		return mm_connected;
+		return mm_connected;	
 	}
 	
 	
-	public void stop() {
+	public void end() {
 		System.out.println("Stop server");
 		
 		//Shut down threads
         if (mm_connect_thread != null) {
-        	mm_connect_thread.stopListening();
-        	mm_connect_thread.interrupt();
+        	mm_connect_thread.cancel();
         	System.out.println("Stop connect thread");
-        }
-        if (mm_communication_thread != null) {
-            mm_communication_thread.interrupt();
         }
         
         //Shut down notifier
@@ -160,14 +157,27 @@ public class BluetoothServer {
                 	} else {
                 		System.out.println("Failure in connect thread:\n" + e + e.getMessage() + "\n");
                 	}
-                    stopListening();
+                    cancel();
                     return;
                 }
             }
         }
 
-        public void stopListening() {
+        public void cancel() {
             running = false;
+            
+            if (mm_communication_thread != null) {
+                mm_communication_thread.cancel();
+            }
+            
+            //Shut down notifier
+            if (notifier != null) {
+            	try {
+    				notifier.close();
+    			} catch (IOException e) {
+    				System.out.println("Warning: notifier was waiting for connection" + e + "\n");
+    			}
+            }
         }
     }
 
@@ -181,30 +191,56 @@ public class BluetoothServer {
         public CommunicationThread(StreamConnection a_connection) {
             super();
             mm_connection = a_connection;
+            
+            try {
+				mm_input_stream = connection.openInputStream();
+				mm_output_stream = connection.openOutputStream();
+			} catch (IOException e) {
+				System.out.println("Failed to open streams");
+				e.printStackTrace();
+			}
         }
 
         @Override
         public void run() {
             mm_running = true;
             try {
-            	
-                mm_input_stream = connection.openInputStream();
-                mm_output_stream = connection.openOutputStream();
 
                 while (mm_running) {
+                	byte[] buffer = new byte[PPMessage.MESSAGE_SIZE];
+                	int numBytes;
 
-                	// read
-                    String command = IOUtils.toString(mm_input_stream, "UTF-8");
-                    System.out.println("Got: " + command);
-                    if (!command.contains("CON: ")) {	
-	                    // respond
-	                    String response = "CON: " + command;
-	                    System.out.println("Response: " + response);
-	                    IOUtils.write(response, mm_output_stream, "UTF-8");
-	                    mm_output_stream.flush();
-	                    System.out.println("Sent");
-                    }
+                	//Read from InputStream
+                	numBytes = mm_input_stream.read(buffer);
+                	if (numBytes < PPMessage.MESSAGE_SIZE) {
+                		if (numBytes == -1) {
+                			//Connection broke so close socket
+                			this.cancel();
+                			return;
+                		}
+                		//System.out.println("Only read " + numBytes + ", not " + PPMessage.MESSAGE_SIZE);
+                	}
+                	
+                	//Get message from buffer
+                    byte what = buffer[0];
+                    //Got null message. Discard and continue
+                    if (what == PPMessage.Command.NULL) continue;
                     
+                    String text = new String(buffer, 1, PPMessage.MESSAGE_SIZE-1, StandardCharsets.UTF_8);
+
+
+                	
+                    System.out.println("Got: " + PPMessage.toString(what) + text);
+                    
+                    
+                    PPMessage m = new PPMessage(what, text);
+                    //TODO Do something with message here
+                    
+                    //If message is notification to terminate, do so
+                    if (m.what == PPMessage.Command.END) {
+                    	end();
+                    }
+	                    
                     sleep(100);
                 }
             } catch (Exception e) {
@@ -216,24 +252,32 @@ public class BluetoothServer {
                     e1.printStackTrace();
                 }
                 System.out.println("Connection closed:");
-            } finally {
-                mm_running = false;
             }
         }
 
-        public void simulateMessage() {
+        public void write(PPMessage message) {
             try {
-
-                System.out.println("Simulating");
-
-                String message = "Test message from Windows app";
-                IOUtils.write(message, mm_output_stream, "UTF-8");
+            	
+            	byte[] b = new byte[PPMessage.MESSAGE_SIZE];
+            	
+            	//Convert message to byte[]
+            	//Message type is first byte
+                b[0] = message.what;
+                //Rest of buffer is message text
+                byte[] text = message.text.getBytes(StandardCharsets.UTF_8);
+                if (text.length > PPMessage.MESSAGE_SIZE-1) {
+                	//Throw exception if text is too long
+                    throw new IllegalArgumentException();
+                }
+                System.arraycopy(text, 0, b, 1, text.length);
+                
+                mm_output_stream.write(b);
                 mm_output_stream.flush();
-                System.out.println("Sending:\n" + message + "\n");
+                System.out.println("Sent: " + PPMessage.toString(message.what) + message.text);
 
             } catch (IOException e) {
+                System.out.println("Failure in write:");
                 e.printStackTrace();
-                System.out.println("Failure in simulate message:\n" + e + "\n");
             }
         }
 
@@ -243,6 +287,16 @@ public class BluetoothServer {
 
         public void setRunning(boolean running) {
             mm_running = running;
+        }
+        
+        public void cancel() {
+            mm_running = false;
+            
+            try {
+                mm_connection.close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
         }
     }
 }

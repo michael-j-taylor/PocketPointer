@@ -6,10 +6,12 @@ import android.os.Message;
 import android.util.Log;
 
 import com.example.testmouseapp.activities.MainActivity;
+import com.example.testmouseapp.dataOperations.PPMessage;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 public class CommunicationThread extends Thread {
     private static final String TAG = "CommunicationThread";
@@ -45,7 +47,7 @@ public class CommunicationThread extends Thread {
     }
 
     public void run() {
-        mmBuffer = new byte[1024];
+        mmBuffer = new byte[PPMessage.MESSAGE_SIZE];
         int numBytes; // bytes returned from read()
 
         // Keep listening to the InputStream until an exception occurs.
@@ -53,11 +55,29 @@ public class CommunicationThread extends Thread {
             try {
                 // Read from the InputStream.
                 numBytes = mmInStream.read(mmBuffer);
+                if (numBytes < PPMessage.MESSAGE_SIZE) {
+                    if (numBytes == -1) {
+                        //Connection broke so close socket
+                        this.cancel();
+                        return;
+                    }
+                    //Log.d(TAG, "Only read " + numBytes + ", not " + PPMessage.MESSAGE_SIZE);
+                }
+
+                //Get message from buffer
+                byte what = mmBuffer[0];
+                //Got null message. Discard and continue
+                if (what == PPMessage.Command.NULL) continue;
+
+                String text = new String(mmBuffer, 1, PPMessage.MESSAGE_SIZE-1, StandardCharsets.UTF_8);
+
                 // Send the obtained bytes to the UI activity.
                 Message readMsg = mmHandler.obtainMessage(
-                        MainActivity.MessageConstants.MESSAGE_READ, numBytes, -1,
-                        mmBuffer);
+                        MainActivity.MessageConstants.MESSAGE_READ, -1, what,
+                        text);
                 readMsg.sendToTarget();
+
+                sleep(100);
             } catch (Exception e) {
                 Log.e(TAG, "Input stream was disconnected", e);
                 break;
@@ -66,24 +86,42 @@ public class CommunicationThread extends Thread {
     }
 
     // Call this from the main activity to send data to the remote device.
-    public void write(byte[] bytes) {
+    public void write(PPMessage message) throws IllegalArgumentException{
         try {
             //Send message to client
-            mmOutStream.write(bytes);
+
+            byte[] b = new byte[PPMessage.MESSAGE_SIZE];
+
+            //Convert message to byte[]
+            //Message type is first byte
+            b[0] = message.what;
+            //Rest of buffer is message text
+            byte[] text = message.text.getBytes(StandardCharsets.UTF_8);
+            if (text.length > PPMessage.MESSAGE_SIZE-1) {
+                //Throw exception if text is too long
+                throw new IllegalArgumentException();
+            }
+            System.arraycopy(text, 0, b, 1, text.length);
+
+            mmOutStream.write(b);
+            sleep(500);
             mmOutStream.flush();
-            Log.d(TAG, "Flushed output");
 
             // Share the sent message with the UI activity.
             Message writtenMsg = mmHandler.obtainMessage(
-                    MainActivity.MessageConstants.MESSAGE_WRITE, -1, -1, bytes);
+                    MainActivity.MessageConstants.MESSAGE_WRITE, -1, message.what, message.text);
             writtenMsg.sendToTarget();
-        } catch (IOException e) {
-            Log.e(TAG, "Error occurred when sending data", e);
+        } catch (Exception e) {
+            if (e.equals(IOException.class)) {
+                Log.e(TAG, "Error occurred when sending data", e);
 
-            // Send a failure message back to the activity.
-            Message writeErrorMsg = mmHandler.obtainMessage(
-                    MainActivity.MessageConstants.MESSAGE_TOAST, "Couldn't send data to the other device");
-            mmHandler.sendMessage(writeErrorMsg);
+                // Send a failure message back to the activity.
+                Message writeErrorMsg = mmHandler.obtainMessage(
+                        MainActivity.MessageConstants.MESSAGE_TOAST, "Couldn't send data to the other device");
+                mmHandler.sendMessage(writeErrorMsg);
+            } else if (e.equals(InterruptedException.class)) {
+                //Do nothing
+            }
         }
     }
 

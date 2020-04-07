@@ -8,7 +8,7 @@
     <string name="paired_devices">Paired Devices</string>
     <string name="textview1">TextView</string>
     <string name="textview2">TextView</string>
-
+    <string name="execute">Send Test Messages</string>
     <string name="title_activity_presentation_mode">PresentationModeActivity</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
