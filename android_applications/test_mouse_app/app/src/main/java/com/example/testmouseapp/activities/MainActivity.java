@@ -278,7 +278,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 x_pos = x_pos + x_vel * time + .5 * val_x * time * time;
                 y_pos = y_pos + y_vel * time + .5 * val_y * time * time;
 
-                String data_live = "X: " + raw_x + "\nY: " + raw_y;
+                String data_live = "X: " + x_pos + "\nY: " + y_pos;
                 String data_max = "X Maximum: " +
                         String.format("%.3f", xmax) + "\nX Minimum: " +
                         String.format("%.3f", xmin) + "\n\nY Maximum: " +
