@@ -57,34 +57,31 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     float ymax = 0;
     float ymin = 0;
 
-    //accelerometer bounds
-    float x_pos_bound;
-    float x_neg_bound;
-    float y_pos_bound;
-    float y_neg_bound;
-
-    MovingAverage movingAverage_X = new MovingAverage(100);
-    MovingAverage movingAverage_Y = new MovingAverage(100);
+    MovingAverage movingAverage_X = new MovingAverage(50);
+    MovingAverage movingAverage_Y = new MovingAverage(50);
 
     //printed accelerometer values
-    float val_x, val_x_ave, val_x_pre;
-    float val_y, val_y_ave, val_y_pre;
+    float val_x, val_x_ave, val_x_pre, raw_x;
+    float val_y, val_y_ave, val_y_pre, raw_y;
     float magnitude;
     int measurementCount = 0;
     long startTime = 0;
     long currentTime;
 
-    final float threshold = 0.2f;
+    //final float threshold = 0.2f;
     final int polling_rate = 60; //in Hz
     float time;
     //calibration vars
-    boolean calibrating = false;
-    int num_readings = 0;
-    int readings_max = 100000;  //change this to determine how many readings the accelerometer calibrates on
-    float x_total;
-    float y_total;
-    float x_pad = 0;
-    float y_pad = 0;
+
+    Calibrater calibrater = new Calibrater(1000);
+
+    //boolean calibrating = false;
+    //int num_readings = 0;
+    //int readings_max = 100000;  //change this to determine how many readings the accelerometer calibrates on
+    //float x_total;
+    //float y_total;
+    //float x_pad = 0;
+    //float y_pad = 0;
     double x_pos = 0;
     double y_pos = 0;
     double x_vel = 0;
@@ -134,9 +131,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setContentView(R.layout.activity_main);
         time = 1.f/polling_rate;
 
-        TextView threshold_text = findViewById(R.id.threshold);
-        threshold_text.setText("Acceleration threshold: " + Float.toString(threshold));
-
         Log.d(TAG, "onCreate: Initializing accelerometer");
 
         //get sensor manager services
@@ -149,7 +143,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);  //can be changed to different delays //could use 1000000/polling_rate
 
         Log.d(TAG, "onCreate: Registered accelerometer listener");
-
 
         Button calibrate = findViewById(R.id.calibrate);
         calibrate.setOnClickListener(new View.OnClickListener() {
@@ -175,42 +168,65 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         live_acceleration = findViewById(R.id.acceleration);
         max_acceleration = findViewById(R.id.maximums);
         position = findViewById(R.id.position);
+        TextView threshold_text = findViewById(R.id.threshold);
+
 
         currentTime = Calendar.getInstance().getTimeInMillis();
-        if (calibrating) {
-            live_acceleration.setText("Calibrating");
-            calibrateAccelerometer(event);
+
+        raw_x = event.values[0];
+        raw_y = event.values[1];
+
+        float raw_magnitude = (float) Math.sqrt(Math.pow(event.values[0], 2) + Math.pow(event.values[1], 2));
+        if (raw_magnitude > calibrater.magnitude_threshold) {
+            Log.d(TAG, "THRESHOLD EXCEEDED");
+            movingAverage_X.addToWindow(raw_x);
+            movingAverage_Y.addToWindow(raw_y);
+        } else {
+            raw_x = 0;
+            raw_y = 0;
         }
-        else {
-            val_x = event.values[0] + x_pad;
-            val_y = event.values[1] + y_pad;
+
+
+        if (calibrater.calibrating) {
+            live_acceleration.setText("Calibrating");
+            calibrater.calibrate(raw_x, raw_y);
+            x_vel = 0;
+            x_pos = 0;
+            y_vel = 0;
+            y_pos = 0;
+            //calibrateAccelerometer(event);
+
+        } else {  //calibrated, using live data
+
+            threshold_text.setText("Acceleration threshold: " + Float.toString(calibrater.magnitude_threshold));
+            //val_x = event.values[0] + x_pad;
+            //val_y = event.values[1] + y_pad;
+
+            //intermittently calculate position
             if (currentTime - startTime > time*1000) {
 
-                //ignore values if they're inside a set range
+                //set maximum x & y acceleration readings
                 if (event.values[0] > xmax) {xmax = event.values[0];}
                 if (event.values[0] < xmin) {xmin = event.values[0];}
 
                 if (event.values[1] > ymax) { ymax = event.values[1];}
                 if (event.values[1] < ymin) { ymin = event.values[1];}
 
-                //float averageAccel[] = MovementCalculation.averageAccel(event, polling_rate);
-
-                //val_x = averageAccel[0];
-                //val_y = averageAccel[1];
-
-                //val_x = val_x_ave / measurementCount;
+                //calculate current value via moving average
                 val_x = movingAverage_X.calculateAverage();
-                //val_y = val_y_ave / measurementCount;
                 val_y = movingAverage_Y.calculateAverage();
+                //Log.d(TAG, event.values[0] + " " + event.values[1]);
+                //Log.d(TAG, val_x + " " + val_y);
 
-                val_x_ave = event.values[0] + x_pad;
-                val_y_ave = event.values[1] + y_pad;
+
+
                 magnitude = (float) Math.sqrt(Math.pow(val_x, 2) + Math.pow(val_y, 2));
+                Log.d(TAG, "raw magnitude: " + raw_magnitude + " vs adjusted " + magnitude + "vs thresh " + calibrater.magnitude_threshold);
 
-                if (magnitude < threshold) {
-                    val_x_ave = 0;
-                    val_y_ave = 0;
-                }
+                //if (magnitude < calibrater.magnitude_threshold) {
+                //    val_x_ave = 0;
+                //    val_y_ave = 0;
+                //}
 
                 //calculate velocity
                 x_vel = x_vel + val_x * time;
@@ -246,15 +262,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 live_acceleration.setText(data_live);
                 max_acceleration.setText(data_max);
 
+                /*
                 magnitude = (float) Math.sqrt(Math.pow(val_x, 2) + Math.pow(val_y, 2));
-                if (magnitude > threshold) {
+
+                if (magnitude > calibrater.magnitude_threshold) {
                     //val_x_ave += val_x;
                     movingAverage_X.addToWindow(val_x);
                     //val_y_ave += val_y;
                     movingAverage_Y.addToWindow(val_y);
-                    x_jerk = (val_x - val_x_pre)*time;
-                    y_jerk = (val_y - val_y_pre)*time;
-                }
+                    //x_jerk = (val_x - val_x_pre)*time;
+                    //y_jerk = (val_y - val_y_pre)*time;
+                }*/
                 measurementCount++;
             }
         }
@@ -268,6 +286,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }*/
     }
 
+    /*
     public void calibrateAccelerometer(SensorEvent event) {
         num_readings += 1;
         xmax = 0;
@@ -293,11 +312,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             Log.d(TAG, "accelerometer calibrated");
         }
     }
+    */
+
 
     public void activateCalibrate(View view) {
-        calibrating = true;
-        x_total = 0;
-        y_total = 0;
+        calibrater.calibrating = true;
+        //x_total = 0;
+        //y_total = 0;
     }
 
 
