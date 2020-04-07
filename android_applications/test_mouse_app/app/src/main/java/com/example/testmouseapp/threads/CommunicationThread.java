@@ -6,10 +6,12 @@ import android.os.Message;
 import android.util.Log;
 
 import com.example.testmouseapp.activities.MainActivity;
+import com.example.testmouseapp.dataOperations.PPMessage;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 public class CommunicationThread extends Thread {
     private static final String TAG = "CommunicationThread";
@@ -45,7 +47,7 @@ public class CommunicationThread extends Thread {
     }
 
     public void run() {
-        mmBuffer = new byte[1024];
+        mmBuffer = new byte[PPMessage.MESSAGE_SIZE];
         int numBytes; // bytes returned from read()
 
         // Keep listening to the InputStream until an exception occurs.
@@ -53,11 +55,23 @@ public class CommunicationThread extends Thread {
             try {
                 // Read from the InputStream.
                 numBytes = mmInStream.read(mmBuffer);
+                if (numBytes < PPMessage.MESSAGE_SIZE) {
+                    if (numBytes == -1) {
+                        //Connection broke so close socket
+                        this.cancel();
+                        return;
+                    }
+                    Log.e(TAG, "Only read " + numBytes + ", not " + PPMessage.MESSAGE_SIZE);
+                }
+
+                String text = new String(mmBuffer, StandardCharsets.UTF_8);
                 // Send the obtained bytes to the UI activity.
                 Message readMsg = mmHandler.obtainMessage(
                         MainActivity.MessageConstants.MESSAGE_READ, numBytes, -1,
-                        mmBuffer);
+                        text);
                 readMsg.sendToTarget();
+
+                sleep(100);
             } catch (Exception e) {
                 Log.e(TAG, "Input stream was disconnected", e);
                 break;
@@ -66,17 +80,20 @@ public class CommunicationThread extends Thread {
     }
 
     // Call this from the main activity to send data to the remote device.
-    public void write(byte[] bytes) {
+    public void write(String message) {
         try {
             //Send message to client
-            mmOutStream.write(bytes);
-            sleep(100);
+            byte[] b = new byte[PPMessage.MESSAGE_SIZE];
+            b = message.getBytes(StandardCharsets.UTF_8);
+            mmOutStream.write(b);
+            Log.d(TAG, "Loaded output");
+            sleep(500);
             mmOutStream.flush();
             Log.d(TAG, "Flushed output");
 
             // Share the sent message with the UI activity.
             Message writtenMsg = mmHandler.obtainMessage(
-                    MainActivity.MessageConstants.MESSAGE_WRITE, -1, -1, bytes);
+                    MainActivity.MessageConstants.MESSAGE_WRITE, -1, -1, message);
             writtenMsg.sendToTarget();
         } catch (Exception e) {
             if (e.equals(IOException.class)) {

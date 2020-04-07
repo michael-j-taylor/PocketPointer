@@ -112,14 +112,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         @Override
         public void handleMessage(Message msg) {
             if (msg.what == MessageConstants.MESSAGE_READ) {
-                Log.d(TAG, "Got: " + msg.obj);
-                if (!msg.obj.toString().contains("CON: ")) {
-                    mm_coms.write(("CON: " + msg.obj).getBytes());
-                }
+                //Log message
+                String text = (String) msg.obj;
+                Toast.makeText(getApplicationContext(), "Got: " + text, Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "Got: " + text);
+
             } else if (msg.what == MessageConstants.MESSAGE_WRITE) {
-                Log.d(TAG, "Sent: \"" + msg.obj + "\"");
+                //Log that message was sent
+                String text = (String) msg.obj;
+                Toast.makeText(getApplicationContext(), "Sent: \"" + text + "\"", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "Sent: \"" + text + "\"");
+
             } else if (msg.what == MessageConstants.MESSAGE_TOAST) {
-                Toast.makeText(getApplicationContext(), msg.obj.toString(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_SHORT).show();
+
             } else {
                 Log.e(TAG, "Received bad message code from handler: " + msg.what);
             }
@@ -334,12 +340,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
-    public void execute() {
+    public void execute(View view) {
         //Send messages to server here
         String test1 = "Test message 1 from client\n";
-        mm_coms.write(test1.getBytes());
+        mm_coms.write(test1);
         String test2 = "Test message 2 from client\n";
-        mm_coms.write(test2.getBytes());
+        mm_coms.write(test2);
     }
 
 
