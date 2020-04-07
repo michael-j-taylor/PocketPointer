@@ -203,10 +203,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         //TODO: move the below objects out of this function - they don't need to be initialized every time the sensor updates
         // HIDDEN FOR DEMO PURPOSES
-        //TextView live_acceleration;
+        TextView live_acceleration;
         //TextView max_acceleration;
         //TextView position;
-        //live_acceleration = findViewById(R.id.acceleration);
+        live_acceleration = findViewById(R.id.acceleration);
         //max_acceleration = findViewById(R.id.maximums);
         //position = findViewById(R.id.position);
         //TextView threshold_text = findViewById(R.id.threshold);
@@ -278,14 +278,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 x_pos = x_pos + x_vel * time + .5 * val_x * time * time;
                 y_pos = y_pos + y_vel * time + .5 * val_y * time * time;
 
-                String data_live = "X: " + val_x + "\nY: " + val_y;
+                String data_live = "X: " + raw_x + "\nY: " + raw_y;
                 String data_max = "X Maximum: " +
                         String.format("%.3f", xmax) + "\nX Minimum: " +
                         String.format("%.3f", xmin) + "\n\nY Maximum: " +
                         String.format("%.3f", ymax) + "\nY Minimum: " +
                         String.format("%.3f", ymin);
 
-                //live_acceleration.setText(data_live);
+                live_acceleration.setText(data_live);
                 //max_acceleration.setText(data_max);
                 //position.setText("Position: " + String.format("%.3f",x_pos) + ", " + String.format("%.3f",y_pos));
                 startTime = Calendar.getInstance().getTimeInMillis();
