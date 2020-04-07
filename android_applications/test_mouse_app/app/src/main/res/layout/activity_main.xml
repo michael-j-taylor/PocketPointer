@@ -7,7 +7,6 @@
     android:layout_height="match_parent">
 
 
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -35,7 +34,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="activateCalibrate"
-            android:text="TextView"
             app:layout_constraintBottom_toTopOf="@+id/acceleration"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -47,7 +45,6 @@
             android:id="@+id/threshold"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="TextView"
             app:layout_constraintBottom_toTopOf="@+id/acceleration"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -83,11 +80,10 @@
             android:id="@+id/position"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="152dp"
-            android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:text="TextView"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="152dp"
             app:layout_constraintBottom_toTopOf="@+id/calibrate"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -104,5 +100,35 @@
             app:layout_constraintBottom_toTopOf="@+id/bluetooth"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
+
+        <Button
+            android:id="@+id/button_prevslide"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="256dp"
+            android:text="@string/button_prevslide"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/button_nextslide"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="256dp"
+            android:layout_marginEnd="32dp"
+            android:text="@string/button_nextslide"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/button_hidescreen"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="256dp"
+            android:text="@string/button_hidescreen"
+            app:layout_constraintEnd_toStartOf="@+id/button_nextslide"
+            app:layout_constraintStart_toEndOf="@+id/button_prevslide"
+            app:layout_constraintTop_toTopOf="@+id/main_toolbar" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

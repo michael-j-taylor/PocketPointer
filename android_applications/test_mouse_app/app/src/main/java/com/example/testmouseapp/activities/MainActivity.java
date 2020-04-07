@@ -32,9 +32,7 @@ import android.widget.Toast;
 
 
 import com.example.testmouseapp.R;
-
 import com.example.testmouseapp.dataOperations.MovingAverage;
-
 import com.example.testmouseapp.threads.CommunicationThread;
 import com.example.testmouseapp.threads.ConnectThread;
 import androidx.appcompat.app.AppCompatActivity;
@@ -68,20 +66,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     long startTime = 0;
     long currentTime;
 
-    //final float threshold = 0.2f;
     final int polling_rate = 60; //in Hz
     float time;
-    //calibration vars
 
     Calibrater calibrater = new Calibrater(1000);
 
-    //boolean calibrating = false;
-    //int num_readings = 0;
-    //int readings_max = 100000;  //change this to determine how many readings the accelerometer calibrates on
-    //float x_total;
-    //float y_total;
-    //float x_pad = 0;
-    //float y_pad = 0;
     double x_pos = 0;
     double y_pos = 0;
     double x_vel = 0;
@@ -169,10 +158,36 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         Log.d(TAG, "onCreate: Registered accelerometer listener");
 
+        //HIDDEN FOR DEMO PURPOSES
+        /*
         Button calibrate = findViewById(R.id.calibrate);
         calibrate.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 activateCalibrate(v);
+            }
+        });
+         */
+
+        //button setup
+        Button button_nextslide = findViewById(R.id.button_nextslide);
+        Button button_prevslide = findViewById(R.id.button_prevslide);
+        Button button_hidescreen = findViewById(R.id.button_hidescreen);
+
+        button_nextslide.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                sendString("RIGHT");
+            }
+        });
+
+        button_prevslide.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                sendString("LEFT");
+            }
+        });
+
+        button_hidescreen.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                sendString("B");
             }
         });
 
@@ -187,13 +202,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onSensorChanged(SensorEvent event) {
 
         //TODO: move the below objects out of this function - they don't need to be initialized every time the sensor updates
-        TextView live_acceleration;
-        TextView max_acceleration;
-        TextView position;
-        live_acceleration = findViewById(R.id.acceleration);
-        max_acceleration = findViewById(R.id.maximums);
-        position = findViewById(R.id.position);
-        TextView threshold_text = findViewById(R.id.threshold);
+        // HIDDEN FOR DEMO PURPOSES
+        //TextView live_acceleration;
+        //TextView max_acceleration;
+        //TextView position;
+        //live_acceleration = findViewById(R.id.acceleration);
+        //max_acceleration = findViewById(R.id.maximums);
+        //position = findViewById(R.id.position);
+        //TextView threshold_text = findViewById(R.id.threshold);
 
 
         currentTime = Calendar.getInstance().getTimeInMillis();
@@ -213,7 +229,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
         if (calibrater.calibrating) {
-            live_acceleration.setText("Calibrating");
+            //live_acceleration.setText("Calibrating");
             calibrater.calibrate(raw_x, raw_y);
             x_vel = 0;
             x_pos = 0;
@@ -223,7 +239,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         } else {  //calibrated, using live data
 
-            threshold_text.setText("Acceleration threshold: " + Float.toString(calibrater.magnitude_threshold));
+            //threshold_text.setText("Acceleration threshold: " + Float.toString(calibrater.magnitude_threshold));
+
             //val_x = event.values[0] + x_pad;
             //val_y = event.values[1] + y_pad;
 
@@ -268,9 +285,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         String.format("%.3f", ymax) + "\nY Minimum: " +
                         String.format("%.3f", ymin);
 
-                live_acceleration.setText(data_live);
-                max_acceleration.setText(data_max);
-                position.setText("Position: " + String.format("%.3f",x_pos) + ", " + String.format("%.3f",y_pos));
+                //live_acceleration.setText(data_live);
+                //max_acceleration.setText(data_max);
+                //position.setText("Position: " + String.format("%.3f",x_pos) + ", " + String.format("%.3f",y_pos));
                 startTime = Calendar.getInstance().getTimeInMillis();
                 measurementCount = 0;
             }
@@ -284,8 +301,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                 String data_live = "X: " + val_x + "\nY: " + val_y;
 
-                live_acceleration.setText(data_live);
-                max_acceleration.setText(data_max);
+                //live_acceleration.setText(data_live);
+                //max_acceleration.setText(data_max);
 
                 /*
                 magnitude = (float) Math.sqrt(Math.pow(val_x, 2) + Math.pow(val_y, 2));
@@ -309,36 +326,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         {
             System.out.print(e);
         }*/
+
     }
-
-    /*
-    public void calibrateAccelerometer(SensorEvent event) {
-        num_readings += 1;
-        xmax = 0;
-        ymax = 0;
-        xmin = 0;
-        ymin = 0;
-        x_vel = 0;
-        y_vel = 0;
-        x_pos = 0;
-        y_pos = 0;
-
-        if (num_readings > readings_max) {
-            x_total += event.values[0];
-            y_total += event.values[1];
-        }
-
-        else {
-            x_pad = x_total / readings_max;
-            y_pad = y_total / readings_max;
-
-            calibrating = false;
-            num_readings = 0;
-            Log.d(TAG, "accelerometer calibrated");
-        }
-    }
-    */
-
 
     public void activateCalibrate(View view) {
         calibrater.calibrating = true;
@@ -383,6 +372,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void execute() {
         //TODO Write to coms here. See example in testMessages(View)
 
+    }
+
+
+    /*
+    temporary, for project demo
+    writes string s to bluetooth buffer
+     */
+    public void sendString(String s) {
+        mm_coms.write(new PPMessage(PPMessage.Command.STRING, s));
     }
 
     public void testMessages(View view) {
