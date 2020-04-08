@@ -17,12 +17,15 @@ import javax.microedition.io.StreamConnectionNotifier;
 
 import org.apache.commons.io.IOUtils;
 
+import Driver.MouseRobot;
+
 
 public class BluetoothServer {
 	private static UUID mm_uuid = new UUID("97c337c7a1484a8d9ccfeeb76cb477a0", false);		//UUID of program
 	private static ConnectThread mm_connect_thread;											//Thread to control the connection to client
     private static CommunicationThread mm_communication_thread;								//Thread to control the communcation with client
     private static boolean mm_connected = false;
+    private final Object lock = new Object();
 	
     StreamConnectionNotifier notifier;
     StreamConnection connection = null;
@@ -75,7 +78,14 @@ public class BluetoothServer {
 	}
 	
 	public void simulateMessage() {
-		while (!this.isConnected());
+		try {
+			synchronized (lock) {
+				while (!this.isConnected())
+					lock.wait(100);
+			}
+		} catch (InterruptedException e) {
+			System.out.println("Wait interrupted, " + e);
+		}
 		mm_communication_thread.write(new PPMessage(PPMessage.Command.STRING, "Test message from Windows\n"));
 	}
 	
@@ -141,9 +151,12 @@ public class BluetoothServer {
                     if (connection != null) {
                         //Start communication thread based off current connection to client
                         mm_communication_thread = new CommunicationThread(connection);
-                        mm_communication_thread.start();
-                        System.out.println("Connected");
-                        mm_connected = true;
+                        synchronized (lock) {
+                        	mm_communication_thread.start();
+                        	System.out.println("Connected");
+                        	mm_connected = true;
+                        	lock.notify();
+                        }
                         sleep(100);
                     } else {
                         System.out.println("No connection created");
@@ -228,13 +241,16 @@ public class BluetoothServer {
                     
                     String text = new String(buffer, 1, PPMessage.MESSAGE_SIZE-1, StandardCharsets.UTF_8);
 
-
+                    text = text.trim();
                 	
                     System.out.println("Got: " + PPMessage.toString(what) + text);
                     
                     
                     PPMessage m = new PPMessage(what, text);
                     //TODO Do something with message here
+                    if (m.what == PPMessage.Command.KEY_PRESS) {
+                    	MouseRobot.powerPoint(text);
+                    }
                     
                     //If message is notification to terminate, do so
                     if (m.what == PPMessage.Command.END) {
