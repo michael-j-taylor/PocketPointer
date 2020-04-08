@@ -30,7 +30,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-
 import com.example.testmouseapp.R;
 import com.example.testmouseapp.dataOperations.MovingAverage;
 import com.example.testmouseapp.threads.CommunicationThread;
@@ -89,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private CommunicationThread mm_coms = null;
     private ConnectThread mm_connection = null;
+    public final Object lock = new Object();
     final int REQUEST_ENABLE_BT = 3;
     final int OPEN_BT_SETTINGS = 6;
     final int SHOW_DEVICES = 9;
@@ -101,6 +101,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 //Get message parts for log
                 String type = PPMessage.toString((byte) msg.arg2);
                 String text = (String) msg.obj;
+
+                text = text.trim();
 
                 //Log message
                 Toast.makeText(getApplicationContext(), "Got: " + type + text, Toast.LENGTH_SHORT).show();
@@ -175,19 +177,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         button_nextslide.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                sendString("RIGHT");
+                sendKeyPress("RIGHT");
             }
         });
 
         button_prevslide.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                sendString("LEFT");
+                sendKeyPress("LEFT");
             }
         });
 
         button_hidescreen.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                sendString("B");
+                sendKeyPress("B");
             }
         });
 
@@ -219,7 +221,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         float raw_magnitude = (float) Math.sqrt(Math.pow(event.values[0], 2) + Math.pow(event.values[1], 2));
         if (raw_magnitude > calibrater.magnitude_threshold) {
-            Log.d(TAG, "THRESHOLD EXCEEDED");
+            //Log.d(TAG, "THRESHOLD EXCEEDED");
             movingAverage_X.addToWindow(raw_x);
             movingAverage_Y.addToWindow(raw_y);
         } else {
@@ -263,7 +265,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
                 magnitude = (float) Math.sqrt(Math.pow(val_x, 2) + Math.pow(val_y, 2));
-                Log.d(TAG, "raw magnitude: " + raw_magnitude + " vs adjusted " + magnitude + "vs thresh " + calibrater.magnitude_threshold);
+                //Log.d(TAG, "raw magnitude: " + raw_magnitude + " vs adjusted " + magnitude + "vs thresh " + calibrater.magnitude_threshold);
 
                 //if (magnitude < calibrater.magnitude_threshold) {
                 //    val_x_ave = 0;
@@ -379,8 +381,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     temporary, for project demo
     writes string s to bluetooth buffer
      */
-    public void sendString(String s) {
-        mm_coms.write(new PPMessage(PPMessage.Command.STRING, s));
+    public void sendKeyPress(String s) {
+        mm_coms.write(new PPMessage(PPMessage.Command.KEY_PRESS, s));
     }
 
     public void testMessages(View view) {
@@ -422,11 +424,26 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             if (resultCode == RESULT_OK) {
                 BluetoothDevice d = data.getParcelableExtra("device");
 
-                mm_connection = new ConnectThread(d, mm_handler);
-                mm_connection.start();
+
 
                 //Ensure comm channel has been established before moving on
-                while (mm_connection.isRunning() && !mm_connection.isConnected());
+                synchronized (lock) {
+                    mm_connection = new ConnectThread(d, mm_handler, lock);
+                    mm_connection.start();
+                    Log.d(TAG, "Started connectThread");
+
+                    while (mm_connection.isRunning() && !mm_connection.isConnected()) {
+                        try {
+                            Log.d(TAG, "Begin wait");
+                            lock.wait(200);
+                            Log.d(TAG, "End wait");
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
+                Log.d(TAG, "Exit snyc");
 
                 //If the connection was successful, move on
                 if (mm_connection.isConnected()) {
@@ -455,4 +472,3 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onDestroy();
     }
 }
-

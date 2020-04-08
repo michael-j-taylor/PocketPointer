@@ -105,7 +105,6 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
         availableDevices_recyclerView.setAdapter(mm_available_adapter);
 
         if (bluetoothAdapter.isDiscovering()) bluetoothAdapter.cancelDiscovery();
-        bluetoothAdapter.startDiscovery();
 
         check_devices.start();
     }
@@ -155,7 +154,7 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
                 if (!mm_scanned_devices.isEmpty()) {
                     BluetoothDevice device = mm_scanned_devices.remove(0);
                     device.fetchUuidsWithSdp();
-                } else bluetoothAdapter.startDiscovery();
+                }
             } else if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
                 if (!bluetoothAdapter.isEnabled()) finish();
                 Toast.makeText(context, "You must keep Bluetooth enabled", Toast.LENGTH_SHORT).show();
@@ -205,13 +204,12 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
         public void run() {
             while (running) {
                 try {
-
+                    bluetoothAdapter.startDiscovery();
                     sleep(1000);
                     if (!mm_scanned_devices.isEmpty()) {
 
                         bluetoothAdapter.cancelDiscovery();
                         sleep(500);
-                        bluetoothAdapter.startDiscovery();
                     }
 
                 } catch (InterruptedException e) {

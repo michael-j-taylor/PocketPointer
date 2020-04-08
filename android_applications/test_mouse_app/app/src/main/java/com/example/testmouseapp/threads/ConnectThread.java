@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 public class ConnectThread extends Thread {
+    private final Object lock;
     private final String TAG = "ConnectThread";
     private final BluetoothSocket mmSocket;
     private final Handler mmHandler;
@@ -19,10 +20,11 @@ public class ConnectThread extends Thread {
     private boolean connected = false;
     private CommunicationThread mmCommunicationThread = null;
 
-    public ConnectThread(BluetoothDevice device, Handler handler) {
+    public ConnectThread(BluetoothDevice device, Handler handler, Object lock) {
         // Use a temporary object that is later assigned to mmSocket
         // because mmSocket is final.
         mmHandler = handler;
+        this.lock = lock;
         BluetoothSocket tmp = null;
 
         try {
@@ -37,6 +39,7 @@ public class ConnectThread extends Thread {
 
     public void run() {
         // Cancel discovery because it otherwise slows down the connection.
+        //Log.d(TAG, "Connect started");
         BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
 
         try {
@@ -47,10 +50,20 @@ public class ConnectThread extends Thread {
                 }
                 // Connect to the remote device through the socket. This call blocks until it succeeds or throws an exception.
                 mmSocket.connect();
+                //Log.d(TAG, "Connected");
                 // The connection attempt succeeded. Perform work associated with the connection in a separate thread.
-                mmCommunicationThread = new CommunicationThread(mmSocket, mmHandler);
-                mmCommunicationThread.start();
-                connected = true;
+                mmCommunicationThread = new CommunicationThread(mmSocket, mmHandler, lock);
+                synchronized (lock) {
+                    //Log.d(TAG, "In sync");
+                    mmCommunicationThread.start();
+                    connected = true;
+                    //Log.d(TAG, "Update");
+                    lock.notify();
+                    //Log.d(TAG, "Notify");
+                }
+                //Log.d(TAG, "Out of sync");
+                sleep(100);
+                //Log.d(TAG, "End of iteration");
             }
         } catch (Exception connectException) {
             // Unable to connect; close the socket and return
