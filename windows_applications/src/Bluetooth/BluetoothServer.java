@@ -163,9 +163,9 @@ public class BluetoothServer {
                     }
 
                 } catch (Exception e) {
-                	if (e.getClass() == InterruptedIOException.class) {
+                	if (e.getClass().equals(InterruptedIOException.class)) {
                 		System.out.println("Warning in ConnectThread: acceptAndOpen was interrupted while waiting for connection");
-                	} else if (e.getClass() == IOException.class) {
+                	} else if (e.getClass().equals(IOException.class)) {
                 		System.out.println("Connection lost");
                 	} else {
                 		System.out.println("Failure in connect thread:\n" + e + e.getMessage() + "\n");
