@@ -39,7 +39,6 @@ public class ConnectThread extends Thread {
 
     public void run() {
         // Cancel discovery because it otherwise slows down the connection.
-        //Log.d(TAG, "Connect started");
         BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
 
         try {

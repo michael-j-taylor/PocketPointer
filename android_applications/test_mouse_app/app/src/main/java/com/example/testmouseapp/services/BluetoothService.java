@@ -97,7 +97,7 @@ public class BluetoothService extends Service {
     public void onDestroy() {
         Toast.makeText(this, "Shutting down", Toast.LENGTH_SHORT).show();
         if (mm_coms != null && !mm_remote_killed) {
-            mm_coms.write(new PPMessage(PPMessage.Command.END, "Client ending activity"));
+            writeMessage(new PPMessage(PPMessage.Command.END, "Client ending activity"));
         }
         //Shut down communicationsThread and connectThread
         mm_coms = null;
@@ -106,7 +106,7 @@ public class BluetoothService extends Service {
         super.onDestroy();
     }
 
-    public void openConenction(BluetoothDevice d) throws IOException{
+    public void openConnection(BluetoothDevice d) throws IOException{
         //Ensure comm channel has been established before moving on
         synchronized (lock) {
             mm_connection = new ConnectThread(d, mm_handler, lock);
@@ -138,6 +138,10 @@ public class BluetoothService extends Service {
     }
 
     public void writeMessage(PPMessage m) {
+        if (mm_coms == null) {
+            Log.e(TAG, "Tried to write to null mm_coms");
+            throw new IllegalStateException();
+        }
         mm_coms.write(m);
     }
 }

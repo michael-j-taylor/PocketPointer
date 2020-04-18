@@ -123,7 +123,6 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
                 }
 
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                Toast.makeText(context, "Discovery canceled", Toast.LENGTH_SHORT).show();
                 // discovery has finished, give a call to fetchUuidsWithSdp on first device in list.
                 if (!mm_scanned_devices.isEmpty()) {
                     BluetoothDevice device = mm_scanned_devices.remove(0);
@@ -192,7 +191,7 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
         super.onDestroy();
         active = false;
 
-        if (bluetoothAdapter.isDiscovering()) bluetoothAdapter.cancelDiscovery();
+        if (check_devices.isRunning()) check_devices.stopChecking();
         unregisterReceiver(receiver);
 
     }
@@ -220,6 +219,10 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
 
         void stopChecking() {
             running = false;
+        }
+
+        boolean isRunning() {
+            return running;
         }
     }
 

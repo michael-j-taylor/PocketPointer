@@ -165,23 +165,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Toolbar toolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
         setTitle(R.string.app_name);
-    }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        // Bind to LocalService
+        // Bind to BluetoothService
         Intent intent = new Intent(this, BluetoothService.class);
         bindService(intent, mm_connection, Context.BIND_AUTO_CREATE);
     }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        unbindService(mm_connection);
-        mm_bound = false;
-    }
-
 
     //on sensor value change, display X and Z values
     @Override
@@ -402,7 +390,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 BluetoothDevice d = data.getParcelableExtra("device");
                 assert d != null;
                 try {
-                    mm_service.openConenction(d);
+                    mm_service.openConnection(d);
                 } catch (IOException e) {
                     Toast.makeText(this, "Failed to connect to " + d.getName(), Toast.LENGTH_SHORT).show();
                     Log.d(TAG, "Failed to connect to " + d.getName());
