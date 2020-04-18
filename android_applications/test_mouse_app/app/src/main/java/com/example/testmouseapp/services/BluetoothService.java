@@ -40,7 +40,7 @@ public class BluetoothService extends Service {
                 text = text.trim();
 
                 //Log message
-                Toast.makeText(getApplicationContext(), "Got: " + type + text, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getApplicationContext(), "Got: " + type + text, Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "Got: " + type + text);
 
 
@@ -61,7 +61,7 @@ public class BluetoothService extends Service {
                 String text = (String) msg.obj;
 
                 //Log message
-                Toast.makeText(getApplicationContext(), "Sent: " + type + text, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getApplicationContext(), "Sent: " + type + text, Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "Sent: " + type + text);
 
             } else if (msg.what == MainActivity.MessageConstants.MESSAGE_TOAST) {

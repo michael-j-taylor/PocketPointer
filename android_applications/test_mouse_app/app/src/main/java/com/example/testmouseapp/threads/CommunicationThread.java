@@ -81,7 +81,7 @@ public class CommunicationThread extends Thread {
 
                 sleep(100);
             } catch (Exception e) {
-                Log.e(TAG, "Input stream was disconnected", e);
+                Log.e(TAG, "Input stream was disconnected");
                 break;
             }
         }
@@ -106,23 +106,24 @@ public class CommunicationThread extends Thread {
             System.arraycopy(text, 0, b, 1, text.length);
 
             mmOutStream.write(b);
-            sleep(500);
             mmOutStream.flush();
+            sleep(150);
+
 
             // Share the sent message with the UI activity.
             Message writtenMsg = mmHandler.obtainMessage(
                     MainActivity.MessageConstants.MESSAGE_WRITE, -1, message.what, message.text);
             writtenMsg.sendToTarget();
         } catch (Exception e) {
-            if (e.equals(IOException.class)) {
+            if (e.getClass().equals(IOException.class)) {
                 Log.e(TAG, "Error occurred when sending data", e);
 
                 // Send a failure message back to the activity.
                 Message writeErrorMsg = mmHandler.obtainMessage(
                         MainActivity.MessageConstants.MESSAGE_TOAST, "Couldn't send data to the other device");
                 mmHandler.sendMessage(writeErrorMsg);
-            } else if (e.equals(InterruptedException.class)) {
-                //Do nothing
+            } else {
+                e.getClass();//Do nothing
             }
         }
     }
