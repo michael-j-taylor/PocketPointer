@@ -1,17 +1,13 @@
 package com.example.testmouseapp.activities;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
 import android.Manifest;
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.annotation.TargetApi;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -19,25 +15,25 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.os.Parcelable;
-import android.provider.Settings;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.testmouseapp.R;
-import com.example.testmouseapp.dataOperations.MovingAverage;
-import com.example.testmouseapp.threads.CommunicationThread;
-import com.example.testmouseapp.threads.ConnectThread;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
-import com.example.testmouseapp.dataOperations.*;
+import com.example.testmouseapp.R;
+import com.example.testmouseapp.dataOperations.Calibrater;
+import com.example.testmouseapp.dataOperations.MovingAverage;
+import com.example.testmouseapp.dataOperations.PPMessage;
+import com.example.testmouseapp.services.BluetoothService;
 
+import java.io.IOException;
 import java.util.Calendar;
 
 @TargetApi(Build.VERSION_CODES.M)
@@ -86,58 +82,30 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     //bluetooth vars
     BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-    private CommunicationThread mm_coms = null;
-    private ConnectThread mm_connection = null;
-    public final Object lock = new Object();
     final int REQUEST_ENABLE_BT = 3;
     final int OPEN_BT_SETTINGS = 6;
     final int SHOW_DEVICES = 9;
     final int REQUEST_COARSE_LOCATION = 12;
-    @SuppressLint("HandlerLeak")
-    public Handler mm_handler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            if (msg.what == MessageConstants.MESSAGE_READ) {
-                //Get message parts for log
-                String type = PPMessage.toString((byte) msg.arg2);
-                String text = (String) msg.obj;
+    private BluetoothService mm_service;
+    private boolean mm_bound;
+    private ServiceConnection mm_connection = new ServiceConnection() {
+        // Called when the connection with the service is established
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            // Because we have bound to an explicit
+            // service that is running in our own process, we can
+            // cast its IBinder to a concrete class and directly access it.
+            BluetoothService.LocalBinder binder = (BluetoothService.LocalBinder) service;
+            mm_service = binder.getService();
+            mm_bound = true;
+        }
 
-                text = text.trim();
-
-                //Log message
-                Toast.makeText(getApplicationContext(), "Got: " + type + text, Toast.LENGTH_SHORT).show();
-                Log.d(TAG, "Got: " + type + text);
-
-
-                PPMessage m = new PPMessage((byte) msg.arg2, text);
-                //TODO Do something with the message here.
-
-                //If message is notification to terminate, do so
-                if (m.what == PPMessage.Command.END) {
-                    Toast.makeText(getApplicationContext(), "Bluetooth device disconnected", Toast.LENGTH_SHORT).show();
-                    //Shut down communicationsThread and connectThread
-                    mm_coms = null;
-                    if (mm_connection != null)
-                        mm_connection.cancel();
-                }
-
-            } else if (msg.what == MessageConstants.MESSAGE_WRITE) {
-                //Get message parts for log
-                String type = PPMessage.toString((byte) msg.arg2);
-                String text = (String) msg.obj;
-
-                //Log message
-                Toast.makeText(getApplicationContext(), "Sent: " + type + text, Toast.LENGTH_SHORT).show();
-                Log.d(TAG, "Sent: " + type + text);
-
-            } else if (msg.what == MessageConstants.MESSAGE_TOAST) {
-                Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_SHORT).show();
-
-            } else {
-                Log.e(TAG, "Received bad message code from handler: " + msg.what);
-            }
+        // Called when the connection with the service disconnects unexpectedly
+        public void onServiceDisconnected(ComponentName className) {
+            Log.e(TAG, "onServiceDisconnected");
+            mm_bound = false;
         }
     };
+
 
 
 
@@ -198,6 +166,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setSupportActionBar(toolbar);
         setTitle(R.string.app_name);
     }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // Bind to LocalService
+        Intent intent = new Intent(this, BluetoothService.class);
+        bindService(intent, mm_connection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unbindService(mm_connection);
+        mm_bound = false;
+    }
+
 
     //on sensor value change, display X and Z values
     @Override
@@ -371,26 +355,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
-    public void execute() {
-        //TODO Write to coms here. See example in testMessages(View)
-
-    }
-
-
     /*
     temporary, for project demo
     writes string s to bluetooth buffer
      */
     public void sendKeyPress(String s) {
-        mm_coms.write(new PPMessage(PPMessage.Command.KEY_PRESS, s));
+        mm_service.writeMessage(new PPMessage(PPMessage.Command.KEY_PRESS, s));
     }
 
     public void testMessages(View view) {
         //Send messages to server here
-        mm_coms.write(new PPMessage(PPMessage.Command.STRING, "Test message 1 from client"));
-        mm_coms.write(new PPMessage(PPMessage.Command.STRING, "Test message 2 from client\n"));
+        mm_service.writeMessage(new PPMessage(PPMessage.Command.STRING, "Test message 1 from client"));
+        mm_service.writeMessage(new PPMessage(PPMessage.Command.STRING, "Test message 2 from client\n"));
     }
-
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -423,36 +400,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (requestCode == SHOW_DEVICES) {
             if (resultCode == RESULT_OK) {
                 BluetoothDevice d = data.getParcelableExtra("device");
-
-
-
-                //Ensure comm channel has been established before moving on
-                synchronized (lock) {
-                    mm_connection = new ConnectThread(d, mm_handler, lock);
-                    mm_connection.start();
-                    Log.d(TAG, "Started connectThread");
-
-                    while (mm_connection.isRunning() && !mm_connection.isConnected()) {
-                        try {
-                            Log.d(TAG, "Begin wait");
-                            lock.wait(200);
-                            Log.d(TAG, "End wait");
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-
-                Log.d(TAG, "Exit snyc");
-
-                //If the connection was successful, move on
-                if (mm_connection.isConnected()) {
-                    mm_coms = mm_connection.getCommunicationThread();
-                    execute();
-                } else {
-                    //Otherwise, return to devices activity and throw error toast
-                    mm_connection.cancel();
+                assert d != null;
+                try {
+                    mm_service.openConenction(d);
+                } catch (IOException e) {
                     Toast.makeText(this, "Failed to connect to " + d.getName(), Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "Failed to connect to " + d.getName());
                     Intent showDevices = new Intent(this, DevicesActivity.class);
                     startActivityForResult(showDevices, SHOW_DEVICES);
                 }
@@ -461,14 +414,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void onDestroy() {
-        Toast.makeText(this, "Shutting down", Toast.LENGTH_SHORT).show();
-        if (mm_coms != null) {
-            mm_coms.write(new PPMessage(PPMessage.Command.END, "Client ending activity"));
+        if (mm_bound) {
+            unbindService(mm_connection);
+            mm_bound = false;
         }
-        //Shut down communicationsThread and connectThread
-        mm_coms = null;
-        if (mm_connection != null)
-            mm_connection.cancel();
         super.onDestroy();
     }
 }
