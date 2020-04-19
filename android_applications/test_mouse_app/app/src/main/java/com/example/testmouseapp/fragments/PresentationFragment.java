@@ -1,4 +1,4 @@
-package com.example.testmouseapp.activities;
+package com.example.testmouseapp.fragments;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -7,15 +7,22 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 
 import com.example.testmouseapp.R;
 import com.example.testmouseapp.dataOperations.PPMessage;
 import com.example.testmouseapp.services.BluetoothService;
 
-public class PresentationModeActivity extends AppCompatActivity {
+import java.util.Objects;
+
+public class PresentationFragment extends Fragment {
+
     private static final String TAG = "Presentation Activity";
 
     //Bluetooth vars
@@ -40,23 +47,45 @@ public class PresentationModeActivity extends AppCompatActivity {
     };
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_presentation_mode);
 
         // Bind to BluetoothService
-        Intent intent = new Intent(this, BluetoothService.class);
-        bindService(intent, mm_connection, Context.BIND_AUTO_CREATE);
+        Intent intent = new Intent(getContext(), BluetoothService.class);
+        Objects.requireNonNull(getActivity()).bindService(intent, mm_connection, Context.BIND_AUTO_CREATE);
     }
 
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             ViewGroup container, Bundle savedInstanceState) {
 
-    public void nextSlide(View view) {
+        View view = inflater.inflate(R.layout.fragment_presentation, container, false);
+
+        //Register nextslide button listener
+        Button button_nextslide = view.findViewById(R.id.button_nextslide);
+        button_nextslide.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                nextSlide();
+            }
+        });
+
+        //Register prevslide button listener
+        Button button_prevslide = view.findViewById(R.id.button_prevslide);
+        button_prevslide.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                previousSlide();
+            }
+        });
+
+        return view;
+    }
+
+    private void nextSlide() {
         try {
             mm_service.writeMessage(new PPMessage(PPMessage.Command.KEY_PRESS, "RIGHT"));
         } catch (IllegalStateException ignored) { }
     }
 
-    public void previousSlide(View view) {
+    private void previousSlide() {
         try {
             mm_service.writeMessage(new PPMessage(PPMessage.Command.KEY_PRESS, "LEFT"));
         } catch (IllegalStateException ignored) { }
@@ -64,7 +93,7 @@ public class PresentationModeActivity extends AppCompatActivity {
 
     public void onDestroy() {
         if (mm_bound) {
-            unbindService(mm_connection);
+            Objects.requireNonNull(getActivity()).unbindService(mm_connection);
             mm_bound = false;
         }
         super.onDestroy();

@@ -32,7 +32,7 @@ public class BluetoothService extends Service {
     public Handler mm_handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            if (msg.what == MainActivity.MessageConstants.MESSAGE_READ) {
+            if (msg.what == BluetoothService.MessageConstants.MESSAGE_READ) {
                 //Get message parts for log
                 String type = PPMessage.toString((byte) msg.arg2);
                 String text = (String) msg.obj;
@@ -55,7 +55,7 @@ public class BluetoothService extends Service {
                     onDestroy();
                 }
 
-            } else if (msg.what == MainActivity.MessageConstants.MESSAGE_WRITE) {
+            } else if (msg.what == BluetoothService.MessageConstants.MESSAGE_WRITE) {
                 //Get message parts for log
                 String type = PPMessage.toString((byte) msg.arg2);
                 String text = (String) msg.obj;
@@ -64,7 +64,7 @@ public class BluetoothService extends Service {
                 //Toast.makeText(getApplicationContext(), "Sent: " + type + text, Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "Sent: " + type + text);
 
-            } else if (msg.what == MainActivity.MessageConstants.MESSAGE_TOAST) {
+            } else if (msg.what == BluetoothService.MessageConstants.MESSAGE_TOAST) {
                 Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_SHORT).show();
 
             } else {
@@ -73,6 +73,12 @@ public class BluetoothService extends Service {
         }
     };
 
+    //Used to interpret Bluetooth messages
+    public interface MessageConstants {
+        int MESSAGE_READ = 0;
+        int MESSAGE_WRITE = 1;
+        int MESSAGE_TOAST = 2;
+    }
 
     public class LocalBinder extends Binder {
         public BluetoothService getService() {
