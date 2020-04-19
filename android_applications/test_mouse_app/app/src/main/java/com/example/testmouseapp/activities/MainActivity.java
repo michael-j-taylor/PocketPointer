@@ -18,7 +18,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -137,29 +136,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
          */
-
-        //button setup
-        Button button_nextslide = findViewById(R.id.button_nextslide);
-        Button button_prevslide = findViewById(R.id.button_prevslide);
-        Button button_hidescreen = findViewById(R.id.button_hidescreen);
-
-        button_nextslide.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                sendKeyPress("RIGHT");
-            }
-        });
-
-        button_prevslide.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                sendKeyPress("LEFT");
-            }
-        });
-
-        button_hidescreen.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                sendKeyPress("B");
-            }
-        });
 
         //Set up Action Bar
         Toolbar toolbar = findViewById(R.id.main_toolbar);
@@ -343,18 +319,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
-    /*
-    temporary, for project demo
-    writes string s to bluetooth buffer
-     */
-    public void sendKeyPress(String s) {
-        mm_service.writeMessage(new PPMessage(PPMessage.Command.KEY_PRESS, s));
+    public void modePresentation(View view) {
+        startActivity(new Intent(this, PresentationModeActivity.class));
     }
 
     public void testMessages(View view) {
         //Send messages to server here
-        mm_service.writeMessage(new PPMessage(PPMessage.Command.STRING, "Test message 1 from client"));
-        mm_service.writeMessage(new PPMessage(PPMessage.Command.STRING, "Test message 2 from client\n"));
+        try {
+            mm_service.writeMessage(new PPMessage(PPMessage.Command.STRING, "Test message 1 from client"));
+            mm_service.writeMessage(new PPMessage(PPMessage.Command.STRING, "Test message 2 from client\n"));
+        } catch (IllegalStateException ignored) { }
     }
 
     @Override

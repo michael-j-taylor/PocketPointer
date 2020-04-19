@@ -12,7 +12,8 @@
     <string name="title_activity_presentation_mode">PresentationModeActivity</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
-    <string name="button_nextslide">next</string>
-    <string name="button_prevslide">prev</string>
-    <string name="button_hidescreen">hide</string>
+    <string name="button_nextslide">Next</string>
+    <string name="button_prevslide">Previous</string>
+    <string name="button_hidescreen">Hide</string>
+    <string name="button_gotopresentation">Presentation Mode</string>
 </resources>

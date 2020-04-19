@@ -101,33 +101,14 @@
             app:layout_constraintStart_toStartOf="parent" />
 
         <Button
-            android:id="@+id/button_prevslide"
+            android:id="@+id/button_gotopresentation"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="256dp"
-            android:text="@string/button_prevslide"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <Button
-            android:id="@+id/button_nextslide"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="256dp"
-            android:layout_marginEnd="32dp"
-            android:text="@string/button_nextslide"
+            android:layout_marginTop="260dp"
+            android:onClick="modePresentation"
+            android:text="@string/button_gotopresentation"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <Button
-            android:id="@+id/button_hidescreen"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="256dp"
-            android:text="@string/button_hidescreen"
-            app:layout_constraintEnd_toStartOf="@+id/button_nextslide"
-            app:layout_constraintStart_toEndOf="@+id/button_prevslide"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/main_toolbar" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
