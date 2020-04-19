@@ -162,14 +162,7 @@ public class BluetoothServer {
                         System.out.println("No connection created");
                     }
 
-                } catch (Exception e) {
-                	if (e.getClass().equals(InterruptedIOException.class)) {
-                		System.out.println("Warning in ConnectThread: acceptAndOpen was interrupted while waiting for connection");
-                	} else if (e.getClass().equals(IOException.class)) {
-                		System.out.println("Connection lost");
-                	} else {
-                		System.out.println("Failure in connect thread:\n" + e + e.getMessage() + "\n");
-                	}
+                } catch (Exception ignored) {
                     cancel();
                     return;
                 }
