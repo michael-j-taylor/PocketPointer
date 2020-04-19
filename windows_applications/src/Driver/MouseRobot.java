@@ -20,28 +20,44 @@ public class MouseRobot {
             e.printStackTrace(); 
         } 
   
+    	System.out.println("Running");
         // Create an instance of Robot class 
         Robot robot = new Robot(); 
   
         // Press keys using robot. A gap of 
-        robot.keyPress(KeyEvent.VK_F);
+        
+        powerPoint("B");
+        powerPoint("B");
+        powerPoint("B");
+        powerPoint("B");
+        powerPoint("B");
+        powerPoint("B");
+        
+        powerPoint("LEFT");
+        powerPoint("RIGHT");
+        powerPoint("B");
+        
+        System.out.println("Finished");
     }
     
-    public static void powerPoint(int buttonPress) throws AWTException {
+    public static void powerPoint(String buttonPress) throws AWTException {
     	Robot robot = new Robot();
     	
-    	if (buttonPress == 1) {
+    	if (buttonPress.equals("RIGHT")) {
+    		
     		//This is the right press button
 			robot.keyPress(KeyEvent.VK_RIGHT);
     	}
-    	else if (buttonPress == 2) {
+    	else if (buttonPress.equals("LEFT")) {
     		//This is left press button
     		robot.keyPress(KeyEvent.VK_LEFT);
     	}
-    	else if (buttonPress == 3) {
+    	else if (buttonPress.equals("B")) {
     		//This is for the blank screen
     		robot.keyPress(KeyEvent.VK_B);
-    	}	
+    	}
+    	
+    	return;
     }
     
 }

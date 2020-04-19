@@ -5,6 +5,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import Bluetooth.BluetoothServer;
+import Bluetooth.PPMessage;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -57,7 +58,7 @@ public class Receiver extends JPanel
             // of 500 mili seconds is added after
             // every key press
             robot.keyPress(KeyEvent.VK_F);
-            MouseRobot.powerPoint(2);
+            MouseRobot.powerPoint("B");
         }
         catch (InterruptedException e)
         {

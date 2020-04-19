@@ -105,7 +105,6 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
         availableDevices_recyclerView.setAdapter(mm_available_adapter);
 
         if (bluetoothAdapter.isDiscovering()) bluetoothAdapter.cancelDiscovery();
-        bluetoothAdapter.startDiscovery();
 
         check_devices.start();
     }
@@ -124,7 +123,6 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
                 }
 
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                Toast.makeText(context, "Discovery canceled", Toast.LENGTH_SHORT).show();
                 // discovery has finished, give a call to fetchUuidsWithSdp on first device in list.
                 if (!mm_scanned_devices.isEmpty()) {
                     BluetoothDevice device = mm_scanned_devices.remove(0);
@@ -155,7 +153,7 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
                 if (!mm_scanned_devices.isEmpty()) {
                     BluetoothDevice device = mm_scanned_devices.remove(0);
                     device.fetchUuidsWithSdp();
-                } else bluetoothAdapter.startDiscovery();
+                }
             } else if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
                 if (!bluetoothAdapter.isEnabled()) finish();
                 Toast.makeText(context, "You must keep Bluetooth enabled", Toast.LENGTH_SHORT).show();
@@ -193,7 +191,7 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
         super.onDestroy();
         active = false;
 
-        if (bluetoothAdapter.isDiscovering()) bluetoothAdapter.cancelDiscovery();
+        if (check_devices.isRunning()) check_devices.stopChecking();
         unregisterReceiver(receiver);
 
     }
@@ -205,13 +203,12 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
         public void run() {
             while (running) {
                 try {
-
+                    bluetoothAdapter.startDiscovery();
                     sleep(1000);
                     if (!mm_scanned_devices.isEmpty()) {
 
                         bluetoothAdapter.cancelDiscovery();
                         sleep(500);
-                        bluetoothAdapter.startDiscovery();
                     }
 
                 } catch (InterruptedException e) {
@@ -222,6 +219,10 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
 
         void stopChecking() {
             running = false;
+        }
+
+        boolean isRunning() {
+            return running;
         }
     }
 

@@ -14,6 +14,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 public class CommunicationThread extends Thread {
+    private Object lock;
     private static final String TAG = "CommunicationThread";
     private final BluetoothSocket mmSocket;
     private Handler mmHandler;
@@ -22,9 +23,10 @@ public class CommunicationThread extends Thread {
     private boolean running = true;
     private byte[] mmBuffer; // mmBuffer store for the stream
 
-    CommunicationThread(BluetoothSocket socket, Handler handler) {
+    CommunicationThread(BluetoothSocket socket, Handler handler, Object lock) {
         mmSocket = socket;
         mmHandler = handler;
+        this.lock = lock;
 
         InputStream tmpIn = null;
         OutputStream tmpOut = null;

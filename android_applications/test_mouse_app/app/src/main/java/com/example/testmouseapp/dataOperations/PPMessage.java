@@ -19,6 +19,7 @@ public class PPMessage {
         if (what == Command.NULL) throw new IllegalArgumentException();
 
         //Ensure text ends in newline character
+        text = text.trim();
         if (text.charAt(text.length()-1) == '\n') this.text = text + "\n";
         else this.text = text;
     }
