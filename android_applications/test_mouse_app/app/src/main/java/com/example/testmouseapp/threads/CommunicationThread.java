@@ -5,8 +5,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-import com.example.testmouseapp.activities.MainActivity;
 import com.example.testmouseapp.dataOperations.PPMessage;
+import com.example.testmouseapp.services.BluetoothService;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -75,13 +75,13 @@ public class CommunicationThread extends Thread {
 
                 // Send the obtained bytes to the UI activity.
                 Message readMsg = mmHandler.obtainMessage(
-                        MainActivity.MessageConstants.MESSAGE_READ, -1, what,
+                        BluetoothService.MessageConstants.MESSAGE_READ, -1, what,
                         text);
                 readMsg.sendToTarget();
 
                 sleep(100);
             } catch (Exception e) {
-                Log.e(TAG, "Input stream was disconnected", e);
+                Log.e(TAG, "Input stream was disconnected");
                 break;
             }
         }
@@ -106,23 +106,24 @@ public class CommunicationThread extends Thread {
             System.arraycopy(text, 0, b, 1, text.length);
 
             mmOutStream.write(b);
-            sleep(500);
             mmOutStream.flush();
+            sleep(150);
+
 
             // Share the sent message with the UI activity.
             Message writtenMsg = mmHandler.obtainMessage(
-                    MainActivity.MessageConstants.MESSAGE_WRITE, -1, message.what, message.text);
+                    BluetoothService.MessageConstants.MESSAGE_WRITE, -1, message.what, message.text);
             writtenMsg.sendToTarget();
         } catch (Exception e) {
-            if (e.equals(IOException.class)) {
+            if (e.getClass().equals(IOException.class)) {
                 Log.e(TAG, "Error occurred when sending data", e);
 
                 // Send a failure message back to the activity.
                 Message writeErrorMsg = mmHandler.obtainMessage(
-                        MainActivity.MessageConstants.MESSAGE_TOAST, "Couldn't send data to the other device");
+                        BluetoothService.MessageConstants.MESSAGE_TOAST, "Couldn't send data to the other device");
                 mmHandler.sendMessage(writeErrorMsg);
-            } else if (e.equals(InterruptedException.class)) {
-                //Do nothing
+            } else {
+                e.getClass();//Do nothing
             }
         }
     }
