@@ -11,7 +11,10 @@ public class PPMessage {
         byte NULL = 0;
         byte MOUSE_COORDS = 1;
         byte KEY_PRESS = 2;
-        byte STRING = 3;
+        byte SWIPE = 3;
+        byte STRING = 4;
+        byte TAP = 5;
+        byte DOUBLETAP = 6;
     }
 
     public PPMessage(byte what, String text) throws IllegalArgumentException {
@@ -40,8 +43,14 @@ public class PPMessage {
             return "KEY - ";
         } else if (what == Command.MOUSE_COORDS) {
             return "COORDS - ";
+        } else if (what == Command.SWIPE) {
+            return "SWIPE - ";
         } else if (what == Command.STRING) {
             return "STRING - ";
+        } else if (what == Command.TAP) {
+            return "TAP - ";
+        } else if (what == Command.DOUBLETAP) {
+            return "DOUBLETAP - ";
         }
 
         //If what not found
