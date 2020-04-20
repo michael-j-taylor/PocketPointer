@@ -83,3 +83,7 @@ lint/generated/
 lint/outputs/
 lint/tmp/
 # lint/reports/
+windows_applications/.idea/workspace.xml
+windows_applications/.idea/modules.xml
+windows_applications/.idea/misc.xml
+windows_applications/.idea/libraries/windows_applications.xml
