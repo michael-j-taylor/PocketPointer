@@ -40,7 +40,7 @@
         tools:layout="@layout/fragment_presentation" />
 
     <fragment
-        android:id="@+id/nav_slideshow"
+        android:id="@+id/nav_touchpad"
         android:name="com.example.testmouseapp.fragments.TouchpadFragment"
         android:label="@string/menu_touchpad"
         tools:layout="@layout/fragment_touchpad" />
