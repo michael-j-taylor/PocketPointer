@@ -101,21 +101,21 @@ public class BluetoothServer {
         if (mm_connect_thread != null) {
         	mm_connect_thread.cancel();
         	System.out.println("Stop connect thread");
-        }
-        
-        //Shut down notifier
-        if (notifier != null) {
-        	try {
-				notifier.close();
-			} catch (IOException e) {
-				System.out.println("Warning: notifier was waiting for connection" + e + "\n");
-			}
+        } else {
+	        //Shut down notifier
+	        if (notifier != null) {
+	        	try {
+					notifier.close();
+				} catch (IOException e) {
+					System.out.println("Warning: notifier was waiting for connection" + e + "\n");
+				}
+	        }
         }
         
         //Turn off discoverability if possible
         try {
         		LocalDevice.getLocalDevice().setDiscoverable(DiscoveryAgent.NOT_DISCOVERABLE);
-		} catch (BluetoothStateException e) {
+		} catch (BluetoothStateException ignored) {
 			//Bluetooth is off, so it cannot be discoverable. No problem
 		}
 	}	
@@ -257,8 +257,7 @@ public class BluetoothServer {
                 System.out.println("Failure in communication thread:\n" + e + "\n");
                 try {
                     mm_connection.close();
-                } catch (IOException e1) {
-                    e1.printStackTrace();
+                } catch (IOException ignored) {
                 }
                 System.out.println("Connection closed:");
             }
@@ -284,9 +283,7 @@ public class BluetoothServer {
                 mm_output_stream.flush();
                 System.out.println("Sent: " + PPMessage.toString(message.what) + message.text);
 
-            } catch (IOException e) {
-                System.out.println("Failure in write:");
-                e.printStackTrace();
+            } catch (IOException ignroed) {
             }
         }
 
@@ -303,6 +300,8 @@ public class BluetoothServer {
             
             try {
                 mm_connection.close();
+                mm_input_stream.close();
+                mm_output_stream.close();
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
