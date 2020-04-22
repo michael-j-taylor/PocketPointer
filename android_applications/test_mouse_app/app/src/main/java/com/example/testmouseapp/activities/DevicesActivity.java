@@ -118,6 +118,7 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 assert device != null;
                 if (mm_scanned_names.indexOf(device.getName()) == -1) {
+                    //If the found device has not already been scanned, check it
                     mm_scanned_devices.add(device);
                     mm_scanned_names.add(device.getName());
                 }
@@ -140,10 +141,11 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
                         ParcelUuid uuid = (ParcelUuid) p;
                         if (uuid.getUuid().equals(mm_uuid)) {
                             assert deviceExtra != null;
-                            mm_available_devices.add(deviceExtra);
                             String device_name = deviceExtra.getName();
-                            if (mm_available_names.indexOf(device_name) == -1) {
-                                assert device_name != null;
+                            assert device_name != null;
+                            if (mm_available_names.indexOf(device_name) == -1 && mm_paired_names.indexOf(device_name) == -1) {
+                                //If the device with the correct UUID is not already in the available or paired list, add it to the available list
+                                mm_available_devices.add(deviceExtra);
                                 mm_available_names.add(device_name);
                                 mm_available_adapter.notifyItemInserted(mm_available_names.indexOf(device_name));
                             }
@@ -154,9 +156,13 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
                     BluetoothDevice device = mm_scanned_devices.remove(0);
                     device.fetchUuidsWithSdp();
                 }
+
             } else if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
-                if (!bluetoothAdapter.isEnabled()) finish();
-                Toast.makeText(context, "You must keep Bluetooth enabled", Toast.LENGTH_SHORT).show();
+                if (!bluetoothAdapter.isEnabled()) {
+                    Toast.makeText(getApplicationContext(), "You must keep Bluetooth enabled", Toast.LENGTH_SHORT).show();
+                    DevicesActivity.this.setResult(RESULT_CANCELED);
+                    finish();
+                }
             }
         }
     };
@@ -173,16 +179,17 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
         if (adapter.equals(mm_paired_adapter)) devices = mm_paired_devices;
         else devices = mm_available_devices;
 
+
         for (BluetoothDevice d : devices) {
             if (d.getName().equals(name)) {
+                //Return d to calling activity
                 check_devices.stopChecking();
                 Toast.makeText(this, "You clicked " + d.getName() + ". Device is " + d.toString(), Toast.LENGTH_SHORT).show();
-
                 Intent resultIntent = new Intent();
                 resultIntent.putExtra("device", d);
                 setResult(RESULT_OK, resultIntent);
                 finish();
-            } else Toast.makeText(this, "Device not found in list" + position, Toast.LENGTH_SHORT).show();
+            } else Toast.makeText(this, "Device " + position +" not found in list", Toast.LENGTH_SHORT).show();
         }
     }
 

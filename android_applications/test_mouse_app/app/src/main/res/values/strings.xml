@@ -5,6 +5,7 @@
     <string name="calibrate">calibrate</string>
     <string name="connect_to_device">Connect to Device</string>
     <string name="devices_toolbar">Bluetooth Devices</string>
+    <string name="disconnect_device">Disconnect</string>
     <string name="paired_devices">Paired Devices</string>
     <string name="textview1"></string>
     <string name="textview2">Acceleration</string>
@@ -22,6 +23,7 @@
     <string name="nav_header_title">Android Studio</string>
     <string name="nav_header_subtitle">android.studio@android.com</string>
     <string name="nav_header_desc">Navigation header</string>
+    <string name="not_connected">No connected device</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_touchpad">TouchpadActivity</string>
 

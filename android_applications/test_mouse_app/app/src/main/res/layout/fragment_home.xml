@@ -38,7 +38,17 @@
         app:layout_constraintVertical_bias="0.468" />
 
     <Button
-        android:id="@+id/calibrate"
+        android:id="@+id/button_disconnectDevice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:text="@string/disconnect_device"
+        app:layout_constraintBottom_toTopOf="@+id/button_calibrate"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/button_calibrate"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
@@ -51,14 +61,14 @@
         app:layout_constraintVertical_bias="0.9" />
 
     <Button
-        android:id="@+id/bluetooth"
-        android:layout_width="213dp"
-        android:layout_height="48dp"
+        android:id="@+id/button_connectDevice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:text="@string/connect_to_device"
-        app:layout_constraintBottom_toTopOf="@+id/calibrate"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/button_calibrate"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
@@ -68,20 +78,29 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/testmessages"
+        app:layout_constraintBottom_toTopOf="@+id/button_testmessages"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/acceleration"
         app:layout_constraintVertical_bias="0.523" />
 
     <Button
-        android:id="@+id/testmessages"
+        android:id="@+id/button_testmessages"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:text="@string/execute"
-        app:layout_constraintBottom_toTopOf="@+id/bluetooth"
+        app:layout_constraintBottom_toTopOf="@+id/button_connectDevice"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/homeDeviceText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
