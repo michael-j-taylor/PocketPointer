@@ -128,10 +128,10 @@ public class BluetoothService extends Service {
     public void closeConnection() {
         if (mm_coms != null && !mm_remote_killed) {
             writeMessage(new PPMessage(PPMessage.Command.END, "Client ending activity"));
+            mm_coms = null;
         }
         //Shut down communicationsThread and connectThread
-        mm_coms = null;
-        if (mm_connection.isConnected())
+        if (mm_connection != null && mm_connection.isConnected())
             mm_connection.cancel();
 
         device = null;
@@ -147,6 +147,7 @@ public class BluetoothService extends Service {
     }
 
     public boolean isConnected() {
+        if (mm_connection == null) return false;
         return mm_connection.isConnected();
     }
 

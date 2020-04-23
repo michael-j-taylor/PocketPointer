@@ -107,7 +107,7 @@ public class TouchpadFragment extends Fragment {
     public void onStart() {
         super.onStart();
         TextView device_view = view.findViewById(R.id.touchpadDeviceText);
-        if (mm_main_activity.bt_service.isConnected()) {
+        if (mm_main_activity.bt_service != null && mm_main_activity.bt_service.isConnected()) {
             String s = "Connected to " + mm_main_activity.bt_service.device.getName();
             device_view.setText(s);
         } else {
