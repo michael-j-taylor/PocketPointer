@@ -12,6 +12,7 @@ import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.fragment.app.Fragment;
 
@@ -34,6 +35,9 @@ public class TouchpadFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
+
+        //hide action bar for this fragment
+        ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
 
         view = inflater.inflate(R.layout.fragment_touchpad, container, false);
 
