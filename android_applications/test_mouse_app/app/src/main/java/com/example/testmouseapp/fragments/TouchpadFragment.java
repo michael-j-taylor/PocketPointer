@@ -30,7 +30,7 @@ public class TouchpadFragment extends Fragment {
     private GestureDetectorCompat PPGestureDetector;
     private View view;
 
-    private boolean mouseLock = true;  //determines if swipe data is sent or pointer coordinates on touchpad
+    private boolean mouseLock = false;  //determines if swipe data is sent or pointer coordinates on touchpad
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
