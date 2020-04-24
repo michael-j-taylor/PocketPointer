@@ -1,19 +1,24 @@
 package com.example.testmouseapp.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.ParcelUuid;
 import android.os.Parcelable;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 import androidx.appcompat.widget.Toolbar;
@@ -44,6 +49,10 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
     private CheckDeviceList check_devices = new CheckDeviceList();
 
     BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+    //TESTING
+    int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 1;
+    private static final String TAG = "DevicesActivity";
 
 
     @Override
@@ -105,7 +114,6 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
         availableDevices_recyclerView.setAdapter(mm_available_adapter);
 
         if (bluetoothAdapter.isDiscovering()) bluetoothAdapter.cancelDiscovery();
-
         check_devices.start();
     }
 

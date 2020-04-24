@@ -16,14 +16,18 @@ import com.example.testmouseapp.R;
 import com.example.testmouseapp.activities.MainActivity;
 import com.example.testmouseapp.dataOperations.PPMessage;
 import com.example.testmouseapp.dataOperations.PPOnSwipeListener;
+import com.example.testmouseapp.dataOperations.pointerTracker;
 
 public class TouchpadFragment extends Fragment {
     private static final String TAG = "Touchpad Fragment";
 
     private MainActivity mm_main_activity;
 
+    private pointerTracker PPpointerTracker;
     private GestureDetectorCompat PPGestureDetector;
     private View view;
+
+    private boolean mouseLock = true;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -33,6 +37,7 @@ public class TouchpadFragment extends Fragment {
         mm_main_activity = (MainActivity) getActivity();
         assert mm_main_activity != null;
 
+        PPpointerTracker = new pointerTracker();
         PPGestureDetector = new GestureDetectorCompat(getContext(), new PPOnSwipeListener() {
 
             //onSingleTapConfirmed only triggers once the device is sure that another tap isn't
@@ -46,6 +51,7 @@ public class TouchpadFragment extends Fragment {
                 return true;
             }
 
+
             @Override
             public boolean onDoubleTap(MotionEvent event) {
                 try {
@@ -54,6 +60,7 @@ public class TouchpadFragment extends Fragment {
 
                 return true;
             }
+
 
             @Override
             public boolean onSwipe(PPOnSwipeListener.Direction direction) {
@@ -93,13 +100,19 @@ public class TouchpadFragment extends Fragment {
             }
         });
 
+
         view.setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
-                PPGestureDetector.onTouchEvent(event);
+
+                if (mouseLock) {  //if mouse lock enabled, send x and y coordinates of pointer
+                    PPpointerTracker.setMouseCoordinates(event);
+                } else {  //capture gesture from swipe
+                    PPGestureDetector.onTouchEvent(event);
+                }
+
                 return true;
             }
         });
-
         return view;
     }
 
