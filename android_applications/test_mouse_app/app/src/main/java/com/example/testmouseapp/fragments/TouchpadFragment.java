@@ -6,7 +6,10 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import androidx.annotation.NonNull;
 import androidx.core.view.GestureDetectorCompat;
@@ -27,7 +30,7 @@ public class TouchpadFragment extends Fragment {
     private GestureDetectorCompat PPGestureDetector;
     private View view;
 
-    private boolean mouseLock = true;
+    private boolean mouseLock = true;  //determines if swipe data is sent or pointer coordinates on touchpad
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -37,6 +40,21 @@ public class TouchpadFragment extends Fragment {
         mm_main_activity = (MainActivity) getActivity();
         assert mm_main_activity != null;
 
+        //button creation
+        ToggleButton button_mouse_lock = view.findViewById(R.id.button_mouseLock);
+        button_mouse_lock.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    mouseLock = true;
+                } else {
+                    mouseLock = false;
+                }
+            }
+        });
+
+        //Create GestureDetector for activity (in this case, we use our own PPGestureDetector class
+        //instead of an android-provided one
         PPpointerTracker = new pointerTracker();
         PPGestureDetector = new GestureDetectorCompat(getContext(), new PPOnSwipeListener() {
 

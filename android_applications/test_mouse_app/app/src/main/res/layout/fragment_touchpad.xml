@@ -25,4 +25,19 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <ToggleButton
+        android:id="@+id/button_mouseLock"
+        android:layout_width="@dimen/button_mouseLock_size"
+        android:layout_height="@dimen/button_mouseLock_size"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/button_mouselock"
+        android:checked="false"
+        android:text=""
+        android:textOff=""
+        android:textOn=""
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/touchpadDeviceText" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
