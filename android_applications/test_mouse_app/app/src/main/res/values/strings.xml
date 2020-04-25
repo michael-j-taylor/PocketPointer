@@ -29,6 +29,10 @@
     <string name="menu_home">Devices</string>
     <string name="menu_presentation">Presentation Mode</string>
     <string name="menu_touchpad">Touchpad Mode</string>
+    <string name="menu_mousemode">Mouse mode</string>
     <string name="title_activity_touchpad">Touchpad</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

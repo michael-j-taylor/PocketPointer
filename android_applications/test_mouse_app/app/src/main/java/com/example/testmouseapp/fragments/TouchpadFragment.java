@@ -8,11 +8,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.fragment.app.Fragment;
 
@@ -21,6 +23,7 @@ import com.example.testmouseapp.activities.MainActivity;
 import com.example.testmouseapp.dataOperations.PPMessage;
 import com.example.testmouseapp.dataOperations.PPOnSwipeListener;
 import com.example.testmouseapp.dataOperations.pointerTracker;
+import com.google.android.material.navigation.NavigationView;
 
 public class TouchpadFragment extends Fragment {
     private static final String TAG = "Touchpad Fragment";
@@ -30,6 +33,7 @@ public class TouchpadFragment extends Fragment {
     private pointerTracker PPpointerTracker;
     private GestureDetectorCompat PPGestureDetector;
     private View view;
+    private View nagivationView;
 
     private boolean mouseLock = false;  //determines if swipe data is sent or pointer coordinates on touchpad
 
@@ -44,8 +48,15 @@ public class TouchpadFragment extends Fragment {
         mm_main_activity = (MainActivity) getActivity();
         assert mm_main_activity != null;
 
+        //access view for navigation drawer from main activity
+        nagivationView =  mm_main_activity.navigationView;
+
         //button creation
-        ToggleButton button_mouse_lock = view.findViewById(R.id.button_mouseLock);
+
+        //TODO: find out how to access the switch in the navigation drawer from this fragment
+        //(The below code causes a fatal error as of now)
+        /*
+        SwitchCompat button_mouse_lock = (SwitchCompat) nagivationView.findViewById(R.id.nav_switch_mousemode);
         button_mouse_lock.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -56,6 +67,7 @@ public class TouchpadFragment extends Fragment {
                 }
             }
         });
+         */
 
         //Create GestureDetector for activity (in this case, we use our own PPGestureDetector class
         //instead of an android-provided one
@@ -125,6 +137,7 @@ public class TouchpadFragment extends Fragment {
 
         view.setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
+                //TODO: ignore touch if within 24px of an edge
 
                 if (mouseLock) {  //if mouse lock enabled, send x and y coordinates of pointer
                     PPpointerTracker.setMouseCoordinates(event);

@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
 
     <group android:checkableBehavior="single">
+
         <item
             android:id="@+id/nav_home"
             android:icon="@drawable/ic_laptop_black_24dp"
@@ -16,5 +18,10 @@
             android:id="@+id/nav_touchpad"
             android:icon="@drawable/ic_touch_app_black_24dp"
             android:title="@string/menu_touchpad" />
+        <item
+            android:id="@+id/nav_switch_mousemode"
+            android:icon="@drawable/touchpad_ic_mouse_blue_24dp"
+            android:title="@string/menu_mousemode"
+            app:actionLayout="@layout/menu_switch_mousemode"/>
     </group>
 </menu>

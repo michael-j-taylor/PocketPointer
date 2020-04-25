@@ -29,18 +29,62 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!--
     <ToggleButton
         android:id="@+id/button_mouseLock"
         android:layout_width="@dimen/button_mouseLock_size"
         android:layout_height="@dimen/button_mouseLock_size"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        android:background="@drawable/button_mouselock"
+        android:background="@drawable/touchpad_button_mouselock"
         android:checked="false"
         android:text=""
         android:textOff=""
         android:textOn=""
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+        -->
+
+
+    <ImageView
+        android:id="@+id/touchpad_ic_corner1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/touchpad_ic_corner1" />
+
+    <ImageView
+        android:id="@+id/touchpad_ic_corner0"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="24dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/touchpad_ic_corner0" />
+
+    <ImageView
+        android:id="@+id/touchpad_ic_corner2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginBottom="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@drawable/touchpad_ic_corner2" />
+
+    <ImageView
+        android:id="@+id/touchpad_ic_corner3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@drawable/touchpad_ic_corner3" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
