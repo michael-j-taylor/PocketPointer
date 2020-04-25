@@ -4,7 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
 
-    <group android:checkableBehavior="single">
+    <group
+        android:id="@+id/fragments"
+        android:checkableBehavior="single">
 
         <item
             android:id="@+id/nav_home"
@@ -18,6 +20,13 @@
             android:id="@+id/nav_touchpad"
             android:icon="@drawable/ic_touch_app_black_24dp"
             android:title="@string/menu_touchpad" />
+
+    </group>
+
+    <group
+        android:id="@+id/quick_settings"
+        android:checkableBehavior="single">
+
         <item
             android:id="@+id/nav_switch_mousemode"
             android:icon="@drawable/touchpad_ic_mouse_blue_24dp"
