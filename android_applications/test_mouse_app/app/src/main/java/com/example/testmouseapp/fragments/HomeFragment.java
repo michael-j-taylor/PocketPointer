@@ -13,12 +13,14 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -29,6 +31,7 @@ import com.example.testmouseapp.activities.MainActivity;
 import com.example.testmouseapp.dataOperations.Calibrater;
 import com.example.testmouseapp.dataOperations.MovingAverage;
 import com.example.testmouseapp.dataOperations.PPMessage;
+import com.google.android.material.navigation.NavigationView;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -38,6 +41,7 @@ public class HomeFragment extends Fragment implements SensorEventListener {
 
     private static final String TAG = "Home Fragment";
     private MainActivity mm_main_activity;
+    private NavigationView navigationView;
 
     private SensorManager sensorManager;
     private Sensor accelerometer;
@@ -119,6 +123,22 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);  //can be changed to different delays //could use 1000000/polling_rate
 
         Log.d(TAG, "onCreate: Registered accelerometer listener");
+
+        /*----------VOLATILE NAVIGATION DRAWER BUTTON CREATION----------*/
+        //using the public NavigationView in our MainActivity, we can access navigation drawer elements
+        //and interact with them. This allows the setup of quick settings for each mode of the application
+        navigationView = mm_main_activity.navigationView;
+
+        //get all quick setting menu items
+        MenuItem menuItem_mouse_lock = navigationView.getMenu().findItem(R.id.nav_switch_mousemode);
+
+        //hide any items not relevant to this fragment
+        menuItem_mouse_lock.setVisible(false);
+
+        // show all items relevant to this fragment
+
+
+        /*----------STANDARD BUTTON CREATION----------*/
 
         //Register testmessages button listener
         Button button_testmessages = view.findViewById(R.id.button_testmessages);

@@ -3,6 +3,7 @@ package com.example.testmouseapp.fragments;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,7 +34,7 @@ public class TouchpadFragment extends Fragment {
     private pointerTracker PPpointerTracker;
     private GestureDetectorCompat PPGestureDetector;
     private View view;
-    private View nagivationView;
+    private NavigationView navigationView;
 
     private boolean mouseLock = false;  //determines if swipe data is sent or pointer coordinates on touchpad
 
@@ -49,14 +50,22 @@ public class TouchpadFragment extends Fragment {
         assert mm_main_activity != null;
 
         //access view for navigation drawer from main activity
-        nagivationView =  mm_main_activity.navigationView;
+        navigationView =  mm_main_activity.navigationView;
 
-        //button creation
+        /*----------VOLATILE NAVIGATION DRAWER BUTTON CREATION----------*/
+        //using the public NavigationView in our MainActivity, we can access navigation drawer elements
+        //and interact with them. This allows the setup of quick settings for each mode of the application
 
-        //TODO: find out how to access the switch in the navigation drawer from this fragment
-        //(The below code causes a fatal error as of now)
-        /*
-        SwitchCompat button_mouse_lock = (SwitchCompat) nagivationView.findViewById(R.id.nav_switch_mousemode);
+        //get all quick setting menu items
+        MenuItem menuItem_mouse_lock = navigationView.getMenu().findItem(R.id.nav_switch_mousemode);
+
+        //hide any buttons not relevant to this fragment
+
+        // show all buttons relevant to this fragment
+        menuItem_mouse_lock.setVisible(true);
+
+        //mouse lock switch: send pointer coordinates when activated, else send direction swipes or tap gestures
+        SwitchCompat button_mouse_lock = (SwitchCompat) menuItem_mouse_lock.getActionView().findViewById(R.id.menu_switch_mousemode);
         button_mouse_lock.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -67,7 +76,7 @@ public class TouchpadFragment extends Fragment {
                 }
             }
         });
-         */
+
 
         //Create GestureDetector for activity (in this case, we use our own PPGestureDetector class
         //instead of an android-provided one
@@ -78,6 +87,8 @@ public class TouchpadFragment extends Fragment {
             //going to occur (i.e., in a doubletap)
             @Override
             public boolean onSingleTapConfirmed(MotionEvent event) {
+
+                Log.d(TAG, "single tap");
                 try {
                     mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.TAP, "SOMEWHERE"));
                 } catch (IllegalStateException ignored) { }
@@ -88,6 +99,8 @@ public class TouchpadFragment extends Fragment {
 
             @Override
             public boolean onDoubleTap(MotionEvent event) {
+
+                Log.d(TAG, "double tap");
                 try {
                     mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.DOUBLETAP, "SOMEWHERE"));
                 } catch (IllegalStateException ignored) { }
@@ -135,6 +148,8 @@ public class TouchpadFragment extends Fragment {
         });
 
 
+        //Called every time a touch is detected in this fragment
+        //Result varies depending on state of mouse lock
         view.setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
                 //TODO: ignore touch if within 24px of an edge
