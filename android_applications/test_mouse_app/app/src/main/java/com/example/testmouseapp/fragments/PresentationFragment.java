@@ -1,6 +1,7 @@
 package com.example.testmouseapp.fragments;
 
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -9,6 +10,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.fragment.app.Fragment;
 
@@ -22,10 +24,12 @@ public class PresentationFragment extends Fragment {
     private static final String TAG = "Presentation Activity";
     private MainActivity mm_main_activity;
     private View view;
-    private NavigationView navigationView;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
+
+        //show action bar for this fragment
+        ((AppCompatActivity) getActivity()).getSupportActionBar().show();
 
         view = inflater.inflate(R.layout.fragment_presentation, container, false);
 
@@ -35,7 +39,7 @@ public class PresentationFragment extends Fragment {
         /*----------VOLATILE NAVIGATION DRAWER BUTTON CREATION----------*/
         //using the public NavigationView in our MainActivity, we can access navigation drawer elements
         //and interact with them. This allows the setup of quick settings for each mode of the application
-        navigationView = mm_main_activity.navigationView;
+        NavigationView navigationView = mm_main_activity.navigationView;
 
         //get all quick setting menu items
         MenuItem menuItem_mouse_lock = navigationView.getMenu().findItem(R.id.nav_switch_mousemode);
@@ -45,9 +49,7 @@ public class PresentationFragment extends Fragment {
 
         // show all items relevant to this fragment
 
-
         /*----------STANDARD BUTTON CREATION----------*/
-
 
         //Register nextslide button listener
         Button button_nextslide = view.findViewById(R.id.button_nextslide);
@@ -68,6 +70,7 @@ public class PresentationFragment extends Fragment {
         return view;
     }
 
+
     @Override
     public void onStart() {
         super.onStart();
@@ -80,12 +83,22 @@ public class PresentationFragment extends Fragment {
         }
     }
 
+
+
+
+
+    /*----------BLUETOOTH MESSAGING FUNCTIONS----------*/
+
+
+    //called when button_nextslide is toggled
     private void nextSlide() {
         try {
             mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.KEY_PRESS, "RIGHT"));
         } catch (IllegalStateException ignored) { }
     }
 
+
+    //called when button_prevslide is toggled
     private void previousSlide() {
         try {
             mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.KEY_PRESS, "LEFT"));

@@ -2,6 +2,7 @@ package com.example.testmouseapp.fragments;
 
 import android.os.Bundle;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.fragment.app.Fragment;
 
@@ -25,13 +26,17 @@ public class SettingsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        //show action bar for this fragment
+        ((AppCompatActivity) getActivity()).getSupportActionBar().show();
+
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
 
         mm_main_activity = (MainActivity) getActivity();
         assert mm_main_activity != null;
 
-        /*----------VOLATILE NAVIGATION DRAWER BUTTON CREATION----------*/
+        /*----------VOLATILE NAVIGATION DRAWER CONTROL CREATION----------*/
         //using the public NavigationView in our MainActivity, we can access navigation drawer elements
         //and interact with them. This allows the setup of quick settings for each mode of the application
         NavigationView navigationView = mm_main_activity.navigationView;
