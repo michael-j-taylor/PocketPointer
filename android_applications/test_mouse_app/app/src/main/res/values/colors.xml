@@ -3,7 +3,11 @@
     <color name="colorPrimary">#008577</color>
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
+    <color name="colorControlActivated">#ff33b5e5</color>
+    <color name="colorControlHighlight">#ff828282</color>
 
     <color name="black_overlay">#66000000</color>
-    <color name ="PPdark_grey">#4D4D4D</color>
+    <color name ="PPdark_grey">#ff292929</color>
+    <color name="PPlight_grey">#ff828282</color>
+    <color name="PPdarkest_grey">#ff1a1a1a</color>
 </resources>

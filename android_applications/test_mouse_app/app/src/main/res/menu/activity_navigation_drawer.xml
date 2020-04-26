@@ -11,7 +11,8 @@
         <item
             android:id="@+id/nav_home"
             android:icon="@drawable/ic_laptop_black_24dp"
-            android:title="@string/menu_home" />
+            android:title="@string/menu_home"/>
+
         <item
             android:id="@+id/nav_presentation"
             android:icon="@drawable/ic_present_to_all_black_24dp"
