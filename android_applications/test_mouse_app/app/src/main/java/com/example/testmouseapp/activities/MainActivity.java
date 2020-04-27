@@ -33,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
     private KeyPressListener listener;
     public boolean overrideVolumeKeys = false;
 
+
+    //used to communicate with an instance of PresentationFragment to override volume keys
     public void setKeyPressListener(KeyPressListener keyPressListener) {
         this.listener = keyPressListener;
     }
@@ -82,11 +84,16 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
 
+        //create instance of PresentationFragment
+        //note that this is NOT the same instance of the fragment the user interacts with
+        //this is neccessary to call the fragment function when volume keys are overridden
         PresentationFragment pfragment = new PresentationFragment();
         setKeyPressListener(pfragment);
     }
 
 
+    //Used to override volume keys in PresentationMode fragment
+    //this method cannot be used in a fragment, so is overridden here
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
 
@@ -97,17 +104,18 @@ public class MainActivity extends AppCompatActivity {
 
                 //otherwise this function is called on key down AND up
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                    Log.d(TAG, "dispatchKeyEvent: volume key");
                     listener.onKeyDown(event.getKeyCode());
                     return true;
                 }
 
+                //ignore event sent when key is released
                 else if (event.getAction() == KeyEvent.ACTION_UP) {
                     return true;
                 }
             }
         }
 
+        //allow every other key to perform default functionality
         return super.dispatchKeyEvent(event);
     }
 
