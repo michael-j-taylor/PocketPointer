@@ -132,18 +132,20 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         /*----------VOLATILE NAVIGATION DRAWER BUTTON CREATION----------*/
         //using the public NavigationView in our MainActivity, we can access navigation drawer elements
         //and interact with them. This allows the setup of quick settings for each mode of the application
-        navigationView = mm_main_activity.navigationView;
+        NavigationView navigationView = mm_main_activity.navigationView;
 
         //get all quick setting menu items
         MenuItem menuItem_mouse_lock = navigationView.getMenu().findItem(R.id.nav_switch_mousemode);
+        MenuItem menuItem_switch_overrideVolumeKeys = navigationView.getMenu().findItem(R.id.nav_switch_override_volume_keys);
 
         //hide any items not relevant to this fragment
         menuItem_mouse_lock.setVisible(false);
+        menuItem_switch_overrideVolumeKeys.setVisible(false);
 
         // show all items relevant to this fragment
 
-
         /*----------STANDARD BUTTON CREATION----------*/
+        //TODO: move appropriate buttons to navdrawer
 
         //Register testmessages button listener
         Button button_testmessages = view.findViewById(R.id.button_testmessages);

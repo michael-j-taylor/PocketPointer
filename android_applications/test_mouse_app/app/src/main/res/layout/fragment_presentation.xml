@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:tag="@string/tag_fragment_presentation"
     android:background="@color/PPmedium_grey"
     tools:context=".fragments.PresentationFragment">
 

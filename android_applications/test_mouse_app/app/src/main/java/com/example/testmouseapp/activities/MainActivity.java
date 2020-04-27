@@ -1,29 +1,27 @@
 package com.example.testmouseapp.activities;
 
-import android.Manifest;
-import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
-import android.widget.Switch;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.testmouseapp.R;
+import com.example.testmouseapp.dataOperations.KeyPressListener;
+import com.example.testmouseapp.fragments.PresentationFragment;
 import com.example.testmouseapp.services.BluetoothService;
 import com.google.android.material.navigation.NavigationView;
 
@@ -32,6 +30,12 @@ public class MainActivity extends AppCompatActivity {
 
     private AppBarConfiguration mAppBarConfiguration;
     public NavigationView navigationView;
+    private KeyPressListener listener;
+    public boolean overrideVolumeKeys = false;
+
+    public void setKeyPressListener(KeyPressListener keyPressListener) {
+        this.listener = keyPressListener;
+    }
 
     //Bluetooth vars
     public BluetoothService bt_service;
@@ -77,7 +81,36 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
+
+        PresentationFragment pfragment = new PresentationFragment();
+        setKeyPressListener(pfragment);
     }
+
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+
+        if (overrideVolumeKeys) {
+            int keyCode = event.getKeyCode();
+
+            if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+
+                //otherwise this function is called on key down AND up
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    Log.d(TAG, "dispatchKeyEvent: volume key");
+                    listener.onKeyDown(event.getKeyCode());
+                    return true;
+                }
+
+                else if (event.getAction() == KeyEvent.ACTION_UP) {
+                    return true;
+                }
+            }
+        }
+
+        return super.dispatchKeyEvent(event);
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -86,12 +119,14 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+
     @Override
     public boolean onSupportNavigateUp() {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         return NavigationUI.navigateUp(navController, mAppBarConfiguration)
                 || super.onSupportNavigateUp();
     }
+
 
     public void onDestroy() {
         if (mm_bound) {

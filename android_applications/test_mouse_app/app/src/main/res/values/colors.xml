@@ -11,4 +11,5 @@
     <color name ="PPdark_grey">#ff292929</color>
     <color name="PPlight_grey">#ff828282</color>
     <color name="PPdarkest_grey">#ff1a1a1a</color>
+    <color name="PPAlert_red">#fffc0303</color>
 </resources>

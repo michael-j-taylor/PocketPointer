@@ -36,18 +36,22 @@ public class SettingsFragment extends Fragment {
         mm_main_activity = (MainActivity) getActivity();
         assert mm_main_activity != null;
 
-        /*----------VOLATILE NAVIGATION DRAWER CONTROL CREATION----------*/
+        /*----------VOLATILE NAVIGATION DRAWER BUTTON CREATION----------*/
         //using the public NavigationView in our MainActivity, we can access navigation drawer elements
         //and interact with them. This allows the setup of quick settings for each mode of the application
         NavigationView navigationView = mm_main_activity.navigationView;
 
         //get all quick setting menu items
-        MenuItem menuItem_mouse_lock =  navigationView.getMenu().findItem(R.id.nav_switch_mousemode);
+        MenuItem menuItem_mouse_lock = navigationView.getMenu().findItem(R.id.nav_switch_mousemode);
+        MenuItem menuItem_switch_overrideVolumeKeys = navigationView.getMenu().findItem(R.id.nav_switch_override_volume_keys);
 
-        //hide any menu items not relevant to this fragment
+        //hide any items not relevant to this
         menuItem_mouse_lock.setVisible(false);
+        menuItem_switch_overrideVolumeKeys.setVisible(false);
 
         // show all items relevant to this fragment
+
+        /*----------STANDARD BUTTON CREATION----------*/
 
 
         return view;
