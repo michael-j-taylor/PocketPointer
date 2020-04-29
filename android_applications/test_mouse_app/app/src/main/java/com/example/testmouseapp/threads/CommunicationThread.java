@@ -55,7 +55,17 @@ public class CommunicationThread extends Thread {
         // Keep listening to the InputStream until an exception occurs.
         while (running) {
             try {
-                // Read from the InputStream.
+                // Read from the InputStream
+                while ( (numBytes = mmInStream.read(mmBuffer)) <= PPMessage.MESSAGE_SIZE) {
+                    if (numBytes == -1) {
+                        //Connection broke so close socket
+                        this.cancel();
+                        return;
+                    } else if (numBytes == 0) break;
+                    //System.out.println("Only read " + numBytes + ", not " + PPMessage.MESSAGE_SIZE);
+                    readMessage(mmBuffer, numBytes);
+                }
+
                 numBytes = mmInStream.read(mmBuffer);
                 if (numBytes < PPMessage.MESSAGE_SIZE) {
                     if (numBytes == -1) {
@@ -66,25 +76,28 @@ public class CommunicationThread extends Thread {
                     //Log.d(TAG, "Only read " + numBytes + ", not " + PPMessage.MESSAGE_SIZE);
                 }
 
-                //Get message from buffer
-                byte what = mmBuffer[0];
-                //Got null message. Discard and continue
-                if (what == PPMessage.Command.NULL) continue;
-
-                String text = new String(mmBuffer, 1, PPMessage.MESSAGE_SIZE-1, StandardCharsets.UTF_8);
-
-                // Send the obtained bytes to the UI activity.
-                Message readMsg = mmHandler.obtainMessage(
-                        BluetoothService.MessageConstants.MESSAGE_READ, -1, what,
-                        text);
-                readMsg.sendToTarget();
-
                 sleep(100);
             } catch (Exception e) {
                 Log.e(TAG, "Input stream was disconnected");
                 break;
             }
         }
+    }
+
+    public void readMessage(byte[] buffer, int numBytes) {
+        //Get message from buffer
+        byte what = buffer[0];
+        //Got null message. Discard and continue
+        if (what == PPMessage.Command.NULL) return;
+
+        String text = new String(buffer, 1, PPMessage.MESSAGE_SIZE-1, StandardCharsets.UTF_8);
+        text.trim();
+
+        // Send the obtained bytes to the UI activity.
+        Message readMsg = mmHandler.obtainMessage(
+                BluetoothService.MessageConstants.MESSAGE_READ, -1, what,
+                text);
+        readMsg.sendToTarget();
     }
 
     // Call this from the main activity to send data to the remote device.
@@ -107,7 +120,7 @@ public class CommunicationThread extends Thread {
 
             mmOutStream.write(b);
             mmOutStream.flush();
-            sleep(150);
+            sleep(10);
 
 
             // Share the sent message with the UI activity.
