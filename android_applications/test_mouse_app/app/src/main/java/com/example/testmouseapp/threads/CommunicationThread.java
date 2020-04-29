@@ -107,7 +107,7 @@ public class CommunicationThread extends Thread {
 
             mmOutStream.write(b);
             mmOutStream.flush();
-            sleep(150);
+            sleep(10);
 
 
             // Share the sent message with the UI activity.

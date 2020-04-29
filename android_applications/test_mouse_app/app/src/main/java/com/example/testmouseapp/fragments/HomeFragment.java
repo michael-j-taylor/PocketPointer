@@ -90,11 +90,6 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         super.onCreate(savedInstanceState);
         time = 1.f/polling_rate;
         calibrater = new Calibrater(100);
-        /*Button calibrate = view.findViewById(R.id.calibrate);
-        calibrate.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                calibrater.calibrating = true;
-            }});*/
 
     }
 
@@ -358,6 +353,8 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         try {
             mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.STRING, "Test message 1 from client"));
             mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.STRING, "Test message 2 from client\n"));
+            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.STRING, "Test message 3 from client"));
+            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.STRING, "Test message 4 from client"));
         } catch (IllegalStateException ignored) { }
     }
 
