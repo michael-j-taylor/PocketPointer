@@ -54,23 +54,19 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     private float ymax = 0;
     private float ymin = 0;
 
-    private MovingAverage movingAverage_X = new MovingAverage(50);
-    private MovingAverage movingAverage_Y = new MovingAverage(50);
+    private MovingAverage movingAverage_X = new MovingAverage(100);
+    private MovingAverage movingAverage_Y = new MovingAverage(100);
 
     //printed accelerometer values
-    private float val_x, val_x_ave, val_x_pre, raw_x;
-    private float val_y;
-    private float val_y_ave;
-    private float val_y_pre;
-    private float magnitude;
-    private int measurementCount = 0;
+    private float accel_x, prev_accel_x, raw_x;
+    private float accel_y, prev_accel_y, raw_y;
     private long startTime = 0;
     private long currentTime;
 
     private final int polling_rate = 60; //in Hz
     private float time;
 
-    private Calibrater calibrater = new Calibrater(1000);
+    private Calibrater calibrater;
 
     private double x_pos = 0;
     private double y_pos = 0;
@@ -79,27 +75,29 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     double x_jerk = 0;
     double y_jerk = 0;
 
+    TextView live_acceleration, max_acceleration, position, threshold_text;
+
     //bluetooth vars
     private BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private final int REQUEST_ENABLE_BT = 3;
     private final int SHOW_DEVICES = 9;
     private final int REQUEST_COARSE_LOCATION = 12;
 
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         time = 1.f/polling_rate;
-
-        //HIDDEN FOR DEMO PURPOSES
-        /*
-        Button calibrate = findViewById(R.id.calibrate);
+        calibrater = new Calibrater(100);
+        /*Button calibrate = view.findViewById(R.id.calibrate);
         calibrate.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                activateCalibrate(v);
-            }
-        });
-         */
+                calibrater.calibrating = true;
+            }});*/
+
+        // Bind to BluetoothService
+        Intent intent = new Intent(getContext(), BluetoothService.class);
+        Objects.requireNonNull(getActivity()).bindService(intent, mm_connection, Context.BIND_AUTO_CREATE);
+
     }
 
     @Override
@@ -162,6 +160,13 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                 connectDevice();
             }
         });
+      
+        Button button_calibrate = view.findViewById(R.id.calibrate);
+        button_calibrate.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                calibrater.calibrating = true;
+            }
+        });
 
         //Register bluetooth button listener
         Button button_disconnect = view.findViewById(R.id.button_disconnectDevice);
@@ -170,7 +175,6 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                 disconnectDevice();
             }
         });
-
         return view;
     }
 
@@ -195,50 +199,40 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     //on sensor value change, display X and Z values
     @Override
     public void onSensorChanged(SensorEvent event) {
-
-        //TODO: move the below objects out of this function - they don't need to be initialized every time the sensor updates
-        // HIDDEN FOR DEMO PURPOSES
-        TextView live_acceleration;
-        //TextView max_acceleration;
-        //TextView position;
         live_acceleration = view.findViewById(R.id.acceleration);
-        //max_acceleration = findViewById(R.id.maximums);
-        //position = findViewById(R.id.position);
-        //TextView threshold_text = findViewById(R.id.threshold);
-
-
         currentTime = Calendar.getInstance().getTimeInMillis();
 
         raw_x = event.values[0];
-        float raw_y = event.values[1];
+        raw_y = event.values[1];
 
-        float raw_magnitude = (float) Math.sqrt(Math.pow(event.values[0], 2) + Math.pow(event.values[1], 2));
-        if (raw_magnitude > calibrater.magnitude_threshold) {
+        //float raw_magnitude = (float) Math.sqrt(Math.pow(event.values[0], 2) + Math.pow(event.values[1], 2));
+        float calibrated_magnitude = (float) Math.sqrt(Math.pow(raw_x - calibrater.x_offset, 2) +
+                Math.pow(raw_y - calibrater.y_offset, 2));
+        if (calibrated_magnitude > calibrater.magnitude_threshold) {
             //Log.d(TAG, "THRESHOLD EXCEEDED");
             movingAverage_X.addToWindow(raw_x);
             movingAverage_Y.addToWindow(raw_y);
-        } else {
-            raw_x = 0;
-            raw_y = 0;
         }
-
-
+        else {
+            movingAverage_X.addToWindow(0.0);
+            movingAverage_Y.addToWindow(0.0);
+        }
         if (calibrater.calibrating) {
-            //live_acceleration.setText("Calibrating");
+            live_acceleration.setText("Calibrating");
             calibrater.calibrate(raw_x, raw_y);
-            x_vel = 0;
-            x_pos = 0;
-            y_vel = 0;
-            y_pos = 0;
-            //calibrateAccelerometer(event);
-
-        } else {  //calibrated, using live data
-
+            if (!calibrater.calibrating) {
+                x_vel = 0;
+                x_pos = 0;
+                y_vel = 0;
+                y_pos = 0;
+                prev_accel_x = 0;
+                prev_accel_y = 0;
+                movingAverage_X.clearWindow();
+                movingAverage_Y.clearWindow();
+            }
+        }
+        else {  //calibrated, using live data
             //threshold_text.setText("Acceleration threshold: " + Float.toString(calibrater.magnitude_threshold));
-
-            //val_x = event.values[0] + x_pad;
-            //val_y = event.values[1] + y_pad;
-
             //intermittently calculate position
             if (currentTime - startTime > time*1000) {
 
@@ -250,30 +244,34 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                 if (event.values[1] < ymin) { ymin = event.values[1];}
 
                 //calculate current value via moving average
-                val_x = movingAverage_X.calculateAverage();
-                val_y = movingAverage_Y.calculateAverage();
-                //Log.d(TAG, event.values[0] + " " + event.values[1]);
-                //Log.d(TAG, val_x + " " + val_y);
+                accel_x = movingAverage_X.calculateAverage() - calibrater.x_offset;
+                accel_y = movingAverage_Y.calculateAverage() - calibrater.y_offset;
+                if (calibrated_magnitude < calibrater.magnitude_threshold)
+                {
+                    accel_x = 0;
+                    accel_y = 0;
+                }
+                //Log.d(TAG, event.values[0] + " " + event.values[1]);//Log.d(TAG, val_x + " " + val_y);
 
-
-
-                magnitude = (float) Math.sqrt(Math.pow(val_x, 2) + Math.pow(val_y, 2));
                 //Log.d(TAG, "raw magnitude: " + raw_magnitude + " vs adjusted " + magnitude + "vs thresh " + calibrater.magnitude_threshold);
 
-                //if (magnitude < calibrater.magnitude_threshold) {
-                //    val_x_ave = 0;
-                //    val_y_ave = 0;
-                //}
-
+                //calculate jerk
+                float jerk_x = (accel_x - prev_accel_x)/time;
+                float jerk_y = (accel_y - prev_accel_y)/time;
                 //calculate velocity
-                x_vel = x_vel + val_x * time;
-                y_vel = y_vel + val_y * time;
+                x_vel = x_vel + accel_x * time + .5 * jerk_x * Math.pow(time, 2);
+                y_vel = y_vel + accel_y * time + .5 * jerk_y * Math.pow(time, 2);
+                //calculate position. Will jerk help? We'll find out. Delta x and y and send to Windows if that is what is needed.
+                double delta_x = x_vel * time + .5 * accel_x * Math.pow(time, 2) + 1/6 * jerk_x * Math.pow(time, 3);
+                double delta_y = y_vel * time + .5 * accel_y * Math.pow(time, 2) + 1/6 * jerk_y * Math.pow(time, 3);
+                x_pos += delta_x;
+                y_pos += delta_y;
+                prev_accel_x = accel_x;
+                prev_accel_y = accel_y;
 
-                //calculate position
-                x_pos = x_pos + x_vel * time + .5 * val_x * time * time;
-                y_pos = y_pos + y_vel * time + .5 * val_y * time * time;
-
-                String data_live = "X: " + x_pos + "\nY: " + y_pos;
+                String data_live = "X: " + String.format("%.3f", x_pos) + "\nY: " + String.format("%.3f", y_pos) + "\nax: " + accel_x +"\nay: " + accel_y +
+                        "\ncx: " + calibrater.x_offset + "\ncy: " + calibrater.y_offset + "\nrx: " + String.format("%.5f", raw_x) +
+                        "\nry: " + String.format("%.5f", raw_y);
                 String data_max = "X Maximum: " +
                         String.format("%.3f", xmax) + "\nX Minimum: " +
                         String.format("%.3f", xmin) + "\n\nY Maximum: " +
@@ -284,7 +282,6 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                 //max_acceleration.setText(data_max);
                 //position.setText("Position: " + String.format("%.3f",x_pos) + ", " + String.format("%.3f",y_pos));
                 startTime = Calendar.getInstance().getTimeInMillis();
-                measurementCount = 0;
             }
             else {
                 //String data_live = "X: " + 0 + "\nY: " + 0;
@@ -294,34 +291,10 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                         String.format("%.3f", ymax) + "\nY Minimum: " +
                         String.format("%.3f", ymin);
 
-                String data_live = "X: " + val_x + "\nY: " + val_y;
-
+                String data_live = "X: " + accel_x + "\nY: " + accel_y;
                 //live_acceleration.setText(data_live);
-                //max_acceleration.setText(data_max);
-
-                /*
-                magnitude = (float) Math.sqrt(Math.pow(val_x, 2) + Math.pow(val_y, 2));
-
-                if (magnitude > calibrater.magnitude_threshold) {
-                    //val_x_ave += val_x;
-                    movingAverage_X.addToWindow(val_x);
-                    //val_y_ave += val_y;
-                    movingAverage_Y.addToWindow(val_y);
-                    //x_jerk = (val_x - val_x_pre)*time;
-                    //y_jerk = (val_y - val_y_pre)*time;
-                }*/
-                measurementCount++;
             }
         }
-       /* try
-        {
-            Thread.sleep(0,1000000/polling_rate);
-        }
-        catch (Exception e)
-        {
-            System.out.print(e);
-        }*/
-
     }
 
     public void activateCalibrate() {
@@ -330,10 +303,8 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         //y_total = 0;
     }
 
-
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
     }
 
     private void connectDevice() {
@@ -421,4 +392,11 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         }
     }
 
+    public void onDestroy() {
+        if (mm_bound) {
+            Objects.requireNonNull(getActivity()).unbindService(mm_connection);
+            mm_bound = false;
+        }
+        super.onDestroy();
+    }
 }
