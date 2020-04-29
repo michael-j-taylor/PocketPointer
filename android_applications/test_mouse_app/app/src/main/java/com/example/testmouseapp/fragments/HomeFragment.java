@@ -10,6 +10,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -83,6 +84,7 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     private BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private final int REQUEST_ENABLE_BT = 3;
     private final int SHOW_DEVICES = 9;
+    private final int REQUEST_FINE_LOCATION = 6;
     private final int REQUEST_COARSE_LOCATION = 12;
 
 
@@ -344,11 +346,19 @@ public class HomeFragment extends Fragment implements SensorEventListener {
             noBtToast.show();
         }
         else {
-            if (ContextCompat.checkSelfPermission(mm_main_activity, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(mm_main_activity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_COARSE_LOCATION);
-            }
-            else {
-                enableBluetooth();
+            Log.d(TAG, "Build version is " + Build.VERSION.SDK_INT);
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P){
+                if (ContextCompat.checkSelfPermission(mm_main_activity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(mm_main_activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_FINE_LOCATION);
+                } else {
+                    enableBluetooth();
+                }
+            } else {
+                if (ContextCompat.checkSelfPermission(mm_main_activity, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(mm_main_activity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_COARSE_LOCATION);
+                } else {
+                    enableBluetooth();
+                }
             }
         }
     }
@@ -397,6 +407,13 @@ public class HomeFragment extends Fragment implements SensorEventListener {
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 Toast.makeText(getContext(), "You must enable Bluetooth for wireless connection.", Toast.LENGTH_LONG).show();
             }
+        }
+        if (requestCode == REQUEST_FINE_LOCATION) {
+            if (ContextCompat.checkSelfPermission(Objects.requireNonNull(getContext()), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                enableBluetooth();
+            } else
+                Toast.makeText(getContext(), "You must enable location permissions to discover devices", Toast.LENGTH_LONG).show();
+
         }
         if (requestCode == REQUEST_COARSE_LOCATION) {
             if (ContextCompat.checkSelfPermission(Objects.requireNonNull(getContext()), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
