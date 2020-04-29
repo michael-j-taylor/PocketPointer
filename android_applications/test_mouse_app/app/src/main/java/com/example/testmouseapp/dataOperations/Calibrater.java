@@ -2,16 +2,9 @@ package com.example.testmouseapp.dataOperations;
 
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import android.util.Log;
-
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 
 //used to calibrate accelerometer
 public class Calibrater {
@@ -56,7 +49,10 @@ public class Calibrater {
             calculateThresholds(10);
             num_readings = 0;
             calibrating = false;
+            x_sum = 0;
+            y_sum = 0;
             Log.d(TAG, "calibrating set to false");
+            Log.d(TAG, "offsets set to " + x_offset + " " + y_offset);
         }
         else {
             addDataPoint(reading_x, reading_y);
@@ -67,7 +63,6 @@ public class Calibrater {
     private void calculateThresholds(int num_edge_readings) {
         Collections.sort(x_readings);
         Collections.sort(y_readings);
-
         if (x_offset > 0) {
             x_threshold = averageTopReadings(x_readings, num_edge_readings);
         }
@@ -81,11 +76,10 @@ public class Calibrater {
         else {
             y_threshold = averageBottomReadings(y_readings, num_edge_readings);
         }
-        x_threshold += 0.2*x_threshold;
-        y_threshold += 0.2*y_threshold;
-
-        magnitude_threshold = (float) Math.sqrt(Math.pow(x_threshold, 2) + Math.pow(y_threshold, 2));
-        Log.d(TAG, "Threshold at: " + magnitude_threshold);
+        x_readings.removeAll(x_readings);
+        y_readings.removeAll(y_readings);
+        magnitude_threshold = (float) Math.sqrt(Math.pow(x_threshold, 2) + Math.pow(y_threshold, 2)) * 1.2f;
+        Log.d(TAG, "Threshold at: " + magnitude_threshold + " " + x_threshold + " " + y_threshold);
     }
 
     private float averageTopReadings(ArrayList<Float> readings, int num_readings) {
