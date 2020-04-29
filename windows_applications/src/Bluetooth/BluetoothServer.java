@@ -1,5 +1,6 @@
 package Bluetooth;
 
+import java.awt.AWTException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -217,41 +218,19 @@ public class BluetoothServer {
                 	int numBytes;
 
                 	//Read from InputStream
-                	numBytes = mm_input_stream.read(buffer);
-                	if (numBytes < PPMessage.MESSAGE_SIZE) {
+                	while ( (numBytes = mm_input_stream.read(buffer)) <= PPMessage.MESSAGE_SIZE) {
                 		if (numBytes == -1) {
                 			//Connection broke so close socket
                 			this.cancel();
                 			return;
-                		}
-                		//System.out.println("Only read " + numBytes + ", not " + PPMessage.MESSAGE_SIZE);
+                		} else if (numBytes == 0) break;
+	            		//System.out.println("Only read " + numBytes + ", not " + PPMessage.MESSAGE_SIZE);
+	                	readMessage(buffer, numBytes);
                 	}
-                	
-                	//Get message from buffer
-                    byte what = buffer[0];
-                    //Got null message. Discard and continue
-                    if (what == PPMessage.Command.NULL) continue;
-                    
-                    String text = new String(buffer, 1, PPMessage.MESSAGE_SIZE-1, StandardCharsets.UTF_8);
-
-                    text = text.trim();
-                	
-                    System.out.println("Got: " + PPMessage.toString(what) + text);
-                    
-                    
-                    PPMessage m = new PPMessage(what, text);
-                    //TODO Do something with message here
-                    if (m.what == PPMessage.Command.KEY_PRESS) {
-                    	MouseRobot.powerPoint(text);
-                    }
-                    
-                    //If message is notification to terminate, do so
-                    if (m.what == PPMessage.Command.END) {
-                    	end();
-                    }
 	                    
-                    sleep(100);
                 }
+            } catch (IOException ignored) {
+            	
             } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("Failure in communication thread:\n" + e + "\n");
@@ -260,6 +239,34 @@ public class BluetoothServer {
                 } catch (IOException ignored) {
                 }
                 System.out.println("Connection closed:");
+            }
+        }
+        
+        public void readMessage(byte[] buffer, int numBytes) {
+        	//Get message from buffer
+            byte what = buffer[0];
+            //Got null message. Discard and return
+            if (what == PPMessage.Command.NULL) return;
+            
+            String text = new String(buffer, 1, PPMessage.MESSAGE_SIZE-1, StandardCharsets.UTF_8);
+            text = text.trim();
+        	
+            System.out.println("Got: " + PPMessage.toString(what) + text);
+            
+            
+            PPMessage m = new PPMessage(what, text);
+            //TODO Do something with message here
+            if (m.what == PPMessage.Command.KEY_PRESS) {
+            	try {
+					MouseRobot.powerPoint(text);
+				} catch (AWTException e) {
+					System.out.println("Failed to execute command");
+				}
+            }
+            
+            //If message is notification to terminate, do so
+            if (m.what == PPMessage.Command.END) {
+            	end();
             }
         }
 
@@ -302,8 +309,7 @@ public class BluetoothServer {
                 mm_connection.close();
                 mm_input_stream.close();
                 mm_output_stream.close();
-            } catch (IOException e1) {
-                e1.printStackTrace();
+            } catch (IOException ignored) {
             }
         }
     }
