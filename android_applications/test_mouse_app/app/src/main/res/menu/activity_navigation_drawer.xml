@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
 
-    <group android:checkableBehavior="single">
+    <group
+        android:id="@+id/fragments"
+        android:checkableBehavior="single">
+
         <item
             android:id="@+id/nav_home"
             android:icon="@drawable/ic_laptop_black_24dp"
-            android:title="@string/menu_home" />
+            android:title="@string/menu_home"/>
+
         <item
             android:id="@+id/nav_presentation"
             android:icon="@drawable/ic_present_to_all_black_24dp"
@@ -16,5 +21,22 @@
             android:id="@+id/nav_touchpad"
             android:icon="@drawable/ic_touch_app_black_24dp"
             android:title="@string/menu_touchpad" />
+
+    </group>
+
+    <group
+        android:id="@+id/quick_settings"
+        android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/nav_switch_mousemode"
+            android:icon="@drawable/touchpad_ic_mouse_blue_24dp"
+            android:title="@string/menu_mousemode"
+            app:actionLayout="@layout/menu_switch_mousemode"/>
+        <item
+            android:id="@+id/nav_switch_override_volume_keys"
+            android:icon="@drawable/menu_ic_volume_override_white_24dp"
+            android:title="@string/menu_overrideVolumeKeys"
+            app:actionLayout="@layout/menu_switch_override_volume_keys" />
     </group>
 </menu>

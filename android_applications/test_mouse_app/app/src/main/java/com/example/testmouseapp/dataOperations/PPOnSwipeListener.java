@@ -1,7 +1,11 @@
 package com.example.testmouseapp.dataOperations;
 
+import android.view.DragEvent;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.View;
+
+import com.example.testmouseapp.dataOperations.pointerTracker;
 
 //extend GestureDetector class so that only the subset of gestures we need can be worked with
 //otherwise we'd need to have a function for EVERY supported gesture
@@ -10,6 +14,7 @@ public class PPOnSwipeListener extends GestureDetector.SimpleOnGestureListener {
 
     //TODO: implement minimum distance for directional swipe
     private static final int FLING_DISTANCE_THRESHOLD = 0;
+
 
     /*
     onFling() override and helper functions

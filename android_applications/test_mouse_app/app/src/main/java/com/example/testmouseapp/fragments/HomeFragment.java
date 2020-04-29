@@ -3,36 +3,36 @@ package com.example.testmouseapp.fragments;
 import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.testmouseapp.R;
 import com.example.testmouseapp.activities.DevicesActivity;
+import com.example.testmouseapp.activities.MainActivity;
 import com.example.testmouseapp.dataOperations.Calibrater;
 import com.example.testmouseapp.dataOperations.MovingAverage;
 import com.example.testmouseapp.dataOperations.PPMessage;
-import com.example.testmouseapp.services.BluetoothService;
+import com.google.android.material.navigation.NavigationView;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -40,7 +40,9 @@ import java.util.Objects;
 
 public class HomeFragment extends Fragment implements SensorEventListener {
 
-    private static final String TAG = "MainActivity";
+    private static final String TAG = "Home Fragment";
+    private MainActivity mm_main_activity;
+    private NavigationView navigationView;
 
     private SensorManager sensorManager;
     private Sensor accelerometer;
@@ -80,54 +82,41 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     private final int REQUEST_ENABLE_BT = 3;
     private final int SHOW_DEVICES = 9;
     private final int REQUEST_COARSE_LOCATION = 12;
-    private BluetoothService mm_service;
-    private boolean mm_bound;
-    private ServiceConnection mm_connection = new ServiceConnection() {
-        // Called when the connection with the service is established
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            // Because we have bound to an explicit
-            // service that is running in our own process, we can
-            // cast its IBinder to a concrete class and directly access it.
-            BluetoothService.LocalBinder binder = (BluetoothService.LocalBinder) service;
-            mm_service = binder.getService();
-            mm_bound = true;
-        }
-
-        // Called when the connection with the service disconnects unexpectedly
-        public void onServiceDisconnected(ComponentName className) {
-            Log.e(TAG, "onServiceDisconnected");
-            mm_bound = false;
-        }
-    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_main);
         time = 1.f/polling_rate;
         calibrater = new Calibrater(100);
         /*Button calibrate = view.findViewById(R.id.calibrate);
         calibrate.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 calibrater.calibrating = true;
-            }
-        });*/
+            }});*/
 
         // Bind to BluetoothService
         Intent intent = new Intent(getContext(), BluetoothService.class);
         Objects.requireNonNull(getActivity()).bindService(intent, mm_connection, Context.BIND_AUTO_CREATE);
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        //show action bar for this fragment
+        ((AppCompatActivity) getActivity()).getSupportActionBar().show();
+
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_home, container, false);
+
+        mm_main_activity = (MainActivity) getActivity();
+        assert mm_main_activity != null;
 
         Log.d(TAG, "onCreate: Initializing accelerometer");
 
         //get sensor manager services
-        sensorManager = (SensorManager) Objects.requireNonNull(getActivity()).getSystemService(Context.SENSOR_SERVICE);
+        sensorManager = (SensorManager) mm_main_activity.getSystemService(Context.SENSOR_SERVICE);
 
         //get sensor (accelerometer in this case)
         assert sensorManager != null;
@@ -138,8 +127,26 @@ public class HomeFragment extends Fragment implements SensorEventListener {
 
         Log.d(TAG, "onCreate: Registered accelerometer listener");
 
+        /*----------VOLATILE NAVIGATION DRAWER BUTTON CREATION----------*/
+        //using the public NavigationView in our MainActivity, we can access navigation drawer elements
+        //and interact with them. This allows the setup of quick settings for each mode of the application
+        NavigationView navigationView = mm_main_activity.navigationView;
+
+        //get all quick setting menu items
+        MenuItem menuItem_mouse_lock = navigationView.getMenu().findItem(R.id.nav_switch_mousemode);
+        MenuItem menuItem_switch_overrideVolumeKeys = navigationView.getMenu().findItem(R.id.nav_switch_override_volume_keys);
+
+        //hide any items not relevant to this fragment
+        menuItem_mouse_lock.setVisible(false);
+        menuItem_switch_overrideVolumeKeys.setVisible(false);
+
+        // show all items relevant to this fragment
+
+        /*----------STANDARD BUTTON CREATION----------*/
+        //TODO: move appropriate buttons to navdrawer
+
         //Register testmessages button listener
-        Button button_testmessages = view.findViewById(R.id.testmessages);
+        Button button_testmessages = view.findViewById(R.id.button_testmessages);
         button_testmessages.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 testMessages();
@@ -147,19 +154,46 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         });
 
         //Register bluetooth button listener
-        Button button_bluetooth = view.findViewById(R.id.bluetooth);
-        button_bluetooth.setOnClickListener(new View.OnClickListener() {
+        Button button_connect = view.findViewById(R.id.button_connectDevice);
+        button_connect.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 connectDevice();
             }
         });
+      
         Button button_calibrate = view.findViewById(R.id.calibrate);
         button_calibrate.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 calibrater.calibrating = true;
             }
         });
+
+        //Register bluetooth button listener
+        Button button_disconnect = view.findViewById(R.id.button_disconnectDevice);
+        button_disconnect.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                disconnectDevice();
+            }
+        });
         return view;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        TextView device_view = view.findViewById(R.id.homeDeviceText);
+        Button button_connect = view.findViewById(R.id.button_connectDevice);
+        Button button_disconnect = view.findViewById(R.id.button_disconnectDevice);
+        if (mm_main_activity.bt_service != null && mm_main_activity.bt_service.isConnected()) {
+            String s = "Connected to " + mm_main_activity.bt_service.device.getName();
+            device_view.setText(s);
+            button_connect.setVisibility(View.INVISIBLE);
+            button_disconnect.setVisibility(View.VISIBLE);
+        } else {
+            device_view.setText(R.string.not_connected);
+            button_connect.setVisibility(View.VISIBLE);
+            button_disconnect.setVisibility(View.INVISIBLE);
+        }
     }
 
     //on sensor value change, display X and Z values
@@ -281,8 +315,8 @@ public class HomeFragment extends Fragment implements SensorEventListener {
             noBtToast.show();
         }
         else {
-            if (ContextCompat.checkSelfPermission(Objects.requireNonNull(getContext()), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(Objects.requireNonNull(getActivity()), new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_COARSE_LOCATION);
+            if (ContextCompat.checkSelfPermission(mm_main_activity, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(mm_main_activity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_COARSE_LOCATION);
             }
             else {
                 enableBluetooth();
@@ -301,11 +335,23 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         }
     }
 
+    private void disconnectDevice() {
+        mm_main_activity.bt_service.closeConnection();
+
+        TextView device_view = view.findViewById(R.id.homeDeviceText);
+        Button button_connect = view.findViewById(R.id.button_connectDevice);
+        Button button_disconnect = view.findViewById(R.id.button_disconnectDevice);
+
+        device_view.setText(R.string.not_connected);
+        button_connect.setVisibility(View.VISIBLE);
+        button_disconnect.setVisibility(View.INVISIBLE);
+    }
+
     private void testMessages() {
         //Send messages to server here
         try {
-            mm_service.writeMessage(new PPMessage(PPMessage.Command.STRING, "Test message 1 from client"));
-            mm_service.writeMessage(new PPMessage(PPMessage.Command.STRING, "Test message 2 from client\n"));
+            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.STRING, "Test message 1 from client"));
+            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.STRING, "Test message 2 from client\n"));
         } catch (IllegalStateException ignored) { }
     }
 
@@ -332,13 +378,13 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         }
         if (requestCode == SHOW_DEVICES) {
             if (resultCode == Activity.RESULT_OK) {
-                BluetoothDevice d = data.getParcelableExtra("device");
-                assert d != null;
+                mm_main_activity.bt_service.device = data.getParcelableExtra("device");
+                assert mm_main_activity.bt_service.device != null;
                 try {
-                    mm_service.openConnection(d);
+                    mm_main_activity.bt_service.openConnection(mm_main_activity.bt_service.device);
                 } catch (IOException e) {
-                    Toast.makeText(getContext(), "Failed to connect to " + d.getName(), Toast.LENGTH_SHORT).show();
-                    Log.d(TAG, "Failed to connect to " + d.getName());
+                    Toast.makeText(getContext(), "Failed to connect to " + mm_main_activity.bt_service.device.getName(), Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "Failed to connect to " + mm_main_activity.bt_service.device.getName());
                     Intent showDevices = new Intent(getContext(), DevicesActivity.class);
                     startActivityForResult(showDevices, SHOW_DEVICES);
                 }
