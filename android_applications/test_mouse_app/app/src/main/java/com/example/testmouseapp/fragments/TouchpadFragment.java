@@ -93,7 +93,7 @@ public class TouchpadFragment extends Fragment {
 
                 Log.d(TAG, "single tap");
                 try {
-                    mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.TAP, "SOMEWHERE"));
+                    mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_LEFT));
                 } catch (IllegalStateException ignored) { }
 
                 return true;

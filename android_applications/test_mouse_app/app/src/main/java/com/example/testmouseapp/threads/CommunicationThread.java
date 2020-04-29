@@ -155,6 +155,4 @@ public class CommunicationThread extends Thread {
             Log.e(TAG, "Could not close the connect socket", e);
         }
     }
-
-
 }
