@@ -38,6 +38,7 @@
     <string name="touchpad_corner_contentdesc">Defines boundaries of touchpad</string>
     <string name="menu_overrideVolumeKeys">Volume override</string>
     <string name="tag_fragment_presentation">presentation</string>
-    <string name="navdrawer_item_button_connect_device">connect device</string>
+    <string name="navdrawer_item_button_connect_device">Connect device</string>
+    <string name="navdrawer_item_button_disconnect_device">Disconnect device</string>
 
 </resources>

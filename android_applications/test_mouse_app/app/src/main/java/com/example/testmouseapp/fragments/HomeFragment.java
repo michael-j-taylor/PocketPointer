@@ -85,6 +85,11 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     private final int REQUEST_FINE_LOCATION = 6;
     private final int REQUEST_COARSE_LOCATION = 12;
 
+    private MenuItem menuItem_button_connect;
+    private MenuItem menuItem_button_disconnect;
+    private Button button_connect;
+    private Button button_disconnect;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -146,8 +151,13 @@ public class HomeFragment extends Fragment implements SensorEventListener {
             }
         });
 
+        menuItem_button_connect = navigationView.getMenu().findItem(R.id.nav_button_connect_device);
+        menuItem_button_disconnect = navigationView.getMenu().findItem(R.id.nav_button_disconnect_device);
+
+        button_connect = menuItem_button_connect.getActionView().findViewById(R.id.menu_button_connect_device);
+        button_disconnect = menuItem_button_disconnect.getActionView().findViewById(R.id.menu_button_disconnect_device);
+
         //Register bluetooth button listener
-        Button button_connect = view.findViewById(R.id.button_connectDevice);
         button_connect.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 connectDevice();
@@ -162,7 +172,6 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         });
 
         //Register bluetooth button listener
-        Button button_disconnect = view.findViewById(R.id.button_disconnectDevice);
         button_disconnect.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 disconnectDevice();
@@ -175,17 +184,16 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     public void onStart() {
         super.onStart();
         TextView device_view = view.findViewById(R.id.homeDeviceText);
-        Button button_connect = view.findViewById(R.id.button_connectDevice);
-        Button button_disconnect = view.findViewById(R.id.button_disconnectDevice);
+
         if (mm_main_activity.bt_service != null && mm_main_activity.bt_service.isConnected()) {
             String s = "Connected to " + mm_main_activity.bt_service.device.getName();
             device_view.setText(s);
-            button_connect.setVisibility(View.INVISIBLE);
-            button_disconnect.setVisibility(View.VISIBLE);
+            menuItem_button_connect.setVisible(false);
+            menuItem_button_disconnect.setVisible(true);
         } else {
             device_view.setText(R.string.not_connected);
-            button_connect.setVisibility(View.VISIBLE);
-            button_disconnect.setVisibility(View.INVISIBLE);
+            menuItem_button_connect.setVisible(true);
+            menuItem_button_disconnect.setVisible(false);
         }
     }
 
@@ -340,12 +348,10 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         mm_main_activity.bt_service.closeConnection();
 
         TextView device_view = view.findViewById(R.id.homeDeviceText);
-        Button button_connect = view.findViewById(R.id.button_connectDevice);
-        Button button_disconnect = view.findViewById(R.id.button_disconnectDevice);
 
         device_view.setText(R.string.not_connected);
-        button_connect.setVisibility(View.VISIBLE);
-        button_disconnect.setVisibility(View.INVISIBLE);
+        menuItem_button_connect.setVisible(true);
+        menuItem_button_disconnect.setVisible(false);
     }
 
     private void testMessages() {
