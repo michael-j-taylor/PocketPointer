@@ -31,12 +31,13 @@ public class MovingAverage {
         if (window.isEmpty()) {
             return 0;
         }
-
         BigDecimal divisor = BigDecimal.valueOf(window.size());
         BigDecimal BGrslt =  sum.divide(divisor, 2, RoundingMode.HALF_UP);
         return BGrslt.floatValue();
     }
 
-
+    public void clearWindow() {
+        window.removeAll(window);
+    }
 
 }
