@@ -22,7 +22,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -33,6 +32,7 @@ import com.example.testmouseapp.activities.MainActivity;
 import com.example.testmouseapp.dataOperations.Calibrater;
 import com.example.testmouseapp.dataOperations.MovingAverage;
 import com.example.testmouseapp.dataOperations.PPMessage;
+import com.example.testmouseapp.services.BluetoothService;
 import com.google.android.material.navigation.NavigationView;
 
 import java.io.IOException;
@@ -95,10 +95,6 @@ public class HomeFragment extends Fragment implements SensorEventListener {
             public void onClick(View v) {
                 calibrater.calibrating = true;
             }});*/
-
-        // Bind to BluetoothService
-        Intent intent = new Intent(getContext(), BluetoothService.class);
-        Objects.requireNonNull(getActivity()).bindService(intent, mm_connection, Context.BIND_AUTO_CREATE);
 
     }
 
@@ -163,7 +159,7 @@ public class HomeFragment extends Fragment implements SensorEventListener {
             }
         });
       
-        Button button_calibrate = view.findViewById(R.id.calibrate);
+        Button button_calibrate = view.findViewById(R.id.button_calibrate);
         button_calibrate.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 calibrater.calibrating = true;
@@ -409,11 +405,4 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         }
     }
 
-    public void onDestroy() {
-        if (mm_bound) {
-            Objects.requireNonNull(getActivity()).unbindService(mm_connection);
-            mm_bound = false;
-        }
-        super.onDestroy();
-    }
 }
