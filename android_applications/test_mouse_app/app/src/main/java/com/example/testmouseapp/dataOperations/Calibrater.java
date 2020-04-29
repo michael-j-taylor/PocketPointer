@@ -88,7 +88,7 @@ public class Calibrater {
 
         float sum = 0;
         for (int i = 0; i < num_readings; i++) {
-            sum += topReadings.indexOf(i);
+            sum += topReadings.get(i);
         }
         return sum/num_readings;
     }
@@ -98,7 +98,7 @@ public class Calibrater {
         List<Float> bottomReadings = readings.subList(0, num_readings);
         float sum = 0;
         for (int i = 0; i < num_readings; i++) {
-            sum += bottomReadings.indexOf(i);
+            sum += bottomReadings.get(i);
         }
         return sum/num_readings;
     }
