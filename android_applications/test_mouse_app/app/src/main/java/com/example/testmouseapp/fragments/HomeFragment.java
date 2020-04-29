@@ -55,8 +55,8 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     private float ymax = 0;
     private float ymin = 0;
 
-    private MovingAverage movingAverage_X = new MovingAverage(100);
-    private MovingAverage movingAverage_Y = new MovingAverage(100);
+    private MovingAverage movingAverage_X;
+    private MovingAverage movingAverage_Y;
 
     //printed accelerometer values
     private float accel_x, prev_accel_x, raw_x;
@@ -65,6 +65,8 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     private long currentTime;
 
     private final int polling_rate = 60; //in Hz
+    private int twa = 0; //ticks without acceleration
+    private float friction_coefficient = .82f;
     private float time;
 
     private Calibrater calibrater;
@@ -94,8 +96,9 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         time = 1.f/polling_rate;
-        calibrater = new Calibrater(100);
-
+        calibrater = new Calibrater(50);
+        movingAverage_X = new MovingAverage(50);
+        movingAverage_Y = new MovingAverage(50);
     }
 
     @Override
@@ -122,7 +125,8 @@ public class HomeFragment extends Fragment implements SensorEventListener {
 
         //setup listener
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);  //can be changed to different delays //could use 1000000/polling_rate
-
+        //mm_main_activity.bt_service.writeMessage(new PPMessage.Command.TAP, )
+        //mm_main_activity.bt_service.writeMessage(new PPMessage.Command.KEY_PRESS, )
         Log.d(TAG, "onCreate: Registered accelerometer listener");
 
         /*----------VOLATILE NAVIGATION DRAWER BUTTON CREATION----------*/
@@ -247,13 +251,26 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                 //calculate current value via moving average
                 accel_x = movingAverage_X.calculateAverage() - calibrater.x_offset;
                 accel_y = movingAverage_Y.calculateAverage() - calibrater.y_offset;
-                if (calibrated_magnitude < calibrater.magnitude_threshold)
+                float average_calibrated_magnitude = (float) Math.sqrt(Math.pow(accel_x, 2) + Math.pow(accel_y, 2));
+                if (average_calibrated_magnitude < calibrater.magnitude_threshold)
                 {
                     accel_x = 0;
                     accel_y = 0;
+                    twa++;
+                    if (twa >= 3) {
+                        Log.d(TAG, "3 or more ticks since acceleration");
+                        x_vel *= friction_coefficient;
+                        y_vel *= friction_coefficient;
+                        float vel_mag = (float) Math.sqrt(x_vel * x_vel + y_vel * y_vel);
+                        if (vel_mag < .0001f) {
+                            x_vel = 0;
+                            y_vel = 0;
+                        }
+                    }
                 }
+                else
+                    twa = 0;
                 //Log.d(TAG, event.values[0] + " " + event.values[1]);//Log.d(TAG, val_x + " " + val_y);
-
                 //Log.d(TAG, "raw magnitude: " + raw_magnitude + " vs adjusted " + magnitude + "vs thresh " + calibrater.magnitude_threshold);
 
                 //calculate jerk
@@ -265,6 +282,7 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                 //calculate position. Will jerk help? We'll find out. Delta x and y and send to Windows if that is what is needed.
                 double delta_x = x_vel * time + .5 * accel_x * Math.pow(time, 2) + 1/6 * jerk_x * Math.pow(time, 3);
                 double delta_y = y_vel * time + .5 * accel_y * Math.pow(time, 2) + 1/6 * jerk_y * Math.pow(time, 3);
+                mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.MOUSE_COORDS, delta_x, delta_y));
                 x_pos += delta_x;
                 y_pos += delta_y;
                 prev_accel_x = accel_x;
@@ -272,36 +290,14 @@ public class HomeFragment extends Fragment implements SensorEventListener {
 
                 String data_live = "X: " + String.format("%.3f", x_pos) + "\nY: " + String.format("%.3f", y_pos) + "\nax: " + accel_x +"\nay: " + accel_y +
                         "\ncx: " + calibrater.x_offset + "\ncy: " + calibrater.y_offset + "\nrx: " + String.format("%.5f", raw_x) +
-                        "\nry: " + String.format("%.5f", raw_y);
-                String data_max = "X Maximum: " +
-                        String.format("%.3f", xmax) + "\nX Minimum: " +
-                        String.format("%.3f", xmin) + "\n\nY Maximum: " +
-                        String.format("%.3f", ymax) + "\nY Minimum: " +
-                        String.format("%.3f", ymin);
+                        "\nry: " + String.format("%.5f", raw_y) + "\nvx: " + String.format("%.5f", x_vel) +
+                        "\nvy: " + String.format("%.5f", y_vel);
 
                 live_acceleration.setText(data_live);
-                //max_acceleration.setText(data_max);
-                //position.setText("Position: " + String.format("%.3f",x_pos) + ", " + String.format("%.3f",y_pos));
                 startTime = Calendar.getInstance().getTimeInMillis();
             }
-            else {
-                //String data_live = "X: " + 0 + "\nY: " + 0;
-                String data_max = "X Maximum: " +
-                        String.format("%.3f", xmax) + "\nX Minimum: " +
-                        String.format("%.3f", xmin) + "\n\nY Maximum: " +
-                        String.format("%.3f", ymax) + "\nY Minimum: " +
-                        String.format("%.3f", ymin);
-
-                String data_live = "X: " + accel_x + "\nY: " + accel_y;
-                //live_acceleration.setText(data_live);
-            }
+        //there was an else statement here, but it was basically empty
         }
-    }
-
-    public void activateCalibrate() {
-        calibrater.calibrating = true;
-        //x_total = 0;
-        //y_total = 0;
     }
 
     @Override
@@ -359,8 +355,6 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         try {
             mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.STRING, "Test message 1 from client"));
             mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.STRING, "Test message 2 from client\n"));
-            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.STRING, "Test message 3 from client"));
-            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.STRING, "Test message 4 from client"));
         } catch (IllegalStateException ignored) { }
     }
 

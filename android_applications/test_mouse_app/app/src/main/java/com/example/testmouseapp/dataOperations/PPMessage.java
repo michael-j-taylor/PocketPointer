@@ -13,8 +13,14 @@ public class PPMessage {
         byte KEY_PRESS = 2;
         byte SWIPE = 3;
         byte STRING = 4;
-        byte TAP = 5;
+        byte BUTTON = 5;
         byte DOUBLETAP = 6;
+    }
+
+    public interface Button {
+        String MOUSE_RIGHT = "mright";
+        String MOUSE_LEFT = "mleft";
+        String MOUSE_MIDDLE = "mmiddle";
     }
 
     public PPMessage(byte what, String text) throws IllegalArgumentException {
@@ -47,8 +53,8 @@ public class PPMessage {
             return "SWIPE - ";
         } else if (what == Command.STRING) {
             return "STRING - ";
-        } else if (what == Command.TAP) {
-            return "TAP - ";
+        } else if (what == Command.BUTTON) {
+            return "MOUSE BUTTON - ";
         } else if (what == Command.DOUBLETAP) {
             return "DOUBLETAP - ";
         }
