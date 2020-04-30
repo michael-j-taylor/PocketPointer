@@ -225,7 +225,7 @@ public class BluetoothServer {
                 			return;
                 		} else if (numBytes == 0) break;
 	            		//System.out.println("Only read " + numBytes + ", not " + PPMessage.MESSAGE_SIZE);
-	                	readMessage(buffer, numBytes);
+	                	readMessage(buffer);
                 	}
 	                    
                 }
@@ -242,7 +242,7 @@ public class BluetoothServer {
             }
         }
         
-        public void readMessage(byte[] buffer, int numBytes) {
+        public void readMessage(byte[] buffer) {
         	//Get message from buffer
             byte what = buffer[0];
             //Got null message. Discard and return
