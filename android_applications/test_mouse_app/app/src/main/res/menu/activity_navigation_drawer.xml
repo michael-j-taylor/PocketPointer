@@ -46,12 +46,12 @@
 
         <item
             android:id="@+id/nav_button_connect_device"
-            android:title="@string/navdrawer_item_button_connect_device"
+            android:title="@string/empty_string"
             app:actionLayout="@layout/menu_button_connect_device"/>
 
         <item
             android:id="@+id/nav_button_disconnect_device"
-            android:title="@string/navdrawer_item_button_disconnect_device"
+            android:title="@string/empty_string"
             app:actionLayout="@layout/menu_button_disconnect_device"/>
     </group>
 </menu>

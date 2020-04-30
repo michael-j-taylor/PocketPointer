@@ -41,4 +41,6 @@
     <string name="navdrawer_item_button_connect_device">Connect device</string>
     <string name="navdrawer_item_button_disconnect_device">Disconnect device</string>
 
+    <string name="empty_string">""</string>
+
 </resources>
