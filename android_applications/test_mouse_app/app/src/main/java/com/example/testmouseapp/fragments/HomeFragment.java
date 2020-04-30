@@ -34,10 +34,8 @@ import com.example.testmouseapp.activities.MainActivity;
 import com.example.testmouseapp.dataOperations.Calibrater;
 import com.example.testmouseapp.dataOperations.MovingAverage;
 import com.example.testmouseapp.dataOperations.PPMessage;
-import com.example.testmouseapp.services.BluetoothService;
 import com.google.android.material.navigation.NavigationView;
 
-import java.io.IOException;
 import java.util.Calendar;
 import java.util.Objects;
 
@@ -89,9 +87,6 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     private final int REQUEST_FINE_LOCATION = 6;
     private final int REQUEST_COARSE_LOCATION = 12;
 
-
-    private MenuItem menuItem_button_connect;
-    private MenuItem menuItem_button_disconnect;
     private Button button_connect;
     private Button button_disconnect;
 
