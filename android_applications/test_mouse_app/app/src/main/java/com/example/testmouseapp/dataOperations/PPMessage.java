@@ -15,6 +15,7 @@ public class PPMessage {
         byte STRING = 4;
         byte BUTTON = 5;
         byte DOUBLETAP = 6;
+        byte SCROLL = 7;
     }
 
     public interface Button {
@@ -65,7 +66,7 @@ public class PPMessage {
 
     public double[] getDoubles() {
         String[] parts = text.split(" ");
-        if (parts[1].charAt(parts[1].length()) == '\n') {
+        if (parts[1].charAt(parts[1].length()-1) == '\n') {
             parts[1] = parts[1].substring(0, parts[1].length()-1);
         }
         double[] results = new double[2];

@@ -1,12 +1,6 @@
 package com.example.testmouseapp.fragments;
 
-import android.Manifest;
-import android.app.Activity;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -21,24 +15,18 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.testmouseapp.R;
-import com.example.testmouseapp.activities.DevicesActivity;
 import com.example.testmouseapp.activities.MainActivity;
 import com.example.testmouseapp.dataOperations.Calibrater;
 import com.example.testmouseapp.dataOperations.MovingAverage;
 import com.example.testmouseapp.dataOperations.PPMessage;
-import com.example.testmouseapp.services.BluetoothService;
 import com.google.android.material.navigation.NavigationView;
 
-import java.io.IOException;
 import java.util.Calendar;
 import java.util.Objects;
 
@@ -79,19 +67,9 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     private double x_vel = 0;
     private double y_vel = 0;
 
-    TextView live_acceleration;
+    private TextView live_acceleration;
 
     private boolean inFocus;
-
-    //bluetooth vars
-    private BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-    private final int REQUEST_ENABLE_BT = 3;
-    private final int SHOW_DEVICES = 9;
-    private final int REQUEST_FINE_LOCATION = 6;
-    private final int REQUEST_COARSE_LOCATION = 12;
-
-    private Button button_connect;
-    private Button button_disconnect;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -108,7 +86,7 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                              Bundle savedInstanceState) {
 
         //show action bar for this fragment
-        ((AppCompatActivity) getActivity()).getSupportActionBar().show();
+        Objects.requireNonNull(((AppCompatActivity) Objects.requireNonNull(getActivity())).getSupportActionBar()).show();
 
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_home, container, false);
@@ -156,16 +134,6 @@ public class HomeFragment extends Fragment implements SensorEventListener {
             }
         });
 
-        button_connect = mm_main_activity.findViewById(R.id.footer_button_connect_device);
-        button_disconnect = mm_main_activity.findViewById(R.id.footer_button_disconnect_device);
-
-        //Register bluetooth button listener
-        button_connect.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                connectDevice();
-            }
-        });
-
         //Register mouse buttons
         Button lmb = view.findViewById(R.id.button_left_mouse);
         lmb.setOnClickListener(new View.OnClickListener() {
@@ -202,12 +170,6 @@ public class HomeFragment extends Fragment implements SensorEventListener {
             }
         });
 
-        //Register bluetooth button listener
-        button_disconnect.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                disconnectDevice();
-            }
-        });
         return view;
     }
 
@@ -220,12 +182,12 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         if (mm_main_activity.bt_service != null && mm_main_activity.bt_service.isConnected()) {
             String s = "Connected to " + mm_main_activity.bt_service.device.getName();
             device_view.setText(s);
-            button_connect.setVisibility(View.INVISIBLE);
-            button_disconnect.setVisibility(View.VISIBLE);
+            mm_main_activity.button_connect.setVisibility(View.INVISIBLE);
+            mm_main_activity.button_disconnect.setVisibility(View.VISIBLE);
         } else {
             device_view.setText(R.string.not_connected);
-            button_connect.setVisibility(View.VISIBLE);
-            button_disconnect.setVisibility(View.INVISIBLE);
+            mm_main_activity.button_connect.setVisibility(View.VISIBLE);
+            mm_main_activity.button_disconnect.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -349,92 +311,11 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         movingAverage_Y.clearWindow();
     }
 
-    private void connectDevice() {
-        if (bluetoothAdapter == null) {
-            String noBtMsg = "Your device does not support Bluetooth. Please connect using a USB cable.";
-
-            Toast noBtToast = Toast.makeText(getContext(), noBtMsg, Toast.LENGTH_LONG);
-            noBtToast.show();
-        }
-        else {
-            Log.d(TAG, "Build version is " + Build.VERSION.SDK_INT);
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P){
-                if (ContextCompat.checkSelfPermission(mm_main_activity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(mm_main_activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_FINE_LOCATION);
-                } else {
-                    enableBluetooth();
-                }
-            } else {
-                if (ContextCompat.checkSelfPermission(mm_main_activity, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(mm_main_activity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_COARSE_LOCATION);
-                } else {
-                    enableBluetooth();
-                }
-            }
-        }
-    }
-
-    private void enableBluetooth() {
-        if (!bluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-        }
-        else {
-            Intent showDevices = new Intent(getContext(), DevicesActivity.class);
-            startActivityForResult(showDevices, SHOW_DEVICES);
-        }
-    }
-
-    private void disconnectDevice() {
-        mm_main_activity.bt_service.closeConnection();
-
-        TextView device_view = view.findViewById(R.id.homeDeviceText);
-
-        device_view.setText(R.string.not_connected);
-        button_connect.setVisibility(View.VISIBLE);
-        button_disconnect.setVisibility(View.INVISIBLE);
-    }
-
     private void testMessages() {
         //Send messages to server here
         try {
             mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.STRING, "Test message 1 from client"));
             mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.STRING, "Test message 2 from client\n"));
         } catch (IllegalStateException ignored) { }
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_ENABLE_BT) {
-            if (resultCode == Activity.RESULT_OK) {
-                //String btEnabledMsg = "Thank you for activating Bluetooth.";
-                //Toast noBtToast = Toast.makeText(getApplicationContext(), btEnabledMsg, Toast.LENGTH_LONG);
-                //noBtToast.show();
-                Intent showDevices = new Intent(getContext(), DevicesActivity.class);
-                startActivityForResult(showDevices, SHOW_DEVICES);
-            } else if (resultCode == Activity.RESULT_CANCELED) {
-                Toast.makeText(getContext(), "You must enable Bluetooth for wireless connection.", Toast.LENGTH_LONG).show();
-            }
-        }
-        if (requestCode == REQUEST_FINE_LOCATION) {
-            if (ContextCompat.checkSelfPermission(Objects.requireNonNull(getContext()), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                enableBluetooth();
-            } else
-                Toast.makeText(getContext(), "You must enable location permissions to discover devices", Toast.LENGTH_LONG).show();
-
-        }
-        if (requestCode == REQUEST_COARSE_LOCATION) {
-            if (ContextCompat.checkSelfPermission(Objects.requireNonNull(getContext()), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                enableBluetooth();
-            } else
-                Toast.makeText(getContext(), "You must enable location permissions to discover devices", Toast.LENGTH_LONG).show();
-
-        }
-        if (requestCode == SHOW_DEVICES) {
-            if (resultCode == Activity.RESULT_OK) {
-                mm_main_activity.bt_service.openConnection((BluetoothDevice) data.getParcelableExtra("device"));
-            }
-        }
     }
 }
