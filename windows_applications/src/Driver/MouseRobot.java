@@ -99,9 +99,9 @@ public class MouseRobot {
     	
     }
     
-    public static void scroll(int wheelAmt) throws AWTException{
+    public static void scroll(double wheelAmt) throws AWTException{
     	Robot robot = new Robot();
-    	robot.mouseWheel(wheelAmt);
+    	robot.mouseWheel((int) Math.round(wheelAmt));
     	
     }
     

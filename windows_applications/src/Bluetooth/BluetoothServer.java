@@ -275,6 +275,17 @@ public class BluetoothServer {
 				}
             }
             
+            //If message is Scrolling
+            if (m.what == PPMessage.Command.SCROLL) {
+            	try {
+            		double [] coords = new double[2];
+            		coords = m.getDoubles();
+            		MouseRobot.scroll(coords[1]);
+            	} catch (AWTException e) {
+            		System.out.println("Failed to execute command");
+            	}
+            }
+            
             //If message is Mouse Coordinates
             if (m.what == PPMessage.Command.MOUSE_COORDS) {
             	double[] coords = new double[2];
