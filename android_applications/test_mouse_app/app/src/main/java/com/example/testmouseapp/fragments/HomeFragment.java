@@ -3,6 +3,7 @@ package com.example.testmouseapp.fragments;
 import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -258,7 +259,7 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                     accel_y = 0;
                     twa++;
                     if (twa >= 3) {
-                        Log.d(TAG, "3 or more ticks since acceleration");
+                        //Log.d(TAG, "3 or more ticks since acceleration");
                         x_vel *= friction_coefficient;
                         y_vel *= friction_coefficient;
                         float vel_mag = (float) Math.sqrt(x_vel * x_vel + y_vel * y_vel);
@@ -390,16 +391,7 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         }
         if (requestCode == SHOW_DEVICES) {
             if (resultCode == Activity.RESULT_OK) {
-                mm_main_activity.bt_service.device = data.getParcelableExtra("device");
-                assert mm_main_activity.bt_service.device != null;
-                try {
-                    mm_main_activity.bt_service.openConnection(mm_main_activity.bt_service.device);
-                } catch (IOException e) {
-                    Toast.makeText(getContext(), "Failed to connect to " + mm_main_activity.bt_service.device.getName(), Toast.LENGTH_SHORT).show();
-                    Log.d(TAG, "Failed to connect to " + mm_main_activity.bt_service.device.getName());
-                    Intent showDevices = new Intent(getContext(), DevicesActivity.class);
-                    startActivityForResult(showDevices, SHOW_DEVICES);
-                }
+                mm_main_activity.bt_service.openConnection((BluetoothDevice) data.getParcelableExtra("device"));
             }
         }
     }
