@@ -44,15 +44,15 @@
             android:id="@+id/footer_button_disconnect_device"
             android:layout_width="wrap_content"
             android:layout_height="35dp"
-            android:background="@drawable/shape_button_rounded_rectangle"
             android:layout_gravity="bottom|center_horizontal"
             android:layout_marginBottom="20dp"
-            android:text="@string/connect_to_device"
-            android:textAllCaps="false"
-            android:textColor="@android:color/white"
+            android:background="@drawable/shape_button_rounded_rectangle"
             android:drawableStart="@drawable/ic_bluetooth_disconnect_white_24dp"
             android:paddingLeft="50dp"
-            android:paddingRight="50dp"/>
+            android:paddingRight="50dp"
+            android:text="@string/disconnect_device"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white" />
 
 
     </com.google.android.material.navigation.NavigationView>
