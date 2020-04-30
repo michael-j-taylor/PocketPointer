@@ -256,6 +256,8 @@ public class BluetoothServer {
             
             PPMessage m = new PPMessage(what, text);
             //TODO Do something with message here
+            
+            //If message is a key press
             if (m.what == PPMessage.Command.KEY_PRESS) {
             	try {
 					MouseRobot.powerPoint(text);
@@ -264,6 +266,27 @@ public class BluetoothServer {
 				}
             }
             
+            //If message is a button press
+            if (m.what == PPMessage.Command.BUTTON) {
+            	try {
+            		MouseRobot.buttonPress(text);
+            	} catch (AWTException e) {
+					System.out.println("Failed to execute command");
+				}
+            }
+            
+            //If message is Mouse Coordinates
+            //Current issues with static and non-static instances
+            if (m.what == PPMessage.Command.MOUSE_COORDS) {
+            	double[] coords = new double[2];
+            	coords = m.getDoubles();
+            	try {
+            		MouseRobot.mouseMovement(coords[0], coords[1]);
+            	} catch (AWTException e) {
+					System.out.println("Failed to execute command");
+				}
+            	
+            }
             //If message is notification to terminate, do so
             if (m.what == PPMessage.Command.END) {
             	end();

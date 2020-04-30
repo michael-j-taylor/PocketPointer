@@ -14,19 +14,16 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 public class CommunicationThread extends Thread {
-    private Object lock;
     private static final String TAG = "CommunicationThread";
     private final BluetoothSocket mmSocket;
     private Handler mmHandler;
     private final InputStream mmInStream;
     private final OutputStream mmOutStream;
     private boolean running = true;
-    private byte[] mmBuffer; // mmBuffer store for the stream
 
-    CommunicationThread(BluetoothSocket socket, Handler handler, Object lock) {
+    CommunicationThread(BluetoothSocket socket, Handler handler) {
         mmSocket = socket;
         mmHandler = handler;
-        this.lock = lock;
 
         InputStream tmpIn = null;
         OutputStream tmpOut = null;
@@ -49,7 +46,8 @@ public class CommunicationThread extends Thread {
     }
 
     public void run() {
-        mmBuffer = new byte[PPMessage.MESSAGE_SIZE];
+        // mmBuffer store for the stream
+        byte[] mmBuffer = new byte[PPMessage.MESSAGE_SIZE];
         int numBytes; // bytes returned from read()
 
         // Keep listening to the InputStream until an exception occurs.
@@ -63,7 +61,7 @@ public class CommunicationThread extends Thread {
                         return;
                     } else if (numBytes == 0) break;
                     //System.out.println("Only read " + numBytes + ", not " + PPMessage.MESSAGE_SIZE);
-                    readMessage(mmBuffer, numBytes);
+                    readMessage(mmBuffer);
                 }
 
                 numBytes = mmInStream.read(mmBuffer);
@@ -84,14 +82,14 @@ public class CommunicationThread extends Thread {
         }
     }
 
-    public void readMessage(byte[] buffer, int numBytes) {
+    private void readMessage(byte[] buffer) {
         //Get message from buffer
         byte what = buffer[0];
         //Got null message. Discard and continue
         if (what == PPMessage.Command.NULL) return;
 
         String text = new String(buffer, 1, PPMessage.MESSAGE_SIZE-1, StandardCharsets.UTF_8);
-        text.trim();
+        text = text.trim();
 
         // Send the obtained bytes to the UI activity.
         Message readMsg = mmHandler.obtainMessage(

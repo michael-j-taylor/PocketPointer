@@ -4,15 +4,17 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 import com.example.testmouseapp.activities.DevicesActivity;
+import com.example.testmouseapp.services.BluetoothService;
 
 import java.io.IOException;
 import java.util.UUID;
 
 public class ConnectThread extends Thread {
-    private final Object lock;
+    private final BluetoothService service;
     private final String TAG = "ConnectThread";
     private final BluetoothSocket mmSocket;
     private final Handler mmHandler;
@@ -20,11 +22,11 @@ public class ConnectThread extends Thread {
     private boolean connected = false;
     private CommunicationThread mmCommunicationThread = null;
 
-    public ConnectThread(BluetoothDevice device, Handler handler, Object lock) {
+    public ConnectThread(BluetoothDevice device, Handler handler, BluetoothService service) {
         // Use a temporary object that is later assigned to mmSocket
         // because mmSocket is final.
         mmHandler = handler;
-        this.lock = lock;
+        this.service = service;
         BluetoothSocket tmp = null;
 
         try {
@@ -47,35 +49,48 @@ public class ConnectThread extends Thread {
                 while (mmCommunicationThread != null && mmCommunicationThread.isRunning()) {
                     sleep(1000);
                 }
+                if (mmCommunicationThread != null && !mmCommunicationThread.isRunning()) return;
                 // Connect to the remote device through the socket. This call blocks until it succeeds or throws an exception.
+                Log.d(TAG, "attempting to connect");
                 mmSocket.connect();
-                //Log.d(TAG, "Connected");
+                Log.d(TAG, "Connected");
                 // The connection attempt succeeded. Perform work associated with the connection in a separate thread.
-                mmCommunicationThread = new CommunicationThread(mmSocket, mmHandler, lock);
-                synchronized (lock) {
-                    //Log.d(TAG, "In sync");
-                    mmCommunicationThread.start();
-                    connected = true;
-                    //Log.d(TAG, "Update");
-                    lock.notify();
-                    //Log.d(TAG, "Notify");
-                }
-                //Log.d(TAG, "Out of sync");
+                mmCommunicationThread = new CommunicationThread(mmSocket, mmHandler);
+                mmCommunicationThread.start();
+
+                successfulConnection();
                 sleep(100);
                 //Log.d(TAG, "End of iteration");
             }
         } catch (Exception connectException) {
             // Unable to connect; close the socket and return
+            failedConnection();
             cancel();
         }
     }
 
-    public CommunicationThread getCommunicationThread() {
-        return mmCommunicationThread;
+    private void successfulConnection() {
+        connected = true;
+        Log.d(TAG, "Update");
+        service.successfulConnection();
+
+        // Share the sent message with the UI activity.
+        Message toastMsg = mmHandler.obtainMessage(
+                BluetoothService.MessageConstants.MESSAGE_TOAST, -1, -1, "Connected to " + service.device.getName());
+        toastMsg.sendToTarget();
     }
 
-    public boolean isRunning() {
-        return running;
+    private void failedConnection() {
+        Log.e(TAG, "Failed to connect to " + service.device.getName());
+
+        // Share the sent message with the UI activity.
+        Message toastMsg = mmHandler.obtainMessage(
+                BluetoothService.MessageConstants.MESSAGE_TOAST, -1, -1, "Failed to connect to " + service.device.getName());
+        toastMsg.sendToTarget();
+    }
+
+    public CommunicationThread getCommunicationThread() {
+        return mmCommunicationThread;
     }
 
     public boolean isConnected() {

@@ -20,11 +20,43 @@
         android:layout_gravity="start"
         android:background="@color/PPdark_grey"
         android:fitsSystemWindows="true"
-        app:headerLayout="@layout/nav_header_navigation"
-        app:menu="@menu/activity_navigation_drawer"
+        app:headerLayout="@layout/navdrawer_header"
+        app:menu="@menu/navdrawer_menu"
         app:itemIconTint="@android:color/white"
         app:itemTextColor="@android:color/white">
 
+        <!--add footer to navdrawer containing our bluetooth buttons -->
+        <Button
+            android:id="@+id/footer_button_connect_device"
+            android:layout_width="wrap_content"
+            android:layout_height="35dp"
+            android:background="@drawable/shape_button_rounded_rectangle"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="20dp"
+            android:text="@string/connect_to_device"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:drawableStart="@drawable/ic_bluetooth_white_24dp"
+            android:paddingLeft="50dp"
+            android:paddingRight="50dp"/>
+
+        <Button
+            android:id="@+id/footer_button_disconnect_device"
+            android:layout_width="wrap_content"
+            android:layout_height="35dp"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/shape_button_rounded_rectangle"
+            android:drawableStart="@drawable/ic_bluetooth_disconnect_white_24dp"
+            android:paddingLeft="50dp"
+            android:paddingRight="50dp"
+            android:text="@string/disconnect_device"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white" />
+
+
     </com.google.android.material.navigation.NavigationView>
+
+
 
 </androidx.drawerlayout.widget.DrawerLayout>

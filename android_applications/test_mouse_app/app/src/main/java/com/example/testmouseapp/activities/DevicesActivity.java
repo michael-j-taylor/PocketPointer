@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.ParcelUuid;
 import android.os.Parcelable;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -107,6 +108,8 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
         availableDevices_recyclerView.setAdapter(mm_available_adapter);
 
         if (bluetoothAdapter.isDiscovering()) bluetoothAdapter.cancelDiscovery();
+
+        Log.d(TAG, "about to start discovery");
         check_devices.start();
     }
 
@@ -116,6 +119,7 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
             String action = intent.getAction();
 
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                Log.d(TAG, "found device");
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 assert device != null;
                 if (mm_scanned_names.indexOf(device.getName()) == -1) {
@@ -185,7 +189,7 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
             if (d.getName().equals(name)) {
                 //Return d to calling activity
                 check_devices.stopChecking();
-                Toast.makeText(this, "You clicked " + d.getName() + ". Device is " + d.toString(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Attempting to connect to " + d.getName(), Toast.LENGTH_SHORT).show();
                 Intent resultIntent = new Intent();
                 resultIntent.putExtra("device", d);
                 setResult(RESULT_OK, resultIntent);
@@ -212,6 +216,7 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
             while (running) {
                 try {
                     bluetoothAdapter.startDiscovery();
+                    Log.d(TAG, "discovery started");
                     sleep(1000);
                     if (!mm_scanned_devices.isEmpty()) {
 

@@ -32,11 +32,12 @@
             android:id="@+id/nav_switch_mousemode"
             android:icon="@drawable/touchpad_ic_mouse_blue_24dp"
             android:title="@string/menu_mousemode"
-            app:actionLayout="@layout/menu_switch_mousemode"/>
+            app:actionLayout="@layout/navdrawer_menu_switch_mousemode"/>
         <item
             android:id="@+id/nav_switch_override_volume_keys"
             android:icon="@drawable/menu_ic_volume_override_white_24dp"
             android:title="@string/menu_overrideVolumeKeys"
-            app:actionLayout="@layout/menu_switch_override_volume_keys" />
+            app:actionLayout="@layout/navdrawer_menu_switch_override_volume_keys" />
     </group>
+
 </menu>
