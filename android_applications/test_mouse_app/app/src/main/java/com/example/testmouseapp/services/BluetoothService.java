@@ -75,8 +75,6 @@ public class BluetoothService extends Service {
         int MESSAGE_READ = 0;
         int MESSAGE_WRITE = 1;
         int MESSAGE_TOAST = 2;
-        int CONNECT_SUCCEEDED = 3;
-        int CONNECT_FAILED = 4;
     }
 
     public class LocalBinder extends Binder {
@@ -95,7 +93,7 @@ public class BluetoothService extends Service {
         //Ensure comm channel has been established before moving on
         device = d;
 
-        mm_connection = new ConnectThread(d, mm_handler, this);
+        mm_connection = new ConnectThread(device, mm_handler, this);
         mm_connection.start();
         Log.d(TAG, "Started connectThread");
     }

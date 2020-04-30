@@ -189,6 +189,7 @@ public class DevicesActivity extends AppCompatActivity implements DevicesRecycle
             if (d.getName().equals(name)) {
                 //Return d to calling activity
                 check_devices.stopChecking();
+                Toast.makeText(this, "Attempting to connect to " + d.getName(), Toast.LENGTH_SHORT).show();
                 Intent resultIntent = new Intent();
                 resultIntent.putExtra("device", d);
                 setResult(RESULT_OK, resultIntent);

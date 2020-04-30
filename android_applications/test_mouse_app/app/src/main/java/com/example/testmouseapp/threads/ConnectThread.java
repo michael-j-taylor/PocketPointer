@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.example.testmouseapp.activities.DevicesActivity;
 import com.example.testmouseapp.services.BluetoothService;
@@ -50,6 +49,7 @@ public class ConnectThread extends Thread {
                 while (mmCommunicationThread != null && mmCommunicationThread.isRunning()) {
                     sleep(1000);
                 }
+                if (mmCommunicationThread != null && !mmCommunicationThread.isRunning()) return;
                 // Connect to the remote device through the socket. This call blocks until it succeeds or throws an exception.
                 Log.d(TAG, "attempting to connect");
                 mmSocket.connect();
