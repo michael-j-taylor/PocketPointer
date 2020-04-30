@@ -48,8 +48,9 @@ public class ConnectThread extends Thread {
                     sleep(1000);
                 }
                 // Connect to the remote device through the socket. This call blocks until it succeeds or throws an exception.
+                Log.d(TAG, "attempting to connect");
                 mmSocket.connect();
-                //Log.d(TAG, "Connected");
+                Log.d(TAG, "Connected");
                 // The connection attempt succeeded. Perform work associated with the connection in a separate thread.
                 mmCommunicationThread = new CommunicationThread(mmSocket, mmHandler, lock);
                 synchronized (lock) {
