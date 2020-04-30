@@ -24,12 +24,13 @@ public class BluetoothService extends Service {
     private CommunicationThread mm_coms = null;
     private ConnectThread mm_connection = null;
     private boolean mm_remote_killed = false;
+    private ServiceCallback mm_callback;
 
     @SuppressLint("HandlerLeak")
     public Handler mm_handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            if (msg.what == BluetoothService.MessageConstants.MESSAGE_READ) {
+            if (msg.what == MessageConstants.MESSAGE_READ) {
                 //Get message parts for log
                 String type = PPMessage.toString((byte) msg.arg2);
                 String text = (String) msg.obj;
@@ -52,7 +53,7 @@ public class BluetoothService extends Service {
                     closeConnection();
                 }
 
-            } else if (msg.what == BluetoothService.MessageConstants.MESSAGE_WRITE) {
+            } else if (msg.what == MessageConstants.MESSAGE_WRITE) {
                 //Get message parts for log
                 String type = PPMessage.toString((byte) msg.arg2);
                 String text = (String) msg.obj;
@@ -61,8 +62,13 @@ public class BluetoothService extends Service {
                 //Toast.makeText(getApplicationContext(), "Sent: " + type + text, Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "Sent: " + type + text);
 
-            } else if (msg.what == BluetoothService.MessageConstants.MESSAGE_TOAST) {
+            } else if (msg.what == MessageConstants.MESSAGE_TOAST) {
                 Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_SHORT).show();
+
+            } else if (msg.what == MessageConstants.CONNECT_SUCCEEDED) {
+                Toast.makeText(getApplicationContext(), "Connected to " + device.getName(), Toast.LENGTH_SHORT).show();
+                mm_coms = mm_connection.getCommunicationThread();
+                mm_callback.updateConnection();
 
             } else {
                 Log.e(TAG, "Received bad message code from handler: " + msg.what);
@@ -75,6 +81,7 @@ public class BluetoothService extends Service {
         int MESSAGE_READ = 0;
         int MESSAGE_WRITE = 1;
         int MESSAGE_TOAST = 2;
+        int CONNECT_SUCCEEDED = 3;
     }
 
     public class LocalBinder extends Binder {
@@ -84,9 +91,17 @@ public class BluetoothService extends Service {
         }
     }
 
+    public interface ServiceCallback {
+        void updateConnection();
+    }
+
     @Override
     public IBinder onBind(Intent intent) {
         return mm_binder;
+    }
+
+    public void setCallbacks(ServiceCallback callbacks) {
+        mm_callback = callbacks;
     }
 
     public void openConnection(BluetoothDevice d) {
@@ -117,11 +132,6 @@ public class BluetoothService extends Service {
             throw new IllegalStateException();
         }
         mm_coms.write(m);
-    }
-
-    public void successfulConnection() {
-        //The connection was successful -> move on
-        mm_coms = mm_connection.getCommunicationThread();
     }
 
     public boolean isConnected() {

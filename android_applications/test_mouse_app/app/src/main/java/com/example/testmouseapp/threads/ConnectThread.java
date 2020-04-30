@@ -70,14 +70,13 @@ public class ConnectThread extends Thread {
     }
 
     private void successfulConnection() {
-        connected = true;
-        Log.d(TAG, "Update");
-        service.successfulConnection();
-
         // Share the sent message with the UI activity.
         Message toastMsg = mmHandler.obtainMessage(
-                BluetoothService.MessageConstants.MESSAGE_TOAST, -1, -1, "Connected to " + service.device.getName());
+                BluetoothService.MessageConstants.CONNECT_SUCCEEDED);
         toastMsg.sendToTarget();
+
+        connected = true;
+        Log.d(TAG, "Update");
     }
 
     private void failedConnection() {

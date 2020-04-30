@@ -25,6 +25,8 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -32,13 +34,16 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.testmouseapp.R;
 import com.example.testmouseapp.dataOperations.KeyPressListener;
+import com.example.testmouseapp.fragments.HomeFragment;
 import com.example.testmouseapp.fragments.PresentationFragment;
+import com.example.testmouseapp.fragments.TouchpadFragment;
 import com.example.testmouseapp.services.BluetoothService;
 import com.google.android.material.navigation.NavigationView;
 
+import java.util.List;
 import java.util.Objects;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements BluetoothService.ServiceCallback{
     private static final String TAG = "Main Activity";
 
     private AppBarConfiguration mAppBarConfiguration;
@@ -73,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
             BluetoothService.LocalBinder binder = (BluetoothService.LocalBinder) service;
             bt_service = binder.getService();
             mm_bound = true;
+            bt_service.setCallbacks(MainActivity.this);
         }
 
         // Called when the connection with the service disconnects unexpectedly
@@ -211,6 +217,37 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void updateConnection() {
+        //Fragment visible_frag = getVisibleFragment();
+        //TextView device_view;
+        //if (visible_frag instanceof HomeFragment) {
+        //    device_view = navigationView.inflate().findViewById(R.id.homeDeviceText);
+        //    Log.d(TAG, "In HomeFragment");
+        //} else if (visible_frag instanceof TouchpadFragment) {
+        //    device_view = findViewById(R.id.touchpadDeviceText);
+        //    Log.d(TAG, "In TouchpadFragment");
+        //} else {
+        //    device_view = findViewById(R.id.presentationDeviceText);
+        //    Log.d(TAG, "In PresentationFragment");
+        //}
+
+        String s = "Connected to " + bt_service.device.getName();
+        //device_view.setText(s);
+        button_connect.setVisibility(View.INVISIBLE);
+        button_disconnect.setVisibility(View.VISIBLE);
+    }
+
+    public Fragment getVisibleFragment(){
+        FragmentManager fragmentManager = MainActivity.this.getSupportFragmentManager();
+        List<Fragment> fragments = fragmentManager.getFragments();
+        for(Fragment fragment : fragments){
+        if(fragment != null && fragment.isVisible())
+            Log.d(TAG, "Visible fragment is " + fragment);
+            return fragment;
+        }
+        return null;
+    }
+
     //Used to override volume keys in PresentationMode fragment
     //this method cannot be used in a fragment, so is overridden here
     @Override
@@ -257,6 +294,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void onDestroy() {
         if (mm_bound) {
+            bt_service.setCallbacks(null);
             unbindService(mm_connection);
             mm_bound = false;
         }

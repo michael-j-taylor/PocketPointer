@@ -58,6 +58,8 @@ public class PPMessage {
             return "MOUSE BUTTON - ";
         } else if (what == Command.DOUBLETAP) {
             return "DOUBLETAP - ";
+        } else if (what == Command.SCROLL) {
+            return "SCROLL - ";
         }
 
         //If what not found

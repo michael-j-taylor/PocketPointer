@@ -167,7 +167,7 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     @Override
     public void onStart() {
         super.onStart();
-        inFocus = true;
+        Log.d(TAG, "HomeFragment onStart");
         TextView device_view = view.findViewById(R.id.homeDeviceText);
 
         if (mm_main_activity.bt_service != null && mm_main_activity.bt_service.isConnected()) {
@@ -184,6 +184,8 @@ public class HomeFragment extends Fragment implements SensorEventListener {
 
     @Override
     public void onResume() {
+        Log.d(TAG, "HomeFragment onResume");
+
         super.onResume();
         inFocus = true;
         calibrater.calibrating = true;
@@ -191,6 +193,8 @@ public class HomeFragment extends Fragment implements SensorEventListener {
 
     @Override
     public void onPause() {
+        Log.d(TAG, "HomeFragment onPause");
+
         super.onPause();
         inFocus = false;
         calibrater.calibrating = false;
