@@ -19,6 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,7 +50,6 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     private SensorManager sensorManager;
     private Sensor accelerometer;
     private View view;
-    private View mainActivityView;
 
     //maximum and minimum acceleration values measured
     private float xmax = 0;
@@ -80,6 +80,8 @@ public class HomeFragment extends Fragment implements SensorEventListener {
 
     TextView live_acceleration;
 
+    private boolean inFocus;
+
     //bluetooth vars
     private BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private final int REQUEST_ENABLE_BT = 3;
@@ -87,6 +89,9 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     private final int REQUEST_FINE_LOCATION = 6;
     private final int REQUEST_COARSE_LOCATION = 12;
 
+
+    private MenuItem menuItem_button_connect;
+    private MenuItem menuItem_button_disconnect;
     private Button button_connect;
     private Button button_disconnect;
 
@@ -152,8 +157,11 @@ public class HomeFragment extends Fragment implements SensorEventListener {
             }
         });
 
-        button_connect = mm_main_activity.findViewById(R.id.footer_button_connect_device);
-        button_disconnect = mm_main_activity.findViewById(R.id.footer_button_disconnect_device);
+        menuItem_button_connect = navigationView.getMenu().findItem(R.id.nav_button_connect_device);
+        menuItem_button_disconnect = navigationView.getMenu().findItem(R.id.nav_button_disconnect_device);
+
+        button_connect = menuItem_button_connect.getActionView().findViewById(R.id.menu_button_connect_device);
+        button_disconnect = menuItem_button_disconnect.getActionView().findViewById(R.id.menu_button_disconnect_device);
 
         //Register bluetooth button listener
         button_connect.setOnClickListener(new View.OnClickListener() {
@@ -176,12 +184,13 @@ public class HomeFragment extends Fragment implements SensorEventListener {
             }
         });
 
-        /*Button mmb = view.findViewById(R.id.button_middle_mouse);
+        //Register scroll wheel and button
+        ScrollView mmb = view.findViewById(R.id.scroll_wheel);
         rmb.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_MIDDLE));
             }
-        });*/
+        });
 
         //Register calibrate button
         Button button_calibrate = view.findViewById(R.id.button_calibrate);
@@ -203,18 +212,33 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     @Override
     public void onStart() {
         super.onStart();
+        inFocus = true;
         TextView device_view = view.findViewById(R.id.homeDeviceText);
 
         if (mm_main_activity.bt_service != null && mm_main_activity.bt_service.isConnected()) {
             String s = "Connected to " + mm_main_activity.bt_service.device.getName();
             device_view.setText(s);
-            button_connect.setVisibility(View.INVISIBLE);
-            button_disconnect.setVisibility(View.VISIBLE);
+            menuItem_button_connect.setVisible(false);
+            menuItem_button_disconnect.setVisible(true);
         } else {
             device_view.setText(R.string.not_connected);
-            button_connect.setVisibility(View.VISIBLE);
-            button_disconnect.setVisibility(View.INVISIBLE);
+            menuItem_button_connect.setVisible(true);
+            menuItem_button_disconnect.setVisible(false);
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        inFocus = true;
+        calibrater.calibrating = true;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        inFocus = false;
+        calibrater.calibrating = false;
     }
 
     //on sensor value change, display X and Z values
@@ -241,21 +265,12 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         if (calibrater.calibrating) {
             live_acceleration.setText("Calibrating");
             calibrater.calibrate(raw_x, raw_y);
-            if (!calibrater.calibrating) {
-                x_vel = 0;
-                x_pos = 0;
-                y_vel = 0;
-                y_pos = 0;
-                prev_accel_x = 0;
-                prev_accel_y = 0;
-                movingAverage_X.clearWindow();
-                movingAverage_Y.clearWindow();
-            }
+            if (!calibrater.calibrating)
+                resetPointer();
         }
-        else {  //calibrated, using live data
-            //threshold_text.setText("Acceleration threshold: " + Float.toString(calibrater.magnitude_threshold));
+        else {  //calibrated using live data
             //intermittently calculate position
-            if (currentTime - startTime > time*1000) {
+            if (currentTime - startTime > time*1000 && inFocus) {
 
                 //set maximum x & y acceleration readings
                 if (event.values[0] > xmax) {xmax = event.values[0];}
@@ -298,7 +313,7 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                 //calculate position. Will jerk help? We'll find out. Delta x and y to send to Windows if that is what is needed.
                 double delta_x = x_vel * time + .5 * accel_x * Math.pow(time, 2) + 1/6 * jerk_x * Math.pow(time, 3);
                 double delta_y = y_vel * time + .5 * accel_y * Math.pow(time, 2) + 1/6 * jerk_y * Math.pow(time, 3);
-                if (mm_main_activity.bt_service != null && mm_main_activity.bt_service.isConnected()) {
+                if (mm_main_activity.bt_service != null && mm_main_activity.bt_service.isConnected() && inFocus) {
                     mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.MOUSE_COORDS, delta_x, delta_y));
                 }
                 x_pos += delta_x;
@@ -319,7 +334,17 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     }
 
     @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+
+    private void resetPointer() {
+        x_vel = 0;
+        x_pos = 0;
+        y_vel = 0;
+        y_pos = 0;
+        prev_accel_x = 0;
+        prev_accel_y = 0;
+        movingAverage_X.clearWindow();
+        movingAverage_Y.clearWindow();
     }
 
     private void connectDevice() {
@@ -364,8 +389,8 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         TextView device_view = view.findViewById(R.id.homeDeviceText);
 
         device_view.setText(R.string.not_connected);
-        button_connect.setVisibility(View.VISIBLE);
-        button_disconnect.setVisibility(View.INVISIBLE);
+        menuItem_button_connect.setVisible(true);
+        menuItem_button_disconnect.setVisible(false);
     }
 
     private void testMessages() {
