@@ -7,6 +7,7 @@
         <item name="colorPrimaryDark">@color/PPdark_grey</item>
         <item name="colorAccent">@android:color/holo_blue_bright</item>
         <item name="colorControlHighlight">@color/colorControlHighlight</item>
+        <item name="android:listDivider">@color/PPlight_grey</item>
     </style>
 
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
