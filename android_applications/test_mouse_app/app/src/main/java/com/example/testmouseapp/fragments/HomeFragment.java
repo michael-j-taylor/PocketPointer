@@ -75,10 +75,8 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     private double y_pos = 0;
     private double x_vel = 0;
     private double y_vel = 0;
-    double x_jerk = 0;
-    double y_jerk = 0;
 
-    TextView live_acceleration, max_acceleration, position, threshold_text;
+    TextView live_acceleration;
 
     //bluetooth vars
     private BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -120,7 +118,6 @@ public class HomeFragment extends Fragment implements SensorEventListener {
 
         //setup listener
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);  //can be changed to different delays //could use 1000000/polling_rate
-        //mm_main_activity.bt_service.writeMessage(new PPMessage.Command.TAP, )
         //mm_main_activity.bt_service.writeMessage(new PPMessage.Command.KEY_PRESS, )
         Log.d(TAG, "onCreate: Registered accelerometer listener");
 
@@ -157,7 +154,29 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                 connectDevice();
             }
         });
-      
+
+        //Register mouse buttons
+        Button lmb = view.findViewById(R.id.button_left_mouse);
+        lmb.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_LEFT));
+            }
+        });
+        Button rmb = view.findViewById(R.id.button_right_mouse);
+        rmb.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_RIGHT));
+            }
+        });
+
+        /*Button mmb = view.findViewById(R.id.button_middle_mouse);
+        rmb.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_MIDDLE));
+            }
+        });*/
+
+        //Register calibrate button
         Button button_calibrate = view.findViewById(R.id.button_calibrate);
         button_calibrate.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -271,7 +290,7 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                 //calculate velocity
                 x_vel = x_vel + accel_x * time + .5 * jerk_x * Math.pow(time, 2);
                 y_vel = y_vel + accel_y * time + .5 * jerk_y * Math.pow(time, 2);
-                //calculate position. Will jerk help? We'll find out. Delta x and y and send to Windows if that is what is needed.
+                //calculate position. Will jerk help? We'll find out. Delta x and y to send to Windows if that is what is needed.
                 double delta_x = x_vel * time + .5 * accel_x * Math.pow(time, 2) + 1/6 * jerk_x * Math.pow(time, 3);
                 double delta_y = y_vel * time + .5 * accel_y * Math.pow(time, 2) + 1/6 * jerk_y * Math.pow(time, 3);
                 mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.MOUSE_COORDS, delta_x, delta_y));
@@ -395,5 +414,4 @@ public class HomeFragment extends Fragment implements SensorEventListener {
             }
         }
     }
-
 }
