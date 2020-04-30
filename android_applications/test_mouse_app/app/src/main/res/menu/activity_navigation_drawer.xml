@@ -40,18 +40,4 @@
             app:actionLayout="@layout/menu_switch_override_volume_keys" />
     </group>
 
-    <group
-        android:id="@+id/connection_buttons"
-        android:checkableBehavior="single">
-
-        <item
-            android:id="@+id/nav_button_connect_device"
-            android:title="@string/navdrawer_item_button_connect_device"
-            app:actionLayout="@layout/menu_button_connect_device"/>
-
-        <item
-            android:id="@+id/nav_button_disconnect_device"
-            android:title="@string/navdrawer_item_button_disconnect_device"
-            app:actionLayout="@layout/menu_button_disconnect_device"/>
-    </group>
 </menu>
