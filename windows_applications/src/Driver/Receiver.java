@@ -88,7 +88,7 @@ public class Receiver extends JPanel
         frame.setSize(800, 600);
         frame.setVisible(true);
         frame.setResizable(false);
-        //frame.getContentPane().setBackground(Color.DARK_GRAY.darker());
+        frame.getContentPane().setBackground(Color.DARK_GRAY.darker());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                     
         
