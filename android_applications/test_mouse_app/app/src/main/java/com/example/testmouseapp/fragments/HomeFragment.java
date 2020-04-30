@@ -5,6 +5,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,6 +16,7 @@ import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
@@ -73,11 +75,12 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         time = 1.f/polling_rate;
-        calibrater = new Calibrater(50);
+        calibrater = new Calibrater(100);
         movingAverage_X = new MovingAverage(50);
         movingAverage_Y = new MovingAverage(50);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -150,6 +153,12 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         scroll_wheel.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_MIDDLE));
+            }
+        });
+        scroll_wheel.setOverScrollMode(View.OVER_SCROLL_ALWAYS);
+        scroll_wheel.setOnScrollChangeListener(new View.OnScrollChangeListener() {
+            public void onScrollChange(View v, int newX, int newY, int oldX, int oldY) {
+                mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.SCROLL, newX - oldX, newY - oldY));
             }
         });
 
