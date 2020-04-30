@@ -3,12 +3,17 @@ package Driver;
 import javax.bluetooth.BluetoothStateException;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 
 import Bluetooth.BluetoothServer;
 import Bluetooth.PPMessage;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.*;
 import java.util.concurrent.TimeoutException;
@@ -83,14 +88,39 @@ public class Receiver extends JPanel
     }
     
     public static void frameSetUp(JFrame frame) {
-    	    	
+    	
+    	JMenuBar bar = new JMenuBar();
+    	JMenu menu = new JMenu("Menu");
+    	JMenuItem conDevNavi = new JMenuItem("Connected Devices");
+    	JMenuItem conNavi = new JMenuItem("Connect to a Device");
+    	JMenuItem exitWindow = new JMenuItem("Exit");
+    	    	    	
     	frame.setTitle("PocketPointer Receiver");
         frame.setSize(800, 600);
         frame.setVisible(true);
         frame.setResizable(false);
         frame.getContentPane().setBackground(Color.DARK_GRAY.darker());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        
+        menu.add(conNavi);
+        menu.add(conDevNavi);
+        menu.addSeparator();
+        menu.add(exitWindow);
+        bar.add(menu);
+        frame.setJMenuBar(bar);
+        
+        exitWindow.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ev) {
+                System.out.println("Exit was pressed");
+            	System.exit(0);
+            }
+        });
+        
                     
         
     }
+
+	
 }
+
+
