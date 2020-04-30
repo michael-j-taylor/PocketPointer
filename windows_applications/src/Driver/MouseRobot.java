@@ -38,6 +38,7 @@ public class MouseRobot {
         powerPoint("B");
         mouseMovement(500, 0);
         buttonPress("mright");
+        scroll(5);
         
         System.out.println("Finished");
     }
@@ -95,6 +96,12 @@ public class MouseRobot {
     		robot.mouseRelease(InputEvent.BUTTON3_DOWN_MASK);
     		System.out.println("Right");
     	}
+    	
+    }
+    
+    public static void scroll(double wheelAmt) throws AWTException{
+    	Robot robot = new Robot();
+    	robot.mouseWheel((int) Math.round(wheelAmt));
     	
     }
     
