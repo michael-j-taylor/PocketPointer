@@ -58,7 +58,6 @@
         android:layout_width="205dp"
         android:layout_height="270dp"
         android:hapticFeedbackEnabled="true"
-        android:text="Button"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/button_right_mouse"
@@ -71,7 +70,6 @@
         android:layout_width="205dp"
         android:layout_height="270dp"
         android:hapticFeedbackEnabled="true"
-        android:text="Button"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -87,13 +85,17 @@
         android:textColor="@color/PPlight_grey"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.544" />
 
     <TextView
         android:id="@+id/maximums"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="@color/PPmedium_grey"
+        android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@+id/acceleration"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -136,20 +138,28 @@
     <ScrollView
         android:layout_width="58dp"
         android:layout_height="148dp"
+        android:background="@color/PPlight_grey"
         android:clickable="true"
+        android:focusable="true"
         android:hapticFeedbackEnabled="true"
         android:overScrollMode="always"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/button_right_mouse"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="@+id/button_left_mouse"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.13999999">
+        app:layout_constraintVertical_bias="0.13999999"
+        tools:visibility="visible">
 
         <LinearLayout
+            android:id="@+id/scroll_wheel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" />
+            android:clickable="true"
+            android:focusable="true"
+            android:orientation="vertical"
+            android:visibility="invisible" />
     </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
