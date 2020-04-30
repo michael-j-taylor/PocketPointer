@@ -3,6 +3,7 @@ package Driver;
 import javax.bluetooth.BluetoothStateException;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -26,8 +27,11 @@ public class Receiver extends JPanel
     public static void main(String args[])
     {
     	
-    	JFrame frame = new JFrame(gc);
-        frameSetUp(frame);
+//    	  JFrame frame = new JFrame(gc);
+        String deviceList[] = {"Alejandro's Device", "Ben's Device", "Ryan's Device", "Taren's Device"};
+//        frameSetUp(frame, deviceList);
+    	FrameWindow frame = new FrameWindow(deviceList);
+        
     	
     	BluetoothServer server = new BluetoothServer();
     	try {
@@ -87,27 +91,28 @@ public class Receiver extends JPanel
     	g.drawString("Hello world", 10, 10);
     }
     
-    public static void frameSetUp(JFrame frame) {
+    public static void frameSetUp(JFrame frame, String[] deviceList) {
     	
     	JMenuBar bar = new JMenuBar();
     	JMenu menu = new JMenu("Menu");
     	JMenuItem conDevNavi = new JMenuItem("Connected Devices");
     	JMenuItem conNavi = new JMenuItem("Connect to a Device");
     	JMenuItem exitWindow = new JMenuItem("Exit");
-    	    	    	
+    	JList listDevices = new JList(deviceList);
+    	
     	frame.setTitle("PocketPointer Receiver");
-        frame.setSize(800, 600);
-        frame.setVisible(true);
+        frame.setSize(600, 450);
         frame.setResizable(false);
         frame.getContentPane().setBackground(Color.DARK_GRAY.darker());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        
+               
         menu.add(conNavi);
         menu.add(conDevNavi);
         menu.addSeparator();
         menu.add(exitWindow);
         bar.add(menu);
         frame.setJMenuBar(bar);
+//        frame.add(listDevices);
         
         exitWindow.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ev) {
@@ -116,8 +121,7 @@ public class Receiver extends JPanel
             }
         });
         
-                    
-        
+        frame.setVisible(true);
     }
 
 	
