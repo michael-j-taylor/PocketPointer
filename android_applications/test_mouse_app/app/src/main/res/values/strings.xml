@@ -32,7 +32,6 @@
     <string name="menu_mousemode">Mouse mode</string>
     <string name="title_activity_touchpad">Touchpad</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="touchpad_bgtext">TOUCHPAD</string>
     <string name="touchpad_corner_contentdesc">Defines boundaries of touchpad</string>
