@@ -66,9 +66,9 @@ public class BluetoothService extends Service {
                 Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_SHORT).show();
 
             } else if (msg.what == MessageConstants.CONNECT_SUCCEEDED) {
-                Toast.makeText(getApplicationContext(), "Connected to " + device.getName(), Toast.LENGTH_SHORT).show();
                 mm_coms = mm_connection.getCommunicationThread();
                 mm_callback.updateConnection();
+                Toast.makeText(getApplicationContext(), "Connected to " + device.getName(), Toast.LENGTH_SHORT).show();
 
             } else {
                 Log.e(TAG, "Received bad message code from handler: " + msg.what);
@@ -135,8 +135,7 @@ public class BluetoothService extends Service {
     }
 
     public boolean isConnected() {
-        if (mm_connection == null) return false;
-        return mm_connection.isConnected();
+        return mm_coms != null;
     }
 
     @Override

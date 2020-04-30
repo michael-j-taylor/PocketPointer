@@ -25,8 +25,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -34,13 +32,10 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.testmouseapp.R;
 import com.example.testmouseapp.dataOperations.KeyPressListener;
-import com.example.testmouseapp.fragments.HomeFragment;
 import com.example.testmouseapp.fragments.PresentationFragment;
-import com.example.testmouseapp.fragments.TouchpadFragment;
 import com.example.testmouseapp.services.BluetoothService;
 import com.google.android.material.navigation.NavigationView;
 
-import java.util.List;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements BluetoothService.ServiceCallback{
@@ -175,9 +170,20 @@ public class MainActivity extends AppCompatActivity implements BluetoothService.
     private void disconnectDevice() {
         bt_service.closeConnection();
 
+        //Identifies current fragment if possible
         TextView device_view = findViewById(R.id.homeDeviceText);
+        if (device_view == null) {
+            device_view = findViewById(R.id.touchpadDeviceText);
+            if (device_view == null) {
+                device_view = findViewById(R.id.presentationDeviceText);
+            }
+        }
 
-        device_view.setText(R.string.not_connected);
+        if ( device_view != null ) {
+            device_view.setText(R.string.not_connected);
+            //Log.d(TAG, "Updated " + device_view + " text");
+        }
+
         button_connect.setVisibility(View.VISIBLE);
         button_disconnect.setVisibility(View.INVISIBLE);
     }
@@ -218,34 +224,22 @@ public class MainActivity extends AppCompatActivity implements BluetoothService.
     }
 
     public void updateConnection() {
-        //Fragment visible_frag = getVisibleFragment();
-        //TextView device_view;
-        //if (visible_frag instanceof HomeFragment) {
-        //    device_view = navigationView.inflate().findViewById(R.id.homeDeviceText);
-        //    Log.d(TAG, "In HomeFragment");
-        //} else if (visible_frag instanceof TouchpadFragment) {
-        //    device_view = findViewById(R.id.touchpadDeviceText);
-        //    Log.d(TAG, "In TouchpadFragment");
-        //} else {
-        //    device_view = findViewById(R.id.presentationDeviceText);
-        //    Log.d(TAG, "In PresentationFragment");
-        //}
+        TextView device_view;
+        if ((device_view = findViewById(R.id.homeDeviceText)) != null ) {
+            Log.d(TAG, "In HomeFragment");
+        } else if ((device_view = findViewById(R.id.touchpadDeviceText)) != null ) {
+            Log.d(TAG, "In TouchpadFragment");
+        } else if ((device_view = findViewById(R.id.presentationDeviceText)) != null ) {
+            Log.d(TAG, "In PresentationFragment");
+        }
 
         String s = "Connected to " + bt_service.device.getName();
-        //device_view.setText(s);
+        if ( device_view != null ) {
+            device_view.setText(s);
+            Log.d(TAG, "Updated " + device_view + " text");
+        }
         button_connect.setVisibility(View.INVISIBLE);
         button_disconnect.setVisibility(View.VISIBLE);
-    }
-
-    public Fragment getVisibleFragment(){
-        FragmentManager fragmentManager = MainActivity.this.getSupportFragmentManager();
-        List<Fragment> fragments = fragmentManager.getFragments();
-        for(Fragment fragment : fragments){
-        if(fragment != null && fragment.isVisible())
-            Log.d(TAG, "Visible fragment is " + fragment);
-            return fragment;
-        }
-        return null;
     }
 
     //Used to override volume keys in PresentationMode fragment
