@@ -9,16 +9,6 @@
     tools:context=".fragments.HomeFragment">
 
     <Button
-        android:id="@+id/button_disconnectDevice"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:text="@string/disconnect_device"
-        app:layout_constraintBottom_toTopOf="@+id/button_calibrate"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Button
         android:id="@+id/button_calibrate"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -33,23 +23,12 @@
 
 
     <Button
-        android:id="@+id/button_connectDevice"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:text="@string/connect_to_device"
-        android:visibility="visible"
-        app:layout_constraintBottom_toTopOf="@+id/button_calibrate"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Button
         android:id="@+id/button_testmessages"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:text="@string/execute"
-        app:layout_constraintBottom_toTopOf="@+id/button_connectDevice"
+        app:layout_constraintBottom_toTopOf="@+id/button_calibrate"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -136,6 +115,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ScrollView
+        android:id="@+id/scroll_wheel"
         android:layout_width="58dp"
         android:layout_height="148dp"
         android:background="@color/PPlight_grey"
@@ -150,16 +130,6 @@
         app:layout_constraintStart_toStartOf="@+id/button_left_mouse"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.13999999"
-        tools:visibility="visible">
-
-        <LinearLayout
-            android:id="@+id/scroll_wheel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:clickable="true"
-            android:focusable="true"
-            android:orientation="vertical"
-            android:visibility="invisible" />
-    </ScrollView>
+        tools:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
