@@ -15,8 +15,6 @@ import com.example.testmouseapp.dataOperations.PPMessage;
 import com.example.testmouseapp.threads.CommunicationThread;
 import com.example.testmouseapp.threads.ConnectThread;
 
-import java.io.IOException;
-
 public class BluetoothService extends Service {
     private static final String TAG = "Bluetooth Service";
     // Binder given to clients
@@ -26,7 +24,6 @@ public class BluetoothService extends Service {
     private CommunicationThread mm_coms = null;
     private ConnectThread mm_connection = null;
     private boolean mm_remote_killed = false;
-    public final Object lock = new Object();
 
     @SuppressLint("HandlerLeak")
     public Handler mm_handler = new Handler() {
@@ -87,42 +84,18 @@ public class BluetoothService extends Service {
         }
     }
 
-
     @Override
     public IBinder onBind(Intent intent) {
         return mm_binder;
     }
 
-    public void openConnection(BluetoothDevice d) throws IOException{
+    public void openConnection(BluetoothDevice d) {
         //Ensure comm channel has been established before moving on
         device = d;
-        synchronized (lock) {
-            mm_connection = new ConnectThread(d, mm_handler, lock);
-            mm_connection.start();
-            Log.d(TAG, "Started connectThread");
 
-            while (mm_connection.isRunning() && !mm_connection.isConnected()) {
-                try {
-                    Log.d(TAG, "Begin wait");
-                    lock.wait(200);
-                    Log.d(TAG, "End wait");
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        Log.d(TAG, "Exit snyc");
-
-        //If the connection was successful, move on
-        if (mm_connection.isConnected()) {
-            mm_coms = mm_connection.getCommunicationThread();
-        } else {
-            //Otherwise, throw error
-            mm_connection.cancel();
-            Toast.makeText(this, "Failed to connect to " + d.getName(), Toast.LENGTH_SHORT).show();
-            Log.e(TAG, "Failed to connect to " + d.getName());
-            throw new IOException();
-        }
+        mm_connection = new ConnectThread(device, mm_handler, this);
+        mm_connection.start();
+        Log.d(TAG, "Started connectThread");
     }
 
     public void closeConnection() {
@@ -144,6 +117,11 @@ public class BluetoothService extends Service {
             throw new IllegalStateException();
         }
         mm_coms.write(m);
+    }
+
+    public void successfulConnection() {
+        //The connection was successful -> move on
+        mm_coms = mm_connection.getCommunicationThread();
     }
 
     public boolean isConnected() {
