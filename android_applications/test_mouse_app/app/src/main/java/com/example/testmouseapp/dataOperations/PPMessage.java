@@ -15,6 +15,7 @@ public class PPMessage {
         byte STRING = 4;
         byte BUTTON = 5;
         byte DOUBLETAP = 6;
+        byte SCROLL = 7;
     }
 
     public interface Button {
