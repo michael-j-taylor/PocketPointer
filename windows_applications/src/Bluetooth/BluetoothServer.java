@@ -225,7 +225,7 @@ public class BluetoothServer {
                 			return;
                 		} else if (numBytes == 0) break;
 	            		//System.out.println("Only read " + numBytes + ", not " + PPMessage.MESSAGE_SIZE);
-	                	readMessage(buffer, numBytes);
+	                	readMessage(buffer);
                 	}
 	                    
                 }
@@ -242,7 +242,7 @@ public class BluetoothServer {
             }
         }
         
-        public void readMessage(byte[] buffer, int numBytes) {
+        public void readMessage(byte[] buffer) {
         	//Get message from buffer
             byte what = buffer[0];
             //Got null message. Discard and return
@@ -256,6 +256,8 @@ public class BluetoothServer {
             
             PPMessage m = new PPMessage(what, text);
             //TODO Do something with message here
+            
+            //If message is a key press
             if (m.what == PPMessage.Command.KEY_PRESS) {
             	try {
 					MouseRobot.powerPoint(text);
@@ -264,6 +266,37 @@ public class BluetoothServer {
 				}
             }
             
+            //If message is a button press
+            if (m.what == PPMessage.Command.BUTTON) {
+            	try {
+            		MouseRobot.buttonPress(text);
+            	} catch (AWTException e) {
+					System.out.println("Failed to execute command");
+				}
+            }
+            
+            //If message is Scrolling
+            if (m.what == PPMessage.Command.SCROLL) {
+            	try {
+            		double [] coords = new double[2];
+            		coords = m.getDoubles();
+            		MouseRobot.scroll(coords[1]);
+            	} catch (AWTException e) {
+            		System.out.println("Failed to execute command");
+            	}
+            }
+            
+            //If message is Mouse Coordinates
+            if (m.what == PPMessage.Command.MOUSE_COORDS) {
+            	double[] coords = new double[2];
+            	coords = m.getDoubles();
+            	try {
+            		MouseRobot.mouseMovement(coords[0], coords[1]);
+            	} catch (AWTException e) {
+					System.out.println("Failed to execute command");
+				}
+            	
+            }
             //If message is notification to terminate, do so
             if (m.what == PPMessage.Command.END) {
             	end();

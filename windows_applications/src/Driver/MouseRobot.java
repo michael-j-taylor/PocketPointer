@@ -1,8 +1,8 @@
 package Driver;
 
-import java.awt.Robot;
-import java.awt.AWTException;
-import java.awt.event.KeyEvent; 
+import java.awt.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.io.*;
 
 public class MouseRobot {
@@ -22,7 +22,7 @@ public class MouseRobot {
   
     	System.out.println("Running");
         // Create an instance of Robot class 
-        Robot robot = new Robot(); 
+        //Robot robot = new Robot(); 
   
         // Press keys using robot. A gap of 
         
@@ -36,6 +36,9 @@ public class MouseRobot {
         powerPoint("LEFT");
         powerPoint("RIGHT");
         powerPoint("B");
+        mouseMovement(500, 0);
+        buttonPress("mright");
+        scroll(5);
         
         System.out.println("Finished");
     }
@@ -58,6 +61,48 @@ public class MouseRobot {
     	}
     	
     	return;
+    }
+    
+    public static void mouseMovement(double x, double y) throws AWTException {
+    	Robot robot = new Robot();
+    	Point mouseLocation = MouseInfo.getPointerInfo().getLocation();
+    	
+    	double mouseX = mouseLocation.getX();
+    	double mouseY = mouseLocation.getY();
+    	int newX, newY;
+    	newX = (int) Math.round(mouseX + x);
+    	newY = (int) Math.round(mouseY + y);
+    	robot.mouseMove(newX, newY);
+    	
+    }
+    
+    public static void buttonPress(String buttonPress) throws AWTException{
+    	Robot robot = new Robot();
+    	
+    	if (buttonPress.equals("mleft")) {
+    		robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+    		robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+    		System.out.println("Left");
+    	}
+    	
+    	else if (buttonPress.equals("mmiddle")) {
+    		robot.mousePress(InputEvent.BUTTON2_DOWN_MASK);
+    		robot.mouseRelease(InputEvent.BUTTON2_DOWN_MASK);
+    		System.out.println("Middle");
+    	}
+    	
+    	else if (buttonPress.equals("mright")) {
+    		robot.mousePress(InputEvent.BUTTON3_DOWN_MASK);
+    		robot.mouseRelease(InputEvent.BUTTON3_DOWN_MASK);
+    		System.out.println("Right");
+    	}
+    	
+    }
+    
+    public static void scroll(double wheelAmt) throws AWTException{
+    	Robot robot = new Robot();
+    	robot.mouseWheel((int) Math.round(wheelAmt));
+    	
     }
     
 }

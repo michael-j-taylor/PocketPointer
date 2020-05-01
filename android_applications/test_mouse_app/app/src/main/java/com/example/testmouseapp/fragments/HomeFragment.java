@@ -1,11 +1,6 @@
 package com.example.testmouseapp.fragments;
 
-import android.Manifest;
-import android.app.Activity;
-import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -18,24 +13,20 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.testmouseapp.R;
-import com.example.testmouseapp.activities.DevicesActivity;
 import com.example.testmouseapp.activities.MainActivity;
 import com.example.testmouseapp.dataOperations.Calibrater;
 import com.example.testmouseapp.dataOperations.MovingAverage;
 import com.example.testmouseapp.dataOperations.PPMessage;
-import com.example.testmouseapp.services.BluetoothService;
 import com.google.android.material.navigation.NavigationView;
 
-import java.io.IOException;
 import java.util.Calendar;
 import java.util.Objects;
 
@@ -75,38 +66,27 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     private double y_pos = 0;
     private double x_vel = 0;
     private double y_vel = 0;
-    double x_jerk = 0;
-    double y_jerk = 0;
 
-    TextView live_acceleration, max_acceleration, position, threshold_text;
+    private TextView live_acceleration;
 
-    //bluetooth vars
-    private BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-    private final int REQUEST_ENABLE_BT = 3;
-    private final int SHOW_DEVICES = 9;
-    private final int REQUEST_FINE_LOCATION = 6;
-    private final int REQUEST_COARSE_LOCATION = 12;
-
-    private MenuItem menuItem_button_connect;
-    private MenuItem menuItem_button_disconnect;
-    private Button button_connect;
-    private Button button_disconnect;
+    private boolean inFocus;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         time = 1.f/polling_rate;
-        calibrater = new Calibrater(50);
+        calibrater = new Calibrater(100);
         movingAverage_X = new MovingAverage(50);
         movingAverage_Y = new MovingAverage(50);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
         //show action bar for this fragment
-        ((AppCompatActivity) getActivity()).getSupportActionBar().show();
+        Objects.requireNonNull(((AppCompatActivity) Objects.requireNonNull(getActivity())).getSupportActionBar()).show();
 
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_home, container, false);
@@ -125,7 +105,6 @@ public class HomeFragment extends Fragment implements SensorEventListener {
 
         //setup listener
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);  //can be changed to different delays //could use 1000000/polling_rate
-        //mm_main_activity.bt_service.writeMessage(new PPMessage.Command.TAP, )
         //mm_main_activity.bt_service.writeMessage(new PPMessage.Command.KEY_PRESS, )
         Log.d(TAG, "onCreate: Registered accelerometer listener");
 
@@ -155,19 +134,35 @@ public class HomeFragment extends Fragment implements SensorEventListener {
             }
         });
 
-        menuItem_button_connect = navigationView.getMenu().findItem(R.id.nav_button_connect_device);
-        menuItem_button_disconnect = navigationView.getMenu().findItem(R.id.nav_button_disconnect_device);
-
-        button_connect = menuItem_button_connect.getActionView().findViewById(R.id.menu_button_connect_device);
-        button_disconnect = menuItem_button_disconnect.getActionView().findViewById(R.id.menu_button_disconnect_device);
-
-        //Register bluetooth button listener
-        button_connect.setOnClickListener(new View.OnClickListener() {
+        //Register mouse buttons
+        Button lmb = view.findViewById(R.id.button_left_mouse);
+        lmb.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                connectDevice();
+                mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_LEFT));
             }
         });
-      
+        Button rmb = view.findViewById(R.id.button_right_mouse);
+        rmb.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_RIGHT));
+            }
+        });
+
+        //Register scroll wheel and button
+        ScrollView scroll_wheel = view.findViewById(R.id.scroll_wheel);
+        scroll_wheel.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_MIDDLE));
+            }
+        });
+        scroll_wheel.setOverScrollMode(View.OVER_SCROLL_ALWAYS);
+        scroll_wheel.setOnScrollChangeListener(new View.OnScrollChangeListener() {
+            public void onScrollChange(View v, int newX, int newY, int oldX, int oldY) {
+                mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.SCROLL, newX - oldX, newY - oldY));
+            }
+        });
+
+        //Register calibrate button
         Button button_calibrate = view.findViewById(R.id.button_calibrate);
         button_calibrate.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -175,12 +170,6 @@ public class HomeFragment extends Fragment implements SensorEventListener {
             }
         });
 
-        //Register bluetooth button listener
-        button_disconnect.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                disconnectDevice();
-            }
-        });
         return view;
     }
 
@@ -192,13 +181,29 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         if (mm_main_activity.bt_service != null && mm_main_activity.bt_service.isConnected()) {
             String s = "Connected to " + mm_main_activity.bt_service.device.getName();
             device_view.setText(s);
-            menuItem_button_connect.setVisible(false);
-            menuItem_button_disconnect.setVisible(true);
+            mm_main_activity.button_connect.setVisibility(View.INVISIBLE);
+            mm_main_activity.button_disconnect.setVisibility(View.VISIBLE);
         } else {
             device_view.setText(R.string.not_connected);
-            menuItem_button_connect.setVisible(true);
-            menuItem_button_disconnect.setVisible(false);
+            mm_main_activity.button_connect.setVisibility(View.VISIBLE);
+            mm_main_activity.button_disconnect.setVisibility(View.INVISIBLE);
         }
+    }
+
+    @Override
+    public void onResume() {
+
+        super.onResume();
+        inFocus = true;
+        calibrater.calibrating = true;
+    }
+
+    @Override
+    public void onPause() {
+
+        super.onPause();
+        inFocus = false;
+        calibrater.calibrating = false;
     }
 
     //on sensor value change, display X and Z values
@@ -225,21 +230,12 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         if (calibrater.calibrating) {
             live_acceleration.setText("Calibrating");
             calibrater.calibrate(raw_x, raw_y);
-            if (!calibrater.calibrating) {
-                x_vel = 0;
-                x_pos = 0;
-                y_vel = 0;
-                y_pos = 0;
-                prev_accel_x = 0;
-                prev_accel_y = 0;
-                movingAverage_X.clearWindow();
-                movingAverage_Y.clearWindow();
-            }
+            if (!calibrater.calibrating)
+                resetPointer();
         }
-        else {  //calibrated, using live data
-            //threshold_text.setText("Acceleration threshold: " + Float.toString(calibrater.magnitude_threshold));
+        else {  //calibrated using live data
             //intermittently calculate position
-            if (currentTime - startTime > time*1000) {
+            if (currentTime - startTime > time*1000 && inFocus) {
 
                 //set maximum x & y acceleration readings
                 if (event.values[0] > xmax) {xmax = event.values[0];}
@@ -258,7 +254,7 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                     accel_y = 0;
                     twa++;
                     if (twa >= 3) {
-                        Log.d(TAG, "3 or more ticks since acceleration");
+                        //Log.d(TAG, "3 or more ticks since acceleration");
                         x_vel *= friction_coefficient;
                         y_vel *= friction_coefficient;
                         float vel_mag = (float) Math.sqrt(x_vel * x_vel + y_vel * y_vel);
@@ -279,10 +275,10 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                 //calculate velocity
                 x_vel = x_vel + accel_x * time + .5 * jerk_x * Math.pow(time, 2);
                 y_vel = y_vel + accel_y * time + .5 * jerk_y * Math.pow(time, 2);
-                //calculate position. Will jerk help? We'll find out. Delta x and y and send to Windows if that is what is needed.
+                //calculate position. Will jerk help? We'll find out. Delta x and y to send to Windows if that is what is needed.
                 double delta_x = x_vel * time + .5 * accel_x * Math.pow(time, 2) + 1/6 * jerk_x * Math.pow(time, 3);
                 double delta_y = y_vel * time + .5 * accel_y * Math.pow(time, 2) + 1/6 * jerk_y * Math.pow(time, 3);
-                if (mm_main_activity.bt_service != null && mm_main_activity.bt_service.isConnected()) {
+                if (mm_main_activity.bt_service != null && mm_main_activity.bt_service.isConnected() && inFocus) {
                     mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.MOUSE_COORDS, delta_x, delta_y));
                 }
                 x_pos += delta_x;
@@ -303,53 +299,17 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     }
 
     @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-    }
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 
-    private void connectDevice() {
-        if (bluetoothAdapter == null) {
-            String noBtMsg = "Your device does not support Bluetooth. Please connect using a USB cable.";
-
-            Toast noBtToast = Toast.makeText(getContext(), noBtMsg, Toast.LENGTH_LONG);
-            noBtToast.show();
-        }
-        else {
-            Log.d(TAG, "Build version is " + Build.VERSION.SDK_INT);
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P){
-                if (ContextCompat.checkSelfPermission(mm_main_activity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(mm_main_activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_FINE_LOCATION);
-                } else {
-                    enableBluetooth();
-                }
-            } else {
-                if (ContextCompat.checkSelfPermission(mm_main_activity, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(mm_main_activity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_COARSE_LOCATION);
-                } else {
-                    enableBluetooth();
-                }
-            }
-        }
-    }
-
-    private void enableBluetooth() {
-        if (!bluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-        }
-        else {
-            Intent showDevices = new Intent(getContext(), DevicesActivity.class);
-            startActivityForResult(showDevices, SHOW_DEVICES);
-        }
-    }
-
-    private void disconnectDevice() {
-        mm_main_activity.bt_service.closeConnection();
-
-        TextView device_view = view.findViewById(R.id.homeDeviceText);
-
-        device_view.setText(R.string.not_connected);
-        menuItem_button_connect.setVisible(true);
-        menuItem_button_disconnect.setVisible(false);
+    private void resetPointer() {
+        x_vel = 0;
+        x_pos = 0;
+        y_vel = 0;
+        y_pos = 0;
+        prev_accel_x = 0;
+        prev_accel_y = 0;
+        movingAverage_X.clearWindow();
+        movingAverage_Y.clearWindow();
     }
 
     private void testMessages() {
@@ -359,49 +319,4 @@ public class HomeFragment extends Fragment implements SensorEventListener {
             mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.STRING, "Test message 2 from client\n"));
         } catch (IllegalStateException ignored) { }
     }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_ENABLE_BT) {
-            if (resultCode == Activity.RESULT_OK) {
-                //String btEnabledMsg = "Thank you for activating Bluetooth.";
-                //Toast noBtToast = Toast.makeText(getApplicationContext(), btEnabledMsg, Toast.LENGTH_LONG);
-                //noBtToast.show();
-                Intent showDevices = new Intent(getContext(), DevicesActivity.class);
-                startActivityForResult(showDevices, SHOW_DEVICES);
-            } else if (resultCode == Activity.RESULT_CANCELED) {
-                Toast.makeText(getContext(), "You must enable Bluetooth for wireless connection.", Toast.LENGTH_LONG).show();
-            }
-        }
-        if (requestCode == REQUEST_FINE_LOCATION) {
-            if (ContextCompat.checkSelfPermission(Objects.requireNonNull(getContext()), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                enableBluetooth();
-            } else
-                Toast.makeText(getContext(), "You must enable location permissions to discover devices", Toast.LENGTH_LONG).show();
-
-        }
-        if (requestCode == REQUEST_COARSE_LOCATION) {
-            if (ContextCompat.checkSelfPermission(Objects.requireNonNull(getContext()), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                enableBluetooth();
-            } else
-                Toast.makeText(getContext(), "You must enable location permissions to discover devices", Toast.LENGTH_LONG).show();
-
-        }
-        if (requestCode == SHOW_DEVICES) {
-            if (resultCode == Activity.RESULT_OK) {
-                mm_main_activity.bt_service.device = data.getParcelableExtra("device");
-                assert mm_main_activity.bt_service.device != null;
-                try {
-                    mm_main_activity.bt_service.openConnection(mm_main_activity.bt_service.device);
-                } catch (IOException e) {
-                    Toast.makeText(getContext(), "Failed to connect to " + mm_main_activity.bt_service.device.getName(), Toast.LENGTH_SHORT).show();
-                    Log.d(TAG, "Failed to connect to " + mm_main_activity.bt_service.device.getName());
-                    Intent showDevices = new Intent(getContext(), DevicesActivity.class);
-                    startActivityForResult(showDevices, SHOW_DEVICES);
-                }
-            }
-        }
-    }
-
 }

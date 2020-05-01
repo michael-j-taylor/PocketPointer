@@ -1,19 +1,30 @@
 package com.example.testmouseapp.activities;
 
+import android.Manifest;
+import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -25,7 +36,9 @@ import com.example.testmouseapp.fragments.PresentationFragment;
 import com.example.testmouseapp.services.BluetoothService;
 import com.google.android.material.navigation.NavigationView;
 
-public class MainActivity extends AppCompatActivity {
+import java.util.Objects;
+
+public class MainActivity extends AppCompatActivity implements BluetoothService.ServiceCallback{
     private static final String TAG = "Main Activity";
 
     private AppBarConfiguration mAppBarConfiguration;
@@ -39,7 +52,16 @@ public class MainActivity extends AppCompatActivity {
         this.listener = keyPressListener;
     }
 
+    public Button button_connect;
+    public Button button_disconnect;
+
     //Bluetooth vars
+    private BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+    private final int REQUEST_ENABLE_BT = 3;
+    private final int SHOW_DEVICES = 9;
+    private final int REQUEST_FINE_LOCATION = 6;
+    private final int REQUEST_COARSE_LOCATION = 12;
+
     public BluetoothService bt_service;
     private boolean mm_bound;
     private ServiceConnection mm_connection = new ServiceConnection() {
@@ -51,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
             BluetoothService.LocalBinder binder = (BluetoothService.LocalBinder) service;
             bt_service = binder.getService();
             mm_bound = true;
+            bt_service.setCallbacks(MainActivity.this);
         }
 
         // Called when the connection with the service disconnects unexpectedly
@@ -89,8 +112,135 @@ public class MainActivity extends AppCompatActivity {
         //this is neccessary to call the fragment function when volume keys are overridden
         PresentationFragment pfragment = new PresentationFragment();
         setKeyPressListener(pfragment);
+
+
+        //Register connect device button listener
+        button_connect = findViewById(R.id.footer_button_connect_device);
+        button_connect.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                connectDevice();
+            }
+        });
+
+        //Register disconnect device button listener
+        button_disconnect = findViewById(R.id.footer_button_disconnect_device);
+        button_disconnect.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                disconnectDevice();
+            }
+        });
     }
 
+    private void connectDevice() {
+        if (bluetoothAdapter == null) {
+            String noBtMsg = "Your device does not support Bluetooth. Please connect using a USB cable.";
+
+            Toast noBtToast = Toast.makeText(this, noBtMsg, Toast.LENGTH_LONG);
+            noBtToast.show();
+        }
+        else {
+            Log.d(TAG, "Build version is " + Build.VERSION.SDK_INT);
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P){
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_FINE_LOCATION);
+                } else {
+                    enableBluetooth();
+                }
+            } else {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_COARSE_LOCATION);
+                } else {
+                    enableBluetooth();
+                }
+            }
+        }
+    }
+
+    private void enableBluetooth() {
+        if (!bluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        }
+        else {
+            Intent showDevices = new Intent(this, DevicesActivity.class);
+            startActivityForResult(showDevices, SHOW_DEVICES);
+        }
+    }
+
+    private void disconnectDevice() {
+        bt_service.closeConnection();
+
+        //Identifies current fragment if possible
+        TextView device_view = findViewById(R.id.homeDeviceText);
+        if (device_view == null) {
+            device_view = findViewById(R.id.touchpadDeviceText);
+            if (device_view == null) {
+                device_view = findViewById(R.id.presentationDeviceText);
+            }
+        }
+
+        if ( device_view != null ) {
+            device_view.setText(R.string.not_connected);
+            //Log.d(TAG, "Updated " + device_view + " text");
+        }
+
+        button_connect.setVisibility(View.VISIBLE);
+        button_disconnect.setVisibility(View.INVISIBLE);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_ENABLE_BT) {
+            if (resultCode == Activity.RESULT_OK) {
+                //String btEnabledMsg = "Thank you for activating Bluetooth.";
+                //Toast noBtToast = Toast.makeText(getApplicationContext(), btEnabledMsg, Toast.LENGTH_LONG);
+                //noBtToast.show();
+                Intent showDevices = new Intent(this, DevicesActivity.class);
+                startActivityForResult(showDevices, SHOW_DEVICES);
+            } else if (resultCode == Activity.RESULT_CANCELED) {
+                Toast.makeText(this, "You must enable Bluetooth for wireless connection.", Toast.LENGTH_LONG).show();
+            }
+        }
+        if (requestCode == REQUEST_FINE_LOCATION) {
+            if (ContextCompat.checkSelfPermission(Objects.requireNonNull(this), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                enableBluetooth();
+            } else
+                Toast.makeText(this, "You must enable location permissions to discover devices", Toast.LENGTH_LONG).show();
+
+        }
+        if (requestCode == REQUEST_COARSE_LOCATION) {
+            if (ContextCompat.checkSelfPermission(Objects.requireNonNull(this), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                enableBluetooth();
+            } else
+                Toast.makeText(this, "You must enable location permissions to discover devices", Toast.LENGTH_LONG).show();
+
+        }
+        if (requestCode == SHOW_DEVICES) {
+            if (resultCode == Activity.RESULT_OK) {
+                bt_service.openConnection((BluetoothDevice) data.getParcelableExtra("device"));
+            }
+        }
+    }
+
+    public void updateConnection() {
+        TextView device_view;
+        if ((device_view = findViewById(R.id.homeDeviceText)) != null ) {
+            Log.d(TAG, "In HomeFragment");
+        } else if ((device_view = findViewById(R.id.touchpadDeviceText)) != null ) {
+            Log.d(TAG, "In TouchpadFragment");
+        } else if ((device_view = findViewById(R.id.presentationDeviceText)) != null ) {
+            Log.d(TAG, "In PresentationFragment");
+        }
+
+        String s = "Connected to " + bt_service.device.getName();
+        if ( device_view != null ) {
+            device_view.setText(s);
+            Log.d(TAG, "Updated " + device_view + " text");
+        }
+        button_connect.setVisibility(View.INVISIBLE);
+        button_disconnect.setVisibility(View.VISIBLE);
+    }
 
     //Used to override volume keys in PresentationMode fragment
     //this method cannot be used in a fragment, so is overridden here
@@ -138,6 +288,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void onDestroy() {
         if (mm_bound) {
+            bt_service.setCallbacks(null);
             unbindService(mm_connection);
             mm_bound = false;
         }

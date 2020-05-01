@@ -15,8 +15,6 @@ import com.example.testmouseapp.dataOperations.PPMessage;
 import com.example.testmouseapp.threads.CommunicationThread;
 import com.example.testmouseapp.threads.ConnectThread;
 
-import java.io.IOException;
-
 public class BluetoothService extends Service {
     private static final String TAG = "Bluetooth Service";
     // Binder given to clients
@@ -26,13 +24,13 @@ public class BluetoothService extends Service {
     private CommunicationThread mm_coms = null;
     private ConnectThread mm_connection = null;
     private boolean mm_remote_killed = false;
-    public final Object lock = new Object();
+    private ServiceCallback mm_callback;
 
     @SuppressLint("HandlerLeak")
     public Handler mm_handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            if (msg.what == BluetoothService.MessageConstants.MESSAGE_READ) {
+            if (msg.what == MessageConstants.MESSAGE_READ) {
                 //Get message parts for log
                 String type = PPMessage.toString((byte) msg.arg2);
                 String text = (String) msg.obj;
@@ -55,7 +53,7 @@ public class BluetoothService extends Service {
                     closeConnection();
                 }
 
-            } else if (msg.what == BluetoothService.MessageConstants.MESSAGE_WRITE) {
+            } else if (msg.what == MessageConstants.MESSAGE_WRITE) {
                 //Get message parts for log
                 String type = PPMessage.toString((byte) msg.arg2);
                 String text = (String) msg.obj;
@@ -64,8 +62,13 @@ public class BluetoothService extends Service {
                 //Toast.makeText(getApplicationContext(), "Sent: " + type + text, Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "Sent: " + type + text);
 
-            } else if (msg.what == BluetoothService.MessageConstants.MESSAGE_TOAST) {
+            } else if (msg.what == MessageConstants.MESSAGE_TOAST) {
                 Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_SHORT).show();
+
+            } else if (msg.what == MessageConstants.CONNECT_SUCCEEDED) {
+                mm_coms = mm_connection.getCommunicationThread();
+                mm_callback.updateConnection();
+                Toast.makeText(getApplicationContext(), "Connected to " + device.getName(), Toast.LENGTH_SHORT).show();
 
             } else {
                 Log.e(TAG, "Received bad message code from handler: " + msg.what);
@@ -78,6 +81,7 @@ public class BluetoothService extends Service {
         int MESSAGE_READ = 0;
         int MESSAGE_WRITE = 1;
         int MESSAGE_TOAST = 2;
+        int CONNECT_SUCCEEDED = 3;
     }
 
     public class LocalBinder extends Binder {
@@ -87,42 +91,26 @@ public class BluetoothService extends Service {
         }
     }
 
+    public interface ServiceCallback {
+        void updateConnection();
+    }
 
     @Override
     public IBinder onBind(Intent intent) {
         return mm_binder;
     }
 
-    public void openConnection(BluetoothDevice d) throws IOException{
+    public void setCallbacks(ServiceCallback callbacks) {
+        mm_callback = callbacks;
+    }
+
+    public void openConnection(BluetoothDevice d) {
         //Ensure comm channel has been established before moving on
         device = d;
-        synchronized (lock) {
-            mm_connection = new ConnectThread(d, mm_handler, lock);
-            mm_connection.start();
-            Log.d(TAG, "Started connectThread");
 
-            while (mm_connection.isRunning() && !mm_connection.isConnected()) {
-                try {
-                    Log.d(TAG, "Begin wait");
-                    lock.wait(200);
-                    Log.d(TAG, "End wait");
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        Log.d(TAG, "Exit snyc");
-
-        //If the connection was successful, move on
-        if (mm_connection.isConnected()) {
-            mm_coms = mm_connection.getCommunicationThread();
-        } else {
-            //Otherwise, throw error
-            mm_connection.cancel();
-            Toast.makeText(this, "Failed to connect to " + d.getName(), Toast.LENGTH_SHORT).show();
-            Log.e(TAG, "Failed to connect to " + d.getName());
-            throw new IOException();
-        }
+        mm_connection = new ConnectThread(device, mm_handler, this);
+        mm_connection.start();
+        Log.d(TAG, "Started connectThread");
     }
 
     public void closeConnection() {
@@ -147,8 +135,7 @@ public class BluetoothService extends Service {
     }
 
     public boolean isConnected() {
-        if (mm_connection == null) return false;
-        return mm_connection.isConnected();
+        return mm_coms != null;
     }
 
     @Override
