@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="Driver.WindowsApp">
-  <grid id="27dc6" binding="conningPanel" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+  <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
       <xy x="20" y="89" width="757" height="449"/>
@@ -10,71 +10,207 @@
     </properties>
     <border type="none"/>
     <children>
-      <grid id="df364" class="javax.swing.JMenuBar" binding="bar" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="a8add" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
-          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="1" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-13421000"/>
-          <foreground color="-9144455"/>
+          <background color="-14737633"/>
         </properties>
         <border type="none"/>
         <children>
-          <grid id="c9532" class="javax.swing.JMenu" binding="menu" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
+          <grid id="39793" layout-manager="GridLayoutManager" row-count="3" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
-              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <background color="-12302519"/>
-              <foreground color="-2894893"/>
-              <horizontalAlignment value="10"/>
-              <text value="Menu"/>
+              <background color="-14737633"/>
             </properties>
             <border type="none"/>
             <children>
-              <component id="8fc0" class="javax.swing.JMenuItem" binding="connedNavi">
-                <constraints/>
+              <grid id="533e7" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                <margin top="0" left="0" bottom="0" right="0"/>
+                <constraints>
+                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
                 <properties>
-                  <background color="-12302519"/>
-                  <foreground color="-2894893"/>
-                  <text value="Connected Devices"/>
+                  <background color="-14737633"/>
+                </properties>
+                <border type="none"/>
+                <children/>
+              </grid>
+              <grid id="1069d" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                <margin top="0" left="0" bottom="0" right="0"/>
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <background color="-14737633"/>
+                </properties>
+                <border type="none"/>
+                <children/>
+              </grid>
+              <grid id="f6f3b" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                <margin top="0" left="0" bottom="0" right="0"/>
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <background color="-14737633"/>
+                </properties>
+                <border type="none"/>
+                <children>
+                  <component id="89645" class="javax.swing.JLabel" binding="connectingOutput">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="2" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <enabled value="true"/>
+                      <foreground color="-1644826"/>
+                      <text value="Connecting..."/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+            </children>
+          </grid>
+          <grid id="c01fb" layout-manager="GridLayoutManager" row-count="3" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <background color="-14737633"/>
+              <enabled value="false"/>
+            </properties>
+            <border type="none"/>
+            <children>
+              <component id="fa8" class="javax.swing.JButton" binding="connectButton" default-binding="true">
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="1" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <background color="-13421000"/>
+                  <enabled value="true"/>
+                  <foreground color="-16733697"/>
+                  <hideActionText value="false"/>
+                  <text value="Connect"/>
                 </properties>
               </component>
-              <component id="f9501" class="javax.swing.JMenuItem" binding="conningNavi">
-                <constraints/>
+              <component id="aa9a1" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="2" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
                 <properties>
-                  <background color="-12302519"/>
-                  <foreground color="-2894893"/>
-                  <text value="Connect to a Device"/>
+                  <foreground color="-1644826"/>
+                  <text value="Connect to Android Application via Bluetooth"/>
                 </properties>
               </component>
-              <component id="1af7d" class="javax.swing.JSeparator">
-                <constraints/>
-                <properties/>
-              </component>
-              <component id="2e306" class="javax.swing.JMenuItem" binding="exitWindow">
-                <constraints/>
+              <grid id="dbeae" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                <margin top="0" left="0" bottom="0" right="0"/>
+                <constraints>
+                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
                 <properties>
-                  <background color="-12302519"/>
-                  <foreground color="-2894893"/>
-                  <text value="Exit"/>
+                  <background color="-14737633"/>
+                  <enabled value="false"/>
                 </properties>
-              </component>
+                <border type="none"/>
+                <children/>
+              </grid>
             </children>
           </grid>
         </children>
       </grid>
-      <component id="93749" class="javax.swing.JButton" binding="connect">
+      <grid id="7d4ef" layout-manager="GridLayoutManager" row-count="4" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
-          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-13421000"/>
-          <foreground color="-1644826"/>
-          <text value="Connect to a Bluetooth Device"/>
+          <background color="-14737633"/>
+          <enabled value="false"/>
         </properties>
-      </component>
+        <border type="none"/>
+        <children>
+          <grid id="51823" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <background color="-14737633"/>
+            </properties>
+            <border type="none"/>
+            <children/>
+          </grid>
+          <grid id="4ba92" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints>
+              <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <background color="-14737633"/>
+            </properties>
+            <border type="none"/>
+            <children/>
+          </grid>
+          <grid id="71ba8" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <background color="-14737633"/>
+              <enabled value="false"/>
+            </properties>
+            <border type="none"/>
+            <children>
+              <component id="b367f" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <foreground color="-1644826"/>
+                  <text value="List of Devices"/>
+                </properties>
+              </component>
+              <component id="26443" class="javax.swing.JList" binding="deviceList">
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="2" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="50"/>
+                  </grid>
+                </constraints>
+                <properties>
+                  <background color="-14737633"/>
+                  <foreground color="-2894893"/>
+                  <model>
+                    <item value="Ben's Phone"/>
+                    <item value="Alejandro's Phone"/>
+                    <item value="Michael's Phone"/>
+                  </model>
+                  <selectionBackground color="-11967840"/>
+                  <selectionForeground color="-1644826"/>
+                </properties>
+              </component>
+            </children>
+          </grid>
+          <grid id="a4d72" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <background color="-14737633"/>
+              <enabled value="false"/>
+            </properties>
+            <border type="none"/>
+            <children/>
+          </grid>
+        </children>
+      </grid>
     </children>
   </grid>
 </form>
