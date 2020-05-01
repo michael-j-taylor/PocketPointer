@@ -27,16 +27,16 @@ public class Receiver extends JPanel
     public static void main(String args[])
     {
 
-  	  JFrame frame = new JFrame(gc);
+  	  /*JFrame frame = new JFrame(gc);
   	  WindowsApp window = new WindowsApp();
   	  frame.setContentPane(window.conningPanel);
   	  frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
   	  frame.pack();
-  	  frame.setVisible(true);
+  	  frame.setVisible(true);*/
         //String deviceList[] = {"Alejandro's Device", "Ben's Device", "Ryan's Device", "Taren's Device"};
 //        frameSetUp(frame, deviceList);
 //    	FrameWindow frame = new FrameWindow(deviceList);
-        
+        WindowsApp window = new WindowsApp();
     	
     	BluetoothServer server = new BluetoothServer();
     	try {
