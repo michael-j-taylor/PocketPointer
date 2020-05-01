@@ -1,8 +1,17 @@
 package Driver;
 
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.GraphicsConfiguration;
+import java.awt.Robot;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
+
 import javax.bluetooth.BluetoothStateException;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -10,14 +19,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 
 import Bluetooth.BluetoothServer;
-import Bluetooth.PPMessage;
-
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.io.*;
-import java.util.concurrent.TimeoutException;
 
 
 public class Receiver extends JPanel
@@ -36,16 +37,16 @@ public class Receiver extends JPanel
         //String deviceList[] = {"Alejandro's Device", "Ben's Device", "Ryan's Device", "Taren's Device"};
 //        frameSetUp(frame, deviceList);
 //    	FrameWindow frame = new FrameWindow(deviceList);
-        WindowsApp window = new WindowsApp();
+        //TODO Uncomment line
+    	WindowsApp window = new WindowsApp();
     	
     	BluetoothServer server = new BluetoothServer();
     	try {
     		server.openServer();
-    		server.simulateMessage();
     	} catch (Exception e) {
-    		if (e.getClass() == TimeoutException.class) {
+    		if (e instanceof TimeoutException) {
     			System.out.println("In receiver, Timed out");
-    		} else if (e.getClass() == BluetoothStateException.class) {
+    		} else if (e instanceof BluetoothStateException) {
     			System.out.println("In receiver, failed to use Bluetooth");
     		} else
     			System.out.println("Exception from openServer:\n" + e + e.getMessage() + "\n");
