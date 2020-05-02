@@ -10,8 +10,8 @@ import javax.microedition.io.StreamConnectionNotifier;
 
 
 public class BluetoothServer {
-	private static final UUID mm_uuid = new UUID("97c337c7a1484a8d9ccfeeb76cb477a0", false);		//UUID of program
-	private static ConnectThread mm_connect_thread;											//Thread to control the connection to client
+	private static final UUID mm_uuid = new UUID("97c337c7a1484a8d9ccfeeb76cb477a0", false);
+	private static ConnectThread mm_connect_thread;
     private static boolean mm_connected = false;
     private WatchDiscoverability mm_watcher;
 	

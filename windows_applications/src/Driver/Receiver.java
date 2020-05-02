@@ -38,12 +38,10 @@ public class Receiver extends JPanel
     	try {
     		server.openServer();
     	} catch (Exception e) {
-    		if (e instanceof TimeoutException) {
-    			System.out.println("In receiver, Timed out");
-    		} else if (e instanceof BluetoothStateException) {
-    			System.out.println("In receiver, failed to use Bluetooth");
-    		} else
-    			System.out.println("Exception from openServer:\n" + e + e.getMessage() + "\n");
+            if (e instanceof BluetoothStateException) {
+                System.out.println("In receiver, failed to use Bluetooth");
+            } else
+                System.out.println("Exception from openServer:\n" + e + e.getMessage() + "\n");
     	}
         
         //TODO: initialize components. pass frame to method
