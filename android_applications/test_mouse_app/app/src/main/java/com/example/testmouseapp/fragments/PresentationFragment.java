@@ -55,9 +55,13 @@ public class PresentationFragment extends Fragment implements KeyPressListener {
         //get all quick setting menu items
         MenuItem menuItem_mouse_lock = navigationView.getMenu().findItem(R.id.nav_switch_mousemode);
         MenuItem menuItem_switch_override_volume_keys = navigationView.getMenu().findItem(R.id.nav_switch_override_volume_keys);
+        MenuItem menuItem_item_calibrate = navigationView.getMenu().findItem(R.id.nav_item_calibrate);
+        MenuItem menuItem_progressbar_calibrating = navigationView.getMenu().findItem(R.id.nav_progressbar_calibrate);
 
         //hide any items not relevant to this fragment
         menuItem_mouse_lock.setVisible(false);
+        menuItem_item_calibrate.setVisible(false);
+        menuItem_progressbar_calibrating.setVisible(false);
 
         // show all items relevant to this fragment
         menuItem_switch_override_volume_keys.setVisible(true);

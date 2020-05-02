@@ -81,6 +81,7 @@ class CommunicationThread extends Thread {
         if (m.what == PPMessage.Command.KEY_PRESS) {
         	//If message is a key press
         	try {
+        	    //calls powerPoint in MouseRobot and sends the text command
 				MouseRobot.powerPoint(m.text);
 			} catch (AWTException e) {
 				System.out.println("Failed to execute command");
@@ -89,6 +90,7 @@ class CommunicationThread extends Thread {
         } else if (m.what == PPMessage.Command.BUTTON) {
         	//If message is a button press
         	try {
+        	    //calls buttonPress in MouseRobot and sends the text command
         		MouseRobot.buttonPress(m.text);
         	} catch (AWTException e) {
 				System.out.println("Failed to execute command");
@@ -99,6 +101,7 @@ class CommunicationThread extends Thread {
         	try {
         		double [] coords;
         		coords = m.getDoubles();
+        		//calls scroll in MouseRobot and sends the amout of scolls
         		MouseRobot.scroll(coords[1]);
         	} catch (AWTException e) {
         		System.out.println("Failed to execute command");
@@ -109,11 +112,27 @@ class CommunicationThread extends Thread {
         	double[] coords;
         	coords = m.getDoubles();
         	try {
+        	    //calls mouseMovement in MouseRobot and sends x and y coordinates
         		MouseRobot.mouseMovement(coords[0], coords[1]);
         	} catch (AWTException e) {
 				System.out.println("Failed to execute command");
 			}
-        	
+        } else if (m.what == PPMessage.Command.SWIPE) {
+            //If message is a swipe
+            try {
+                //calls swipe in MouseRobot
+                MouseRobot.swipe(m.text);
+            } catch (AWTException e) {
+                System.out.println("Failed to execute command");
+            }
+        } else if (m.what == PPMessage.Command.DOUBLETAP) {
+            //If message is a double tap
+            try {
+                //calls doubleTap() in MouseRobot
+                MouseRobot.doubleTap();
+            } catch (AWTException e) {
+                System.out.println("Failed to execute command");
+            }
         } else if (m.what == PPMessage.Command.END) {
         	//If message is notification to terminate, do so
         	mm_server.end();
