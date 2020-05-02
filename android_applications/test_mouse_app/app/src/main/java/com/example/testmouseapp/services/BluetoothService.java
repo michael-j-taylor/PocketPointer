@@ -60,7 +60,8 @@ public class BluetoothService extends Service {
 
                 //Log message
                 //Toast.makeText(getApplicationContext(), "Sent: " + type + text, Toast.LENGTH_SHORT).show();
-                Log.d(TAG, "Sent: " + type + text);
+                if (msg.arg2 != PPMessage.Command.MOUSE_COORDS)
+                    Log.d(TAG, "Sent: " + type + text);
 
             } else if (msg.what == MessageConstants.MESSAGE_TOAST) {
                 Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_SHORT).show();
