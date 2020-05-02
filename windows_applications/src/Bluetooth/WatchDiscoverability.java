@@ -16,7 +16,6 @@ class WatchDiscoverability extends Thread {
 		System.out.println("Start watcher thread");
 		try {
         	while (mm_running) {
-        		System.out.println("Watch loop - " + LocalDevice.getLocalDevice().getDiscoverable() + ", " + DiscoveryAgent.LIAC);
         		//If discoverability reverts to NOT_DISCOVERABLE after 1 minute before connecting, shut down server
         		if (LocalDevice.getLocalDevice().getDiscoverable() == DiscoveryAgent.NOT_DISCOVERABLE) {
         			if (!mm_server.isConnected()) {
