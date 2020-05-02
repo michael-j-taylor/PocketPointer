@@ -59,8 +59,7 @@ public class MouseRobot {
     		//This is for the blank screen
     		robot.keyPress(KeyEvent.VK_B);
     	}
-    	
-    	return;
+
     }
     
     public static void mouseMovement(double x, double y) throws AWTException {
@@ -104,5 +103,27 @@ public class MouseRobot {
     	robot.mouseWheel((int) Math.round(wheelAmt));
     	
     }
-    
+
+    public static void doubleTap() throws AWTException{
+		Robot robot = new Robot();
+	}
+
+	public static void swipe(String swipeInput) throws AWTException{
+		Robot robot = new Robot();
+
+		if (swipeInput.equals("RIGHT")){
+			robot.keyPress(KeyEvent.VK_CONTROL);
+			robot.keyPress(KeyEvent.VK_PAGE_DOWN);
+			robot.keyRelease(KeyEvent.VK_CONTROL);
+			robot.keyRelease(KeyEvent.VK_PAGE_DOWN);
+		}
+
+		else if (swipeInput.equals("LEFT")){
+			robot.keyPress(KeyEvent.VK_CONTROL);
+			robot.keyPress(KeyEvent.VK_PAGE_UP);
+			robot.keyRelease(KeyEvent.VK_CONTROL);
+			robot.keyRelease(KeyEvent.VK_PAGE_UP);
+		}
+
+    }
 }
