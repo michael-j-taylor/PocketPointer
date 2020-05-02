@@ -56,6 +56,8 @@ class ConnectThread extends Thread {
                 return;
             }
         }
+        
+    	System.out.println("Stop connect thread");
     }
 	
 	private void successfulConnection() {
@@ -81,7 +83,6 @@ class ConnectThread extends Thread {
 	}
 
     public void end() {
-    	System.out.println("Stop connect thread");
         running = false;
         
         if (mm_communication_thread != null) {

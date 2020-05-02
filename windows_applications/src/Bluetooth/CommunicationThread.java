@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import javax.bluetooth.BluetoothStateException;
 
 import Driver.MouseRobot;
 
@@ -59,6 +60,8 @@ class CommunicationThread extends Thread {
             System.out.println("Failure in communication thread:\n" + e + "\n");
             mm_server.end();
         }
+        
+    	System.out.println("Stop communication thread");
     }
     
     private void readMessage(byte[] buffer) {
@@ -114,6 +117,10 @@ class CommunicationThread extends Thread {
         } else if (m.what == PPMessage.Command.END) {
         	//If message is notification to terminate, do so
         	mm_server.end();
+        	try {
+				mm_server.restartServer();
+			} catch (BluetoothStateException ignored) {
+			}
         }
     }
 
@@ -150,7 +157,6 @@ class CommunicationThread extends Thread {
     }
     
     public void end() {
-    	System.out.println("Stop communication thread");
         mm_running = false;
         
         try {

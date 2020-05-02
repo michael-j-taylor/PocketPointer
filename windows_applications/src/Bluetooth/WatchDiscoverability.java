@@ -13,8 +13,10 @@ class WatchDiscoverability extends Thread {
 	}
 	
 	public void run() {
+		System.out.println("Start watcher thread");
 		try {
         	while (mm_running) {
+        		System.out.println("Watch loop - " + LocalDevice.getLocalDevice().getDiscoverable() + ", " + DiscoveryAgent.LIAC);
         		//If discoverability reverts to NOT_DISCOVERABLE after 1 minute before connecting, shut down server
         		if (LocalDevice.getLocalDevice().getDiscoverable() == DiscoveryAgent.NOT_DISCOVERABLE) {
         			if (!mm_server.isConnected()) {
@@ -27,10 +29,11 @@ class WatchDiscoverability extends Thread {
 		} catch (BluetoothStateException e) {
 			System.out.println("Warning: Bluetooth is not on. Cannot check discoverability.");
 		}
+		
+		System.out.println("Stop watcher thread");
 	}
 	
 	public void cancel() {
-    	System.out.println("Stop watcher thread");
 		mm_running = false;
 	}
 }
