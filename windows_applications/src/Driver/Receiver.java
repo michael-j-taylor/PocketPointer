@@ -37,7 +37,7 @@ public class Receiver extends JPanel
         //String deviceList[] = {"Alejandro's Device", "Ben's Device", "Ryan's Device", "Taren's Device"};
 //        frameSetUp(frame, deviceList);
 //    	FrameWindow frame = new FrameWindow(deviceList);
-    	//WindowsApp window = new WindowsApp();
+    	WindowsApp window = new WindowsApp();
     	
     	BluetoothServer server = new BluetoothServer();
     	try {
