@@ -11,7 +11,7 @@ class ConnectThread extends Thread {
 
     private boolean running = true;
     private CommunicationThread mm_communication_thread;
-    private BluetoothServer mm_server;
+    private final BluetoothServer mm_server;
     private StreamConnection mm_connection_stream;
 
 	public ConnectThread(BluetoothServer server) {
@@ -56,6 +56,8 @@ class ConnectThread extends Thread {
                 return;
             }
         }
+        
+    	System.out.println("Stop connect thread");
     }
 	
 	private void successfulConnection() {
@@ -81,7 +83,6 @@ class ConnectThread extends Thread {
 	}
 
     public void end() {
-    	System.out.println("Stop connect thread");
         running = false;
         
         if (mm_communication_thread != null) {

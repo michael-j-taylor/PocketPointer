@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import javax.bluetooth.BluetoothStateException;
 
 import Driver.MouseRobot;
 
@@ -13,8 +14,8 @@ class CommunicationThread extends Thread {
     private InputStream mm_input_stream;
     private OutputStream mm_output_stream;
     private boolean mm_running = true;
-    private BluetoothServer mm_server;
-    private ConnectThread mm_connection;
+    private final BluetoothServer mm_server;
+    private final ConnectThread mm_connection;
 
     public CommunicationThread(BluetoothServer server, ConnectThread connection) {
         super();
@@ -59,6 +60,8 @@ class CommunicationThread extends Thread {
             System.out.println("Failure in communication thread:\n" + e + "\n");
             mm_server.end();
         }
+        
+    	System.out.println("Stop communication thread");
     }
     
     private void readMessage(byte[] buffer) {
@@ -78,6 +81,7 @@ class CommunicationThread extends Thread {
         if (m.what == PPMessage.Command.KEY_PRESS) {
         	//If message is a key press
         	try {
+        	    //calls powerPoint in MouseRobot and sends the text command
 				MouseRobot.powerPoint(m.text);
 			} catch (AWTException e) {
 				System.out.println("Failed to execute command");
@@ -86,6 +90,7 @@ class CommunicationThread extends Thread {
         } else if (m.what == PPMessage.Command.BUTTON) {
         	//If message is a button press
         	try {
+        	    //calls buttonPress in MouseRobot and sends the text command
         		MouseRobot.buttonPress(m.text);
         	} catch (AWTException e) {
 				System.out.println("Failed to execute command");
@@ -94,8 +99,9 @@ class CommunicationThread extends Thread {
         } else if (m.what == PPMessage.Command.SCROLL) {
         	//If message is Scrolling
         	try {
-        		double [] coords = new double[2];
+        		double [] coords;
         		coords = m.getDoubles();
+        		//calls scroll in MouseRobot and sends the amout of scolls
         		MouseRobot.scroll(coords[1]);
         	} catch (AWTException e) {
         		System.out.println("Failed to execute command");
@@ -103,17 +109,37 @@ class CommunicationThread extends Thread {
         	
         } else if (m.what == PPMessage.Command.MOUSE_COORDS) {
         	//If message is Mouse Coordinates
-        	double[] coords = new double[2];
+        	double[] coords;
         	coords = m.getDoubles();
         	try {
+        	    //calls mouseMovement in MouseRobot and sends x and y coordinates
         		MouseRobot.mouseMovement(coords[0], coords[1]);
         	} catch (AWTException e) {
 				System.out.println("Failed to execute command");
 			}
-        	
+        } else if (m.what == PPMessage.Command.SWIPE) {
+            //If message is a swipe
+            try {
+                //calls swipe in MouseRobot
+                MouseRobot.swipe(m.text);
+            } catch (AWTException e) {
+                System.out.println("Failed to execute command");
+            }
+        } else if (m.what == PPMessage.Command.DOUBLETAP) {
+            //If message is a double tap
+            try {
+                //calls doubleTap() in MouseRobot
+                MouseRobot.doubleTap();
+            } catch (AWTException e) {
+                System.out.println("Failed to execute command");
+            }
         } else if (m.what == PPMessage.Command.END) {
         	//If message is notification to terminate, do so
         	mm_server.end();
+        	try {
+				mm_server.restartServer();
+			} catch (BluetoothStateException ignored) {
+			}
         }
     }
 
@@ -137,7 +163,7 @@ class CommunicationThread extends Thread {
             mm_output_stream.flush();
             System.out.println("Sent: " + PPMessage.toString(message.what) + message.text);
 
-        } catch (IOException ignroed) {
+        } catch (IOException ignored) {
         }
     }
 
@@ -150,7 +176,6 @@ class CommunicationThread extends Thread {
     }
     
     public void end() {
-    	System.out.println("Stop communication thread");
         mm_running = false;
         
         try {
