@@ -120,8 +120,8 @@ public class MouseRobot {
     //this is a method for double tap input for specific applications
     public static void doubleTap() throws AWTException{
 		Robot robot = new Robot();
-
-
+		//presses space for double tap
+		robot.keyPress(KeyEvent.VK_SPACE);
 	}
 
 	//this method for swipe input for specific applications, currently for tab switches in Google Chrome
