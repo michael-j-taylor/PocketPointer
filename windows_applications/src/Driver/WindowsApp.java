@@ -22,6 +22,8 @@ public class WindowsApp extends JFrame {
     private JTextField devPriorityField;
     private JButton saveDeviceButton;
     private JLabel devBtIdField;
+    private JButton saveNewButton;
+    private JButton deleteButton;
     private ArrayList<BtDevices> btDevicesArrayList;
     private DefaultListModel listModel;
 
@@ -46,14 +48,27 @@ public class WindowsApp extends JFrame {
                     devNameField.setText(dev.getDevName());
                     devPriorityField.setText(String.valueOf(deviceNum + 1));
                     devBtIdField.setText(dev.getDevBtId());
+
+                    saveDeviceButton.setVisible(true);
+                    deleteButton.setVisible(true);
+                } else {
+                    saveDeviceButton.setVisible(false);
+                    deleteButton.setVisible(false);
                 }
             }
         });
 
-        saveDeviceButton.addActionListener(new ActionListener() {
+        saveNewButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
 
+                //TODO start here
+                int deviceNum = deviceList.getSelectedIndex();
+                if (deviceNum >= 0) {
+                    BtDevices dev = btDevicesArrayList.get(deviceNum);
+                    dev.setDevName(devNameField.getText());
+
+                }
             }
         });
 
@@ -214,7 +229,7 @@ public class WindowsApp extends JFrame {
         saveDeviceButton.setBackground(new Color(-13421000));
         saveDeviceButton.setForeground(new Color(-1644826));
         saveDeviceButton.setText("Save Device");
-        saveDeviceButton.setVisible(true);
+        saveDeviceButton.setVisible(false);
         panel12.add(saveDeviceButton, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final Spacer spacer2 = new Spacer();
         panel12.add(spacer2, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
