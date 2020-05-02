@@ -6,7 +6,7 @@ import javax.bluetooth.LocalDevice;
 
 class WatchDiscoverability extends Thread {
 	private boolean mm_running = true;
-	private BluetoothServer mm_server;
+	private final BluetoothServer mm_server;
 	
 	public WatchDiscoverability(BluetoothServer server) {
 		mm_server = server;
@@ -16,7 +16,6 @@ class WatchDiscoverability extends Thread {
 		System.out.println("Start watcher thread");
 		try {
         	while (mm_running) {
-        		System.out.println("Watch loop - " + LocalDevice.getLocalDevice().getDiscoverable() + ", " + DiscoveryAgent.LIAC);
         		//If discoverability reverts to NOT_DISCOVERABLE after 1 minute before connecting, shut down server
         		if (LocalDevice.getLocalDevice().getDiscoverable() == DiscoveryAgent.NOT_DISCOVERABLE) {
         			if (!mm_server.isConnected()) {
