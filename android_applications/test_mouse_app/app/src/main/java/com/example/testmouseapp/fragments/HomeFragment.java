@@ -153,14 +153,6 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         /*----------STANDARD BUTTON CREATION----------*/
         //TODO: move appropriate buttons to navdrawer
 
-        //Register testmessages button listener
-        Button button_testmessages = view.findViewById(R.id.button_testmessages);
-        button_testmessages.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                testMessages();
-            }
-        });
-
         //Register mouse buttons
         Button lmb = view.findViewById(R.id.button_left_mouse);
         lmb.setOnClickListener(new View.OnClickListener() {
@@ -353,14 +345,6 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         prev_accel_y = 0;
         movingAverage_X.clearWindow();
         movingAverage_Y.clearWindow();
-    }
-
-    private void testMessages() {
-        //Send messages to server here
-        try {
-            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.STRING, "Test message 1 from client"));
-            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.STRING, "Test message 2 from client\n"));
-        } catch (IllegalStateException ignored) { }
     }
 
     private boolean canSendMessage() {
