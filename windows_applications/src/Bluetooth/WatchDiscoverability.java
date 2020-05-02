@@ -6,7 +6,7 @@ import javax.bluetooth.LocalDevice;
 
 class WatchDiscoverability extends Thread {
 	private boolean mm_running = true;
-	private BluetoothServer mm_server;
+	private final BluetoothServer mm_server;
 	
 	public WatchDiscoverability(BluetoothServer server) {
 		mm_server = server;

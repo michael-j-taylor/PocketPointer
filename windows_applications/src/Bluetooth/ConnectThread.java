@@ -11,7 +11,7 @@ class ConnectThread extends Thread {
 
     private boolean running = true;
     private CommunicationThread mm_communication_thread;
-    private BluetoothServer mm_server;
+    private final BluetoothServer mm_server;
     private StreamConnection mm_connection_stream;
 
 	public ConnectThread(BluetoothServer server) {

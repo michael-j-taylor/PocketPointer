@@ -14,8 +14,8 @@ class CommunicationThread extends Thread {
     private InputStream mm_input_stream;
     private OutputStream mm_output_stream;
     private boolean mm_running = true;
-    private BluetoothServer mm_server;
-    private ConnectThread mm_connection;
+    private final BluetoothServer mm_server;
+    private final ConnectThread mm_connection;
 
     public CommunicationThread(BluetoothServer server, ConnectThread connection) {
         super();
@@ -97,7 +97,7 @@ class CommunicationThread extends Thread {
         } else if (m.what == PPMessage.Command.SCROLL) {
         	//If message is Scrolling
         	try {
-        		double [] coords = new double[2];
+        		double [] coords;
         		coords = m.getDoubles();
         		MouseRobot.scroll(coords[1]);
         	} catch (AWTException e) {
@@ -106,7 +106,7 @@ class CommunicationThread extends Thread {
         	
         } else if (m.what == PPMessage.Command.MOUSE_COORDS) {
         	//If message is Mouse Coordinates
-        	double[] coords = new double[2];
+        	double[] coords;
         	coords = m.getDoubles();
         	try {
         		MouseRobot.mouseMovement(coords[0], coords[1]);
@@ -144,7 +144,7 @@ class CommunicationThread extends Thread {
             mm_output_stream.flush();
             System.out.println("Sent: " + PPMessage.toString(message.what) + message.text);
 
-        } catch (IOException ignroed) {
+        } catch (IOException ignored) {
         }
     }
 
