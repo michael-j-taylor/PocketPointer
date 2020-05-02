@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,9 +17,12 @@ import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.navigation.ui.NavigationUI;
 
 import com.example.testmouseapp.R;
 import com.example.testmouseapp.activities.MainActivity;
@@ -70,6 +74,11 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     private TextView live_acceleration;
 
     private boolean inFocus;
+    private boolean isCalibrating = false;
+
+    MenuItem menuItem_item_calibrate;
+    MenuItem menuItem_progressbar_calibrating;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -111,17 +120,34 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         /*----------VOLATILE NAVIGATION DRAWER BUTTON CREATION----------*/
         //using the public NavigationView in our MainActivity, we can access navigation drawer elements
         //and interact with them. This allows the setup of quick settings for each mode of the application
-        NavigationView navigationView = mm_main_activity.navigationView;
+        navigationView = mm_main_activity.navigationView;
 
         //get all quick setting menu items
         MenuItem menuItem_mouse_lock = navigationView.getMenu().findItem(R.id.nav_switch_mousemode);
         MenuItem menuItem_switch_overrideVolumeKeys = navigationView.getMenu().findItem(R.id.nav_switch_override_volume_keys);
+        menuItem_item_calibrate = navigationView.getMenu().findItem(R.id.nav_item_calibrate);
+        menuItem_progressbar_calibrating = navigationView.getMenu().findItem(R.id.nav_progressbar_calibrate);
 
         //hide any items not relevant to this fragment
         menuItem_mouse_lock.setVisible(false);
         menuItem_switch_overrideVolumeKeys.setVisible(false);
+        menuItem_progressbar_calibrating.setVisible(false);
 
         // show all items relevant to this fragment
+        menuItem_item_calibrate.setVisible(true);
+
+
+        //set listeners
+        Button button_calibrate = menuItem_item_calibrate.getActionView().findViewById(R.id.menu_button_calibrate);
+        button_calibrate.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                menuItem_item_calibrate.setVisible(false);
+                menuItem_progressbar_calibrating.setVisible(true);
+                calibrater.calibrating = true;
+                isCalibrating = true;
+            }
+        });
+
 
         /*----------STANDARD BUTTON CREATION----------*/
         //TODO: move appropriate buttons to navdrawer
@@ -162,16 +188,10 @@ public class HomeFragment extends Fragment implements SensorEventListener {
             }
         });
 
-        //Register calibrate button
-        Button button_calibrate = view.findViewById(R.id.button_calibrate);
-        button_calibrate.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                calibrater.calibrating = true;
-            }
-        });
-
         return view;
     }
+
+
 
     @Override
     public void onStart() {
@@ -235,6 +255,12 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         }
         else {  //calibrated using live data
             //intermittently calculate position
+            if (isCalibrating) {
+                isCalibrating = false;
+                menuItem_progressbar_calibrating.setVisible(false);
+                menuItem_item_calibrate.setVisible(true);
+            }
+
             if (currentTime - startTime > time*1000 && inFocus) {
 
                 //set maximum x & y acceleration readings

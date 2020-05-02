@@ -60,12 +60,17 @@ public class TouchpadFragment extends Fragment {
         //get all quick setting menu items
         MenuItem menuItem_mouse_lock = navigationView.getMenu().findItem(R.id.nav_switch_mousemode);
         MenuItem menuItem_switch_overrideVolumeKeys = navigationView.getMenu().findItem(R.id.nav_switch_override_volume_keys);
+        MenuItem menuItem_item_calibrate = navigationView.getMenu().findItem(R.id.nav_item_calibrate);
+        MenuItem menuItem_progressbar_calibrating = navigationView.getMenu().findItem(R.id.nav_progressbar_calibrate);
 
         //hide any buttons not relevant to this fragment
+        menuItem_switch_overrideVolumeKeys.setVisible(false);
+        menuItem_item_calibrate.setVisible(false);
+        menuItem_progressbar_calibrating.setVisible(false);
 
         // show all buttons relevant to this fragment
         menuItem_mouse_lock.setVisible(true);
-        menuItem_switch_overrideVolumeKeys.setVisible(false);
+
 
         //mouse lock switch: send pointer coordinates when activated, else send direction swipes or tap gestures
         SwitchCompat button_mouse_lock = (SwitchCompat) menuItem_mouse_lock.getActionView().findViewById(R.id.menu_switch_mousemode);
