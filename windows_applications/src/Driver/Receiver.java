@@ -45,8 +45,6 @@ public class Receiver extends JPanel
     		} else
     			System.out.println("Exception from openServer:\n" + e + e.getMessage() + "\n");
     	}
-    	
-    	
         
         //TODO: initialize components. pass frame to method
 //        robotTest();

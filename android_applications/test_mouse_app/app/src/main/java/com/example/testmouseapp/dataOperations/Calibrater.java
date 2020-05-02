@@ -78,7 +78,7 @@ public class Calibrater {
         }
         x_readings.removeAll(x_readings);
         y_readings.removeAll(y_readings);
-        magnitude_threshold = (float) Math.sqrt(Math.pow(x_threshold, 2) + Math.pow(y_threshold, 2)) * 1.2f;
+        magnitude_threshold = (float) Math.sqrt(Math.pow(x_threshold, 2) + Math.pow(y_threshold, 2)) * 1.05f;
         Log.d(TAG, "Threshold at: " + magnitude_threshold + " " + x_threshold + " " + y_threshold);
     }
 

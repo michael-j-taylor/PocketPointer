@@ -37,7 +37,17 @@
             android:id="@+id/nav_switch_override_volume_keys"
             android:icon="@drawable/menu_ic_volume_override_white_24dp"
             android:title="@string/menu_overrideVolumeKeys"
-            app:actionLayout="@layout/navdrawer_menu_switch_override_volume_keys" />
+            app:actionLayout="@layout/navdrawer_menu_switch_override_volume_keys"/>
+        <item
+            android:id="@+id/nav_item_calibrate"
+            android:title="@string/empty_string"
+            android:icon="@drawable/home_ic_vibration_white_24dp"
+            app:actionLayout="@layout/navdrawer_menu_button_calibrate"/>
+        <item
+            android:id="@+id/nav_progressbar_calibrate"
+            android:title="@string/calibrate"
+            android:icon="@drawable/home_ic_vibration_white_24dp"
+            app:actionLayout="@layout/navdrawer_menu_progressbar_calibrating"/>
     </group>
 
 </menu>

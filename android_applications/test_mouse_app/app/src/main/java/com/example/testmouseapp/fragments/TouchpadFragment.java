@@ -7,11 +7,8 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -26,6 +23,8 @@ import com.example.testmouseapp.dataOperations.PPOnSwipeListener;
 import com.example.testmouseapp.dataOperations.pointerTracker;
 import com.google.android.material.navigation.NavigationView;
 
+import java.util.Objects;
+
 public class TouchpadFragment extends Fragment {
     private static final String TAG = "Touchpad Fragment";
 
@@ -34,7 +33,6 @@ public class TouchpadFragment extends Fragment {
     private pointerTracker PPpointerTracker;
     private GestureDetectorCompat PPGestureDetector;
     private View view;
-    private NavigationView navigationView;
 
 
     private boolean mouseLock = false;  //determines if swipe data is sent or pointer coordinates on touchpad
@@ -43,7 +41,7 @@ public class TouchpadFragment extends Fragment {
                              ViewGroup container, Bundle savedInstanceState) {
 
         //hide action bar for this fragment
-        ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
+        Objects.requireNonNull(((AppCompatActivity) Objects.requireNonNull(getActivity())).getSupportActionBar()).hide();
 
         view = inflater.inflate(R.layout.fragment_touchpad, container, false);
 
@@ -51,7 +49,7 @@ public class TouchpadFragment extends Fragment {
         assert mm_main_activity != null;
 
         //access view for navigation drawer from main activity
-        navigationView =  mm_main_activity.navigationView;
+        NavigationView navigationView = mm_main_activity.navigationView;
 
         /*----------VOLATILE NAVIGATION DRAWER BUTTON CREATION----------*/
         //using the public NavigationView in our MainActivity, we can access navigation drawer elements
@@ -60,23 +58,24 @@ public class TouchpadFragment extends Fragment {
         //get all quick setting menu items
         MenuItem menuItem_mouse_lock = navigationView.getMenu().findItem(R.id.nav_switch_mousemode);
         MenuItem menuItem_switch_overrideVolumeKeys = navigationView.getMenu().findItem(R.id.nav_switch_override_volume_keys);
+        MenuItem menuItem_item_calibrate = navigationView.getMenu().findItem(R.id.nav_item_calibrate);
+        MenuItem menuItem_progressbar_calibrating = navigationView.getMenu().findItem(R.id.nav_progressbar_calibrate);
 
         //hide any buttons not relevant to this fragment
+        menuItem_switch_overrideVolumeKeys.setVisible(false);
+        menuItem_item_calibrate.setVisible(false);
+        menuItem_progressbar_calibrating.setVisible(false);
 
         // show all buttons relevant to this fragment
         menuItem_mouse_lock.setVisible(true);
-        menuItem_switch_overrideVolumeKeys.setVisible(false);
+
 
         //mouse lock switch: send pointer coordinates when activated, else send direction swipes or tap gestures
-        SwitchCompat button_mouse_lock = (SwitchCompat) menuItem_mouse_lock.getActionView().findViewById(R.id.menu_switch_mousemode);
+        SwitchCompat button_mouse_lock = menuItem_mouse_lock.getActionView().findViewById(R.id.menu_switch_mousemode);
         button_mouse_lock.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    mouseLock = true;
-                } else {
-                    mouseLock = false;
-                }
+                mouseLock = isChecked;
             }
         });
 
@@ -159,6 +158,9 @@ public class TouchpadFragment extends Fragment {
 
                 if (mouseLock) {  //if mouse lock enabled, send x and y coordinates of pointer
                     PPpointerTracker.setMouseCoordinates(event);
+                    if (mm_main_activity.bt_service != null && mm_main_activity.bt_service.isConnected()) {
+                        mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.MOUSE_COORDS, PPpointerTracker.getDeltaX(), PPpointerTracker.getDeltaY()));
+                    }
                 } else {  //capture gesture from swipe
                     PPGestureDetector.onTouchEvent(event);
                 }

@@ -57,7 +57,7 @@ public class HomeFragment extends Fragment implements SensorEventListener {
 
     private final int polling_rate = 60; //in Hz
     private int twa = 0; //ticks without acceleration
-    private float friction_coefficient = .82f;
+    private float friction_coefficient = .8f;
     private float time;
 
     private Calibrater calibrater;
@@ -70,6 +70,11 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     private TextView live_acceleration;
 
     private boolean inFocus;
+    private boolean isCalibrating = false;
+
+    MenuItem menuItem_item_calibrate;
+    MenuItem menuItem_progressbar_calibrating;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -111,40 +116,58 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         /*----------VOLATILE NAVIGATION DRAWER BUTTON CREATION----------*/
         //using the public NavigationView in our MainActivity, we can access navigation drawer elements
         //and interact with them. This allows the setup of quick settings for each mode of the application
-        NavigationView navigationView = mm_main_activity.navigationView;
+        navigationView = mm_main_activity.navigationView;
 
         //get all quick setting menu items
         MenuItem menuItem_mouse_lock = navigationView.getMenu().findItem(R.id.nav_switch_mousemode);
         MenuItem menuItem_switch_overrideVolumeKeys = navigationView.getMenu().findItem(R.id.nav_switch_override_volume_keys);
+        menuItem_item_calibrate = navigationView.getMenu().findItem(R.id.nav_item_calibrate);
+        menuItem_progressbar_calibrating = navigationView.getMenu().findItem(R.id.nav_progressbar_calibrate);
 
         //hide any items not relevant to this fragment
         menuItem_mouse_lock.setVisible(false);
         menuItem_switch_overrideVolumeKeys.setVisible(false);
+        menuItem_progressbar_calibrating.setVisible(false);
 
         // show all items relevant to this fragment
+        menuItem_item_calibrate.setVisible(true);
+
+
+        //set listeners
+        Button button_calibrate = menuItem_item_calibrate.getActionView().findViewById(R.id.menu_button_calibrate);
+        button_calibrate.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                menuItem_item_calibrate.setVisible(false);
+                menuItem_progressbar_calibrating.setVisible(true);
+                calibrater.calibrating = true;
+                isCalibrating = true;
+            }
+        });
+
 
         /*----------STANDARD BUTTON CREATION----------*/
         //TODO: move appropriate buttons to navdrawer
-
-        //Register testmessages button listener
-        Button button_testmessages = view.findViewById(R.id.button_testmessages);
-        button_testmessages.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                testMessages();
-            }
-        });
 
         //Register mouse buttons
         Button lmb = view.findViewById(R.id.button_left_mouse);
         lmb.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_LEFT));
+                if (canSendMessage())
+                    mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_LEFT));
+                Log.d(TAG, "Left mouse button clicked");
             }
         });
+        /*lmb.setOnTouchListener(new Button.OnTouchListener() {
+            public boolean onTouch(View v, MotionEvent e) {
+                mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_LEFT));
+            }
+        });*/
         Button rmb = view.findViewById(R.id.button_right_mouse);
         rmb.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_RIGHT));
+                if (canSendMessage())
+                    mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_RIGHT));
+                Log.d(TAG, "Right mouse button clicked");
             }
         });
 
@@ -152,21 +175,17 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         ScrollView scroll_wheel = view.findViewById(R.id.scroll_wheel);
         scroll_wheel.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_MIDDLE));
+                if (canSendMessage())
+                    mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_MIDDLE));
+                Log.d(TAG, "Middle mouse button clicked");
             }
         });
         scroll_wheel.setOverScrollMode(View.OVER_SCROLL_ALWAYS);
         scroll_wheel.setOnScrollChangeListener(new View.OnScrollChangeListener() {
             public void onScrollChange(View v, int newX, int newY, int oldX, int oldY) {
-                mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.SCROLL, newX - oldX, newY - oldY));
-            }
-        });
-
-        //Register calibrate button
-        Button button_calibrate = view.findViewById(R.id.button_calibrate);
-        button_calibrate.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                calibrater.calibrating = true;
+                if (canSendMessage())
+                    mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.SCROLL, newX - oldX, newY - oldY));
+                Log.d(TAG, "Scroll wheel invoked");
             }
         });
 
@@ -235,14 +254,20 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         }
         else {  //calibrated using live data
             //intermittently calculate position
+            if (isCalibrating) {
+                isCalibrating = false;
+                menuItem_progressbar_calibrating.setVisible(false);
+                menuItem_item_calibrate.setVisible(true);
+            }
+
             if (currentTime - startTime > time*1000 && inFocus) {
 
                 //set maximum x & y acceleration readings
-                if (event.values[0] > xmax) {xmax = event.values[0];}
+                /*if (event.values[0] > xmax) {xmax = event.values[0];} //Might repurpose this later
                 if (event.values[0] < xmin) {xmin = event.values[0];}
 
                 if (event.values[1] > ymax) { ymax = event.values[1];}
-                if (event.values[1] < ymin) { ymin = event.values[1];}
+                if (event.values[1] < ymin) { ymin = event.values[1];}*/
 
                 //calculate current value via moving average
                 accel_x = movingAverage_X.calculateAverage() - calibrater.x_offset;
@@ -253,7 +278,7 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                     accel_x = 0;
                     accel_y = 0;
                     twa++;
-                    if (twa >= 3) {
+                    if (twa >= 4) {
                         //Log.d(TAG, "3 or more ticks since acceleration");
                         x_vel *= friction_coefficient;
                         y_vel *= friction_coefficient;
@@ -266,8 +291,6 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                 }
                 else
                     twa = 0;
-                //Log.d(TAG, event.values[0] + " " + event.values[1]);//Log.d(TAG, val_x + " " + val_y);
-                //Log.d(TAG, "raw magnitude: " + raw_magnitude + " vs adjusted " + magnitude + "vs thresh " + calibrater.magnitude_threshold);
 
                 //calculate jerk
                 float jerk_x = (accel_x - prev_accel_x)/time;
@@ -278,11 +301,18 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                 //calculate position. Will jerk help? We'll find out. Delta x and y to send to Windows if that is what is needed.
                 double delta_x = x_vel * time + .5 * accel_x * Math.pow(time, 2) + 1/6 * jerk_x * Math.pow(time, 3);
                 double delta_y = y_vel * time + .5 * accel_y * Math.pow(time, 2) + 1/6 * jerk_y * Math.pow(time, 3);
-                if (mm_main_activity.bt_service != null && mm_main_activity.bt_service.isConnected() && inFocus) {
+                x_pos += delta_x*10000;
+                y_pos += -(delta_y*10000);
+                if (x_pos < 0.0)
+                    x_pos = 0;
+                if (y_pos < 0.0)
+                    y_pos = 0;
+                delta_x*=20000;
+                delta_y*=-20000;
+                if (canSendMessage()) {
                     mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.MOUSE_COORDS, delta_x, delta_y));
                 }
-                x_pos += delta_x;
-                y_pos += delta_y;
+
                 prev_accel_x = accel_x;
                 prev_accel_y = accel_y;
 
@@ -312,11 +342,7 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         movingAverage_Y.clearWindow();
     }
 
-    private void testMessages() {
-        //Send messages to server here
-        try {
-            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.STRING, "Test message 1 from client"));
-            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.STRING, "Test message 2 from client\n"));
-        } catch (IllegalStateException ignored) { }
+    private boolean canSendMessage() {
+        return (mm_main_activity.bt_service != null && mm_main_activity.bt_service.isConnected() && inFocus);
     }
 }

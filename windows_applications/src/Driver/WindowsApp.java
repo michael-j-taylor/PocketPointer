@@ -33,6 +33,7 @@ public class WindowsApp extends JFrame {
         setSize(850, 400);
         setResizable(false);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
         getContentPane().add(mainPanel);
 
         btDevicesArrayList = new ArrayList<BtDevices>();

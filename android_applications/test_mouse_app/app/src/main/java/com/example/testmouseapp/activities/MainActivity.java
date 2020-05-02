@@ -12,19 +12,24 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.text.method.Touch;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -32,13 +37,17 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.testmouseapp.R;
 import com.example.testmouseapp.dataOperations.KeyPressListener;
+import com.example.testmouseapp.fragments.HomeFragment;
 import com.example.testmouseapp.fragments.PresentationFragment;
+import com.example.testmouseapp.fragments.TouchpadFragment;
 import com.example.testmouseapp.services.BluetoothService;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.Objects;
 
-public class MainActivity extends AppCompatActivity implements BluetoothService.ServiceCallback{
+public class MainActivity extends AppCompatActivity
+        implements BluetoothService.ServiceCallback {
+
     private static final String TAG = "Main Activity";
 
     private AppBarConfiguration mAppBarConfiguration;
@@ -97,6 +106,7 @@ public class MainActivity extends AppCompatActivity implements BluetoothService.
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
+
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
@@ -106,6 +116,7 @@ public class MainActivity extends AppCompatActivity implements BluetoothService.
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
+
 
         //create instance of PresentationFragment
         //note that this is NOT the same instance of the fragment the user interacts with
@@ -222,6 +233,7 @@ public class MainActivity extends AppCompatActivity implements BluetoothService.
             }
         }
     }
+
 
     public void updateConnection() {
         TextView device_view;
