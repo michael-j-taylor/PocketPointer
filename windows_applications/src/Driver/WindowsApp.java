@@ -92,6 +92,8 @@ public class WindowsApp extends JFrame {
         connectDeviceButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
+                connectDeviceButton.setVisible(false);
+                stopConnectingButton.setVisible(true);
                 if (server == null) {
                     server = new BluetoothServer(window);
                     try {
@@ -106,9 +108,21 @@ public class WindowsApp extends JFrame {
             }
         });
 
+        stopConnectingButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                stopConnectingButton.setVisible(false);
+                connectDeviceButton.setVisible(true);
+                server.end(true);
+                server = null;
+            }
+        });
+
         disconnectDeviceButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                disconnectDeviceButton.setVisible(false);
+                connectDeviceButton.setVisible(true);
                 server.end(true);
                 server = null;
             }
@@ -148,14 +162,6 @@ public class WindowsApp extends JFrame {
 
                 refreshDeviceList();
 
-            }
-        });
-
-        stopConnectingButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                stopConnectingButton.setVisible(false);
-                connectDeviceButton.setVisible(true);
             }
         });
     }
