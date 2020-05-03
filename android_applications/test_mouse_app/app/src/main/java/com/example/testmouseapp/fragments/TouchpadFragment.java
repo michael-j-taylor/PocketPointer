@@ -113,6 +113,11 @@ public class TouchpadFragment extends Fragment {
 
             @Override
             public boolean onSwipe(PPOnSwipeListener.Direction direction) {
+
+                if (mouseLock) {
+                    return true;
+                }
+
                 if (direction == PPOnSwipeListener.Direction.up) {
                     Log.d(TAG, "swipe up");
 
@@ -159,7 +164,9 @@ public class TouchpadFragment extends Fragment {
                 if (mouseLock) {  //if mouse lock enabled, send x and y coordinates of pointer
                     PPpointerTracker.setMouseCoordinates(event);
                     if (mm_main_activity.bt_service != null && mm_main_activity.bt_service.isConnected()) {
+
                         mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.MOUSE_COORDS, PPpointerTracker.getDeltaX(), PPpointerTracker.getDeltaY()));
+                        PPGestureDetector.onTouchEvent(event);
                     }
                 } else {  //capture gesture from swipe
                     PPGestureDetector.onTouchEvent(event);
