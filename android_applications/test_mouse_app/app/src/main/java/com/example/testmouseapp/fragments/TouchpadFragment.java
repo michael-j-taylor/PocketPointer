@@ -92,7 +92,12 @@ public class TouchpadFragment extends Fragment {
                 Log.d(TAG, "single tap");
                 vibe.vibrate(50);
                 try {
-                    mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_LEFT));
+                    if (mouseLock) {
+                        mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_LEFT));
+                    }
+                    else {
+                        mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.TOUCH_TAP));
+                    }
                 } catch (IllegalStateException ignored) { }
 
                 return true;
@@ -104,7 +109,12 @@ public class TouchpadFragment extends Fragment {
                 vibe.vibrate(15);
                 Log.d(TAG, "double tap");
                 try {
-                    mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.DOUBLETAP, "SOMEWHERE"));
+                    if (mouseLock) {
+                        mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_RIGHT));
+                    }
+                    else {
+                        mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.TOUCH_DOUBLETAP));
+                    }
                 } catch (IllegalStateException ignored) { }
                 vibe.vibrate(15);
 
