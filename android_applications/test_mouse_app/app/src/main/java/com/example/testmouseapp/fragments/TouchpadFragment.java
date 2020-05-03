@@ -1,6 +1,8 @@
 package com.example.testmouseapp.fragments;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -30,7 +32,7 @@ public class TouchpadFragment extends Fragment {
     private pointerTracker PPpointerTracker;
     private GestureDetectorCompat PPGestureDetector;
     private View view;
-
+    private final Vibrator vibe = (Vibrator) mm_main_activity.getSystemService(Context.VIBRATOR_SERVICE);
 
     private boolean mouseLock = false;  //determines if swipe data is sent or pointer coordinates on touchpad
 
@@ -88,6 +90,7 @@ public class TouchpadFragment extends Fragment {
             public boolean onSingleTapConfirmed(MotionEvent event) {
 
                 Log.d(TAG, "single tap");
+                vibe.vibrate(50);
                 try {
                     mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_LEFT));
                 } catch (IllegalStateException ignored) { }
@@ -98,11 +101,12 @@ public class TouchpadFragment extends Fragment {
 
             @Override
             public boolean onDoubleTap(MotionEvent event) {
-
+                vibe.vibrate(15);
                 Log.d(TAG, "double tap");
                 try {
                     mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.DOUBLETAP, "SOMEWHERE"));
                 } catch (IllegalStateException ignored) { }
+                vibe.vibrate(15);
 
                 return true;
             }

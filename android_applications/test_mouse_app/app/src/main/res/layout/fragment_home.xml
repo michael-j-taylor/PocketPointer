@@ -9,32 +9,10 @@
     tools:context=".fragments.HomeFragment">
 
 
-    <ScrollView
-        android:id="@+id/scroll_wheel"
-        style="@android:style/Widget.DeviceDefault.Light.ScrollView"
-        android:layout_width="58dp"
-        android:layout_height="148dp"
-        android:background="@color/PPlight_grey"
-        android:clickable="true"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:hapticFeedbackEnabled="true"
-        android:keepScreenOn="true"
-        android:overScrollMode="always"
-        android:scrollbarStyle="insideInset"
-        android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.531"
-        tools:visibility="visible" />
-
     <Button
         android:id="@+id/button_left_mouse"
         android:layout_width="205dp"
-        android:layout_height="270dp"
+        android:layout_height="280dp"
         android:background="#00FFFFFF"
         android:hapticFeedbackEnabled="true"
         android:visibility="visible"
@@ -47,7 +25,7 @@
     <Button
         android:id="@+id/button_right_mouse"
         android:layout_width="205dp"
-        android:layout_height="270dp"
+        android:layout_height="280dp"
         android:background="#00FFFFFF"
         android:hapticFeedbackEnabled="true"
         android:visibility="visible"
@@ -56,6 +34,36 @@
         app:layout_constraintStart_toEndOf="@+id/button_left_mouse"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0" />
+
+    <ScrollView
+        android:id="@+id/scroll_wheel"
+        style="@android:style/Widget.DeviceDefault.Light.ScrollView"
+        android:layout_width="58dp"
+        android:layout_height="148dp"
+        android:background="@color/PPlight_grey"
+        android:clickable="true"
+        android:elevation="2dp"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:hapticFeedbackEnabled="true"
+        android:keepScreenOn="true"
+        android:overScrollMode="always"
+        android:scrollbarStyle="insideInset"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.51"
+        tools:visibility="visible" >
+
+        <LinearLayout
+            android:id="@+id/wheel_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#00FFFFFF"
+            android:orientation="vertical"></LinearLayout>
+    </ScrollView>
 
     <TextView
         android:id="@+id/acceleration"
@@ -68,7 +76,7 @@
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.867" />
+        app:layout_constraintVertical_bias="0.79" />
 
     <TextView
         android:id="@+id/homeDeviceText"
