@@ -54,6 +54,7 @@ public class WindowsApp extends JFrame {
                 }
             }
         };
+
         addWindowListener(exitListener);
         getContentPane().add(mainPanel);
 
@@ -83,16 +84,13 @@ public class WindowsApp extends JFrame {
         saveNewButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                BtDevices dev = new BtDevices(devNameField.getText(), devBtIdField.getText());
+                btDevicesArrayList.add(dev);
+                int x = devPriorityField.getX() - 1;
+                if (x >= 1 && x<= btDevicesArrayList.size()) {
 
-                //start here on video
-                int deviceNum = deviceList.getSelectedIndex();
-                if (deviceNum >= 0) {
-                    BtDevices dev = btDevicesArrayList.get(deviceNum);
-                    dev.setDevName(devNameField.getText());
-                    dev.setDevBtId(devBtIdField.getText());
-
-                    refreshDeviceList();
                 }
+                refreshDeviceList();
             }
         });
 
