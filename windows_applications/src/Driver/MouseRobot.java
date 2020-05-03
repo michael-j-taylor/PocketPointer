@@ -52,14 +52,17 @@ public class MouseRobot {
     		
     		//This is the right press button
 			robot.keyPress(KeyEvent.VK_RIGHT);
+			robot.keyRelease(KeyEvent.VK_RIGHT);
     	}
     	else if (buttonPress.equals("LEFT")) {
     		//This is left press button
     		robot.keyPress(KeyEvent.VK_LEFT);
+    		robot.keyRelease(KeyEvent.VK_LEFT);
     	}
     	else if (buttonPress.equals("B")) {
     		//This is for the blank screen
     		robot.keyPress(KeyEvent.VK_B);
+    		robot.keyRelease(KeyEvent.VK_B);
     	}
 
     }
@@ -122,6 +125,7 @@ public class MouseRobot {
 		Robot robot = new Robot();
 		//presses space for double tap
 		robot.keyPress(KeyEvent.VK_SPACE);
+		robot.keyRelease(KeyEvent.VK_SPACE);
 	}
 
 	//this method for swipe input for specific applications, currently for tab switches in Google Chrome
@@ -152,12 +156,14 @@ public class MouseRobot {
 		else if (swipeInput.equals("UP")){
 			//these press the page up button
 			robot.keyPress(KeyEvent.VK_PAGE_UP);
+			robot.keyRelease(KeyEvent.VK_PAGE_UP);
 		}
 
 		//checks if the input is a swipe down
 		else if(swipeInput.equals("Down")){
 			//these press the page down button
 			robot.keyPress(KeyEvent.VK_PAGE_DOWN);
+			robot.keyRelease(KeyEvent.VK_PAGE_DOWN);
 		}
 
     }
