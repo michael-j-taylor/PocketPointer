@@ -1,10 +1,7 @@
 package Bluetooth;
 
 import java.io.IOException;
-import javax.bluetooth.BluetoothStateException;
-import javax.bluetooth.DiscoveryAgent;
-import javax.bluetooth.LocalDevice;
-import javax.bluetooth.UUID;
+import javax.bluetooth.*;
 import javax.microedition.io.Connector;
 import javax.microedition.io.StreamConnectionNotifier;
 
@@ -77,9 +74,39 @@ public class BluetoothServer {
 	public StreamConnectionNotifier getNotifier() {
 		return notifier;
 	}
+
+
+
+	public String[] getPairedNames() throws IOException {
+		RemoteDevice[] devices = LocalDevice.getLocalDevice().getDiscoveryAgent().retrieveDevices(DiscoveryAgent.PREKNOWN);
+		String[] names = new String[devices.length];
+		for (int i = 0; i < devices.length; i++) {
+			names[i] = devices[i].getFriendlyName(false);
+		}
+		return names;
+	}
+
+	public String[] getPairedAddresses() throws BluetoothStateException {
+		RemoteDevice[] devices = LocalDevice.getLocalDevice().getDiscoveryAgent().retrieveDevices(DiscoveryAgent.PREKNOWN);
+		String[] addresses = new String[devices.length];
+		for (int i = 0; i < devices.length; i++) {
+			addresses[i] = devices[i].getBluetoothAddress();
+		}
+		return addresses;
+	}
+
+	public String getConnectedName() throws IOException {
+		RemoteDevice device = mm_connect_thread.getConnectedDevice();
+		return device.getFriendlyName(false);
+	}
+
+	public String getConnectedAddress() throws IOException {
+		RemoteDevice device = mm_connect_thread.getConnectedDevice();
+		return device.getBluetoothAddress();
+	}
 	
 	public void stopWatching() {
-		mm_watcher.cancel();
+		mm_watcher.end();
 	}
 	
 	public void end() {
@@ -98,6 +125,9 @@ public class BluetoothServer {
 				}
 	        }
         }
+        if (mm_watcher.isRunning()) {
+        	stopWatching();
+		}
         
         //Turn off discoverability if possible
         try {
