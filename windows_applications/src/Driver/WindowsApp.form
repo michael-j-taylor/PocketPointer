@@ -69,7 +69,7 @@
                     <properties>
                       <enabled value="true"/>
                       <foreground color="-1644826"/>
-                      <text value="Connecting..."/>
+                      <text value="No connected device"/>
                     </properties>
                   </component>
                 </children>

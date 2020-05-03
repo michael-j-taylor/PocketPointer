@@ -11,7 +11,6 @@ import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.fragment.app.Fragment;
@@ -22,8 +21,6 @@ import com.example.testmouseapp.dataOperations.PPMessage;
 import com.example.testmouseapp.dataOperations.PPOnSwipeListener;
 import com.example.testmouseapp.dataOperations.pointerTracker;
 import com.google.android.material.navigation.NavigationView;
-
-import java.util.Objects;
 
 public class TouchpadFragment extends Fragment {
     private static final String TAG = "Touchpad Fragment";
@@ -41,7 +38,7 @@ public class TouchpadFragment extends Fragment {
                              ViewGroup container, Bundle savedInstanceState) {
 
         //hide action bar for this fragment
-        Objects.requireNonNull(((AppCompatActivity) Objects.requireNonNull(getActivity())).getSupportActionBar()).hide();
+        //Objects.requireNonNull(((AppCompatActivity) Objects.requireNonNull(getActivity())).getSupportActionBar()).hide();
 
         view = inflater.inflate(R.layout.fragment_touchpad, container, false);
 
@@ -113,6 +110,11 @@ public class TouchpadFragment extends Fragment {
 
             @Override
             public boolean onSwipe(PPOnSwipeListener.Direction direction) {
+
+                if (mouseLock) {
+                    return true;
+                }
+
                 if (direction == PPOnSwipeListener.Direction.up) {
                     Log.d(TAG, "swipe up");
 
@@ -159,7 +161,9 @@ public class TouchpadFragment extends Fragment {
                 if (mouseLock) {  //if mouse lock enabled, send x and y coordinates of pointer
                     PPpointerTracker.setMouseCoordinates(event);
                     if (mm_main_activity.bt_service != null && mm_main_activity.bt_service.isConnected()) {
+
                         mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.MOUSE_COORDS, PPpointerTracker.getDeltaX(), PPpointerTracker.getDeltaY()));
+                        PPGestureDetector.onTouchEvent(event);
                     }
                 } else {  //capture gesture from swipe
                     PPGestureDetector.onTouchEvent(event);
