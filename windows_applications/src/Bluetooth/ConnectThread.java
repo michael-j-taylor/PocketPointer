@@ -34,6 +34,8 @@ class ConnectThread extends Thread {
                 if (mm_communication_thread != null && !mm_communication_thread.isRunning()) return;
                 
                 System.out.println("Waiting for connection...");
+                mm_server.getWindow().connectingOutput.setText("Waiting for connection...");
+
 
                 //Wait for client to connect
                 mm_connection_stream = mm_server.getNotifier().acceptAndOpen();

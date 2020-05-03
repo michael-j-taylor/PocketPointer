@@ -15,7 +15,6 @@ import java.util.ArrayList;
 
 public class WindowsApp extends JFrame {
     private JPanel mainPanel;
-    private JButton connectDeviceButton;
     private JList deviceList;
     private JButton connectNewDeviceButton;
     private JButton updateButton;
@@ -30,7 +29,7 @@ public class WindowsApp extends JFrame {
     private DefaultListModel listModel;
     private BluetoothServer server;
 
-
+    public JButton connectDeviceButton;
     public JLabel connectingOutput;
     public JTextField devNameField;
     public JTextField devPriorityField;
@@ -93,17 +92,17 @@ public class WindowsApp extends JFrame {
         connectDeviceButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
-                server = new BluetoothServer(window);
-                try {
-                    server.openServer();
-                    connectingOutput.setText("Waiting for connection...");
-                } catch (Exception e) {
-                    if (e instanceof BluetoothStateException) {
-                        System.out.println("In receiver, failed to use Bluetooth");
-                    } else
-                        System.out.println("Exception from openServer:\n" + e + e.getMessage() + "\n");
+                if (server == null) {
+                    server = new BluetoothServer(window);
+                    try {
+                        server.openServer();
+                    } catch (Exception e) {
+                        if (e instanceof BluetoothStateException) {
+                            System.out.println("In receiver, failed to use Bluetooth");
+                        } else
+                            System.out.println("Exception from openServer:\n" + e + e.getMessage() + "\n");
+                    }
                 }
-
             }
         });
 
@@ -236,7 +235,7 @@ public class WindowsApp extends JFrame {
         connectingOutput = new JLabel();
         connectingOutput.setEnabled(true);
         connectingOutput.setForeground(new Color(-1644826));
-        connectingOutput.setText("Connecting...");
+        connectingOutput.setText("No connected device");
         panel5.add(connectingOutput, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_SOUTH, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel6 = new JPanel();
         panel6.setLayout(new GridLayoutManager(4, 1, new Insets(0, 0, 0, 0), -1, -1));
