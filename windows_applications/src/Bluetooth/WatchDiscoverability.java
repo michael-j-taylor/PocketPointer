@@ -20,7 +20,7 @@ class WatchDiscoverability extends Thread {
         		if (LocalDevice.getLocalDevice().getDiscoverable() == DiscoveryAgent.NOT_DISCOVERABLE) {
         			if (!mm_server.isConnected()) {
         				System.out.println("Device has been discoverable for 1 minute without connecting. Stopping");
-        				mm_server.end();
+        				mm_server.end(false);
         				mm_running = false;
         			}
         		}

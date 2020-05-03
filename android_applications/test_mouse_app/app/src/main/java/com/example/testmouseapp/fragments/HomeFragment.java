@@ -1,5 +1,6 @@
 package com.example.testmouseapp.fragments;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -8,8 +9,10 @@ import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.InputDevice;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -85,6 +88,7 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         movingAverage_Y = new MovingAverage(50);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -143,8 +147,6 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                 isCalibrating = true;
             }
         });
-
-
         /*----------STANDARD BUTTON CREATION----------*/
         //TODO: move appropriate buttons to navdrawer
 
@@ -173,22 +175,52 @@ public class HomeFragment extends Fragment implements SensorEventListener {
 
         //Register scroll wheel and button
         ScrollView scroll_wheel = view.findViewById(R.id.scroll_wheel);
-        scroll_wheel.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
+        scroll_wheel.setOnGenericMotionListener(new View.OnGenericMotionListener() {
+            @Override
+            public boolean onGenericMotion(View view, MotionEvent motionEvent) {
+                if (motionEvent.isFromSource(InputDevice.SOURCE_CLASS_POINTER)) {
+                    switch (motionEvent.getAction()) {
+                        case MotionEvent.ACTION_SCROLL:
+                        {
+                            float newX = motionEvent.getX();
+                            float oldX = motionEvent.getHistoricalX(1);
+                            float newY = motionEvent.getY();
+                            float oldY = motionEvent.getHistoricalY(1);
+                            if (canSendMessage())
+                                mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.SCROLL, newX - oldX, newY - oldY));
+                            Log.d(TAG, "Scroll wheel used");
+                            return true;
+                        }
+                        case MotionEvent.ACTION_BUTTON_PRESS:
+                        {
+                            if (canSendMessage())
+                                mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_MIDDLE));
+                            Log.d(TAG, "Scroll wheel clicked");
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+        });
+        scroll_wheel.setOnTouchListener(new View.OnTouchListener() {
+            public boolean onTouch(View v, MotionEvent me) {
                 if (canSendMessage())
                     mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_MIDDLE));
                 Log.d(TAG, "Middle mouse button clicked");
+                return true;
             }
+
+            public void performClick() {}
         });
         scroll_wheel.setOverScrollMode(View.OVER_SCROLL_ALWAYS);
-        scroll_wheel.setOnScrollChangeListener(new View.OnScrollChangeListener() {
+        /*scroll_wheel.setOnScrollChangeListener(new View.OnScrollChangeListener() {
             public void onScrollChange(View v, int newX, int newY, int oldX, int oldY) {
                 if (canSendMessage())
                     mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.SCROLL, newX - oldX, newY - oldY));
                 Log.d(TAG, "Scroll wheel invoked");
             }
-        });
-
+        });*/
         return view;
     }
 

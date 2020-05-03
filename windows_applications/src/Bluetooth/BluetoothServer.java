@@ -1,12 +1,11 @@
 package Bluetooth;
 
-import Driver.BtDevices;
 import Driver.WindowsApp;
 
-import java.io.IOException;
 import javax.bluetooth.*;
 import javax.microedition.io.Connector;
 import javax.microedition.io.StreamConnectionNotifier;
+import java.io.IOException;
 
 
 public class BluetoothServer {
@@ -53,7 +52,7 @@ public class BluetoothServer {
 		} catch (Exception e) {
 			System.out.println("Failure in openServer:\n" + e + "\n");
             System.out.println("Error " + e.getMessage() + "\n");
-            end();
+            end(false);
             throw new BluetoothStateException();
 		}
 		
@@ -84,7 +83,7 @@ public class BluetoothServer {
 			System.out.println("Failed to retrieve connected device");
 			mm_window.devBtIdField.setText("...");
 		}
-		mm_window.devPriorityField.setText(String.valueOf(mm_window.getBtDevicesArrayList().size()));
+		mm_window.devPriorityField.setText(String.valueOf(mm_window.getBtDevicesArrayList().size() + 1));
 	}
 	
 	public boolean isConnected() {
@@ -145,8 +144,12 @@ public class BluetoothServer {
 		mm_watcher.end();
 	}
 	
-	public void end() {
+	public void end(boolean localKilled) {
 		System.out.println("Stop server");
+
+		if (localKilled && isConnected()) {
+		    mm_connect_thread.getComs().write(new PPMessage(PPMessage.Command.END, "Server ending activity"));
+        }
 		
 		//Shut down threads
         if (mm_connect_thread != null) {
