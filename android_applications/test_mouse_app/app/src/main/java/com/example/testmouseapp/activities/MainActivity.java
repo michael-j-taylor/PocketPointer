@@ -179,24 +179,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void disconnectDevice() {
-        bt_service.closeConnection();
+        bt_service.closeConnection(true);
 
-        //Identifies current fragment if possible
-        TextView device_view = findViewById(R.id.homeDeviceText);
-        if (device_view == null) {
-            device_view = findViewById(R.id.touchpadDeviceText);
-            if (device_view == null) {
-                device_view = findViewById(R.id.presentationDeviceText);
-            }
-        }
-
-        if ( device_view != null ) {
-            device_view.setText(R.string.not_connected);
-            //Log.d(TAG, "Updated " + device_view + " text");
-        }
-
-        button_connect.setVisibility(View.VISIBLE);
-        button_disconnect.setVisibility(View.INVISIBLE);
+        removeConnection();
     }
 
     @Override
@@ -235,7 +220,7 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    public void updateConnection() {
+    public void addConnection() {
         TextView device_view;
         if ((device_view = findViewById(R.id.homeDeviceText)) != null ) {
             Log.d(TAG, "In HomeFragment");
@@ -252,6 +237,24 @@ public class MainActivity extends AppCompatActivity
         }
         button_connect.setVisibility(View.INVISIBLE);
         button_disconnect.setVisibility(View.VISIBLE);
+    }
+
+    public void removeConnection() {
+        //Identifies current fragment if possible
+        TextView device_view = findViewById(R.id.homeDeviceText);
+        if (device_view == null) {
+            device_view = findViewById(R.id.touchpadDeviceText);
+            if (device_view == null) {
+                device_view = findViewById(R.id.presentationDeviceText);
+            }
+        }
+
+        if ( device_view != null ) {
+            device_view.setText(R.string.not_connected);
+            Log.d(TAG, "Updated " + device_view + " text");
+        }
+        button_connect.setVisibility(View.VISIBLE);
+        button_disconnect.setVisibility(View.INVISIBLE);
     }
 
     //Used to override volume keys in PresentationMode fragment
