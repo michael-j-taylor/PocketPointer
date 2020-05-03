@@ -17,17 +17,25 @@ public class WindowsApp extends JFrame {
     private JPanel mainPanel;
     private JButton connectDeviceButton;
     private JList deviceList;
-    private JLabel connectingOutput;
-    private JTextField devNameField;
-    private JTextField devPriorityField;
+    private JButton connectNewDeviceButton;
     private JButton saveDeviceButton;
     private JLabel devBtIdField;
     private JButton saveNewButton;
     private JButton deleteButton;
+
+    public ArrayList<BtDevices> getBtDevicesArrayList() {
+        return btDevicesArrayList;
+    }
+
     private ArrayList<BtDevices> btDevicesArrayList;
     private DefaultListModel listModel;
     private BluetoothServer server;
 
+
+    public JLabel connectingOutput;
+    public JTextField devNameField;
+    public JTextField devPriorityField;
+    public JLabel devBtIdField;
 
     public WindowsApp() {
         super("PocketPointer Receiver");

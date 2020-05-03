@@ -31,8 +31,12 @@ class WatchDiscoverability extends Thread {
 		
 		System.out.println("Stop watcher thread");
 	}
+
+	public boolean isRunning() {
+		return mm_running;
+	}
 	
-	public void cancel() {
+	public void end() {
 		mm_running = false;
 	}
 }

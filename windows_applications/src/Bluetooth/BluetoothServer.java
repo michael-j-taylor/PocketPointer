@@ -1,10 +1,10 @@
 package Bluetooth;
 
+import Driver.BtDevices;
+import Driver.WindowsApp;
+
 import java.io.IOException;
-import javax.bluetooth.BluetoothStateException;
-import javax.bluetooth.DiscoveryAgent;
-import javax.bluetooth.LocalDevice;
-import javax.bluetooth.UUID;
+import javax.bluetooth.*;
 import javax.microedition.io.Connector;
 import javax.microedition.io.StreamConnectionNotifier;
 
@@ -14,8 +14,13 @@ public class BluetoothServer {
 	private static ConnectThread mm_connect_thread;
     private static boolean mm_connected = false;
     private WatchDiscoverability mm_watcher;
+    private WindowsApp mm_window;
 	
     StreamConnectionNotifier notifier;
+
+    public BluetoothServer(WindowsApp window) {
+    	mm_window = window;
+	}
 	
 	//Throws TimeoutException if discoverable for 1 minute and no connection
     //Throws BluetoothStateException if encountering a bluetooth error (probably off)
@@ -65,6 +70,22 @@ public class BluetoothServer {
 		
 		openServer();
 	}
+
+	public void successfulConnection() {
+    	mm_connected = true;
+
+    	//Update text fields in window to device's specs
+    	String name = getConnectedName();
+    	mm_window.connectingOutput.setText("Connected to " + name);
+    	mm_window.devNameField.setText(name);
+		try {
+			mm_window.devBtIdField.setText(getConnectedAddress());
+		} catch (IOException e) {
+			System.out.println("Failed to retrieve connected device");
+			mm_window.devBtIdField.setText("...");
+		}
+		mm_window.devPriorityField.setText(String.valueOf(mm_window.getBtDevicesArrayList().size()));
+	}
 	
 	public boolean isConnected() {
 		return mm_connected;	
@@ -77,9 +98,51 @@ public class BluetoothServer {
 	public StreamConnectionNotifier getNotifier() {
 		return notifier;
 	}
+
+
+
+	public String[] getPairedNames() throws BluetoothStateException {
+		RemoteDevice[] devices = LocalDevice.getLocalDevice().getDiscoveryAgent().retrieveDevices(DiscoveryAgent.PREKNOWN);
+
+		String[] names = new String[devices.length];
+		for (int i = 0; i < devices.length; i++) {
+			try {
+				names[i] = devices[i].getFriendlyName(false);
+			} catch (IOException e) {
+				System.out.println("Failed to retrieve remote device name");
+				names[i] = "Unknown device";
+			}
+		}
+		return names;
+	}
+
+	public String[] getPairedAddresses() throws BluetoothStateException {
+		RemoteDevice[] devices = LocalDevice.getLocalDevice().getDiscoveryAgent().retrieveDevices(DiscoveryAgent.PREKNOWN);
+		String[] addresses = new String[devices.length];
+		for (int i = 0; i < devices.length; i++) {
+			addresses[i] = devices[i].getBluetoothAddress();
+		}
+		return addresses;
+	}
+
+	public String getConnectedName() {
+		RemoteDevice device;
+		try {
+			device = mm_connect_thread.getConnectedDevice();
+			return device.getFriendlyName(false);
+		} catch (IOException e) {
+			System.out.println("Failed to retrieve remote device or remote device name");
+			return "Unknown device";
+		}
+	}
+
+	public String getConnectedAddress() throws IOException {
+		RemoteDevice device = mm_connect_thread.getConnectedDevice();
+		return device.getBluetoothAddress();
+	}
 	
 	public void stopWatching() {
-		mm_watcher.cancel();
+		mm_watcher.end();
 	}
 	
 	public void end() {
@@ -98,6 +161,9 @@ public class BluetoothServer {
 				}
 	        }
         }
+        if (mm_watcher.isRunning()) {
+        	stopWatching();
+		}
         
         //Turn off discoverability if possible
         try {
