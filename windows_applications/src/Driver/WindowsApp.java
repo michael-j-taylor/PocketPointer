@@ -110,6 +110,7 @@ public class WindowsApp extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 server.end(true);
+                server = null;
             }
         });
 

@@ -125,6 +125,18 @@ public class MouseRobot {
 				robot.mouseRelease(InputEvent.BUTTON3_DOWN_MASK);
 				System.out.println("Right");
 				break;
+			case "doubletap": //case for doubletap on the screen alt + Right to forward page
+				robot.mousePress(KeyEvent.VK_ALT);
+				robot.mousePress(KeyEvent.VK_RIGHT);
+				robot.mouseRelease(KeyEvent.VK_ALT);
+				robot.mouseRelease(KeyEvent.VK_RIGHT);
+				break;
+			case "singletap": //case for singletap on the screen alt + Left to back page
+				robot.mousePress(KeyEvent.VK_ALT);
+				robot.mousePress(KeyEvent.VK_LEFT);
+				robot.mouseRelease(KeyEvent.VK_ALT);
+				robot.mouseRelease(KeyEvent.VK_LEFT);
+				break;
 			default: //default output
 				System.out.println("Error Button Does Not Exist");
 				break;
@@ -161,12 +173,12 @@ public class MouseRobot {
     }
 
     //this is a method for double tap input for specific applications
-    public static void doubleTap() throws AWTException{
+    /*public static void doubleTap() throws AWTException{
 		Robot robot = new Robot();
 		//presses space for double tap
 		robot.keyPress(KeyEvent.VK_SPACE);
 		robot.keyRelease(KeyEvent.VK_SPACE);
-	}
+	}*/
 
 	//this method for swipe input for specific applications, currently for tab switches in Google Chrome
 	public static void swipe(String swipeInput) throws AWTException{
@@ -230,7 +242,7 @@ public class MouseRobot {
 		}
 
 		//checks if the input is a swipe down
-		else if(swipeInput.equals("Down")){
+		else if(swipeInput.equals("DOWN")){
 			//these press the page down button
 			robot.keyPress(KeyEvent.VK_PAGE_DOWN);
 			robot.keyRelease(KeyEvent.VK_PAGE_DOWN);

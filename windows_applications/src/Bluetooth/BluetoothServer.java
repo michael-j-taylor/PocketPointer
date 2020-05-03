@@ -156,6 +156,8 @@ public class BluetoothServer {
 		    mm_connect_thread.getComs().write(new PPMessage(PPMessage.Command.END, "Server ending activity"));
         }
 
+		mm_connected = false;
+
         //Update text fields in window to show no connection
         mm_window.connectingOutput.setText("No connected device");
         mm_window.connectDeviceButton.setVisible(true);
