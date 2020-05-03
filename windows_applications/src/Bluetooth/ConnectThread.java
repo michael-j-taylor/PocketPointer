@@ -63,9 +63,9 @@ class ConnectThread extends Thread {
 	
 	private void successfulConnection() {
     	System.out.println("Connected to remote device");
-    	mm_server.setConnected(true);
-    	
-    	//Send test message
+        mm_server.successfulConnection();
+
+        //Send test message
 		mm_communication_thread.write(new PPMessage(PPMessage.Command.STRING, "Test message from Windows\n"));
     	
     	//Stop watching for expired discoverability
