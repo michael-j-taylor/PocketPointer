@@ -150,6 +150,9 @@ public class BluetoothServer {
 		if (localKilled && isConnected()) {
 		    mm_connect_thread.getComs().write(new PPMessage(PPMessage.Command.END, "Server ending activity"));
         }
+
+        mm_window.connectDeviceButton.setVisible(true);
+		mm_window.disconnectDeviceButton.setVisible(false);
 		
 		//Shut down threads
         if (mm_connect_thread != null) {

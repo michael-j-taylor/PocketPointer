@@ -15,7 +15,6 @@ import java.util.ArrayList;
 
 public class WindowsApp extends JFrame {
     private JPanel mainPanel;
-    private JButton connectDeviceButton;
     private JList deviceList;
     private JButton connectNewDeviceButton;
     private JButton saveDeviceButton;
@@ -30,7 +29,7 @@ public class WindowsApp extends JFrame {
     private DefaultListModel listModel;
     private BluetoothServer server;
 
-
+    public JButton connectDeviceButton;
     public JLabel connectingOutput;
     public JTextField devNameField;
     public JTextField devPriorityField;
