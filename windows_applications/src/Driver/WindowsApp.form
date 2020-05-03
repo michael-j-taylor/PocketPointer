@@ -129,6 +129,7 @@
                   <background color="-13421000"/>
                   <foreground color="-10174465"/>
                   <text value="Disconnect Device"/>
+                  <visible value="false"/>
                 </properties>
               </component>
             </children>

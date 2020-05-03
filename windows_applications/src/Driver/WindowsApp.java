@@ -35,7 +35,7 @@ public class WindowsApp extends JFrame {
     public JTextField devNameField;
     public JTextField devPriorityField;
     public JLabel devBtIdField;
-    private JButton disconnectDeviceButton;
+    public JButton disconnectDeviceButton;
 
     public WindowsApp() {
         super("PocketPointer Receiver");
@@ -107,6 +107,13 @@ public class WindowsApp extends JFrame {
             }
         });
 
+        disconnectDeviceButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                server.end(true);
+            }
+        });
+
         saveNewButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -115,7 +122,7 @@ public class WindowsApp extends JFrame {
                 try {
                     int current = btDevicesArrayList.size() - 1;
                     int target = Integer.parseInt(devPriorityField.getText());
-                    orderList(current, target);
+                    btDevicesArrayList = orderList(btDevicesArrayList, current, target);
                 } catch (NumberFormatException exception) {
                     System.out.println("Exception: " + exception);
                 }
@@ -134,7 +141,7 @@ public class WindowsApp extends JFrame {
 
                 try {
                     int target = Integer.parseInt(devPriorityField.getText());
-                    orderList(deviceNum, target);
+                    btDevicesArrayList = orderList(btDevicesArrayList, deviceNum, target);
                 } catch (NumberFormatException exception) {
                     System.out.println("Exception: " + exception);
                 }
@@ -143,6 +150,7 @@ public class WindowsApp extends JFrame {
 
             }
         });
+
     }
 
     public void addBtDevice(BtDevices dev, int position) {
@@ -151,13 +159,28 @@ public class WindowsApp extends JFrame {
         btDevicesArrayList.add(dev);
         i = btDevicesArrayList.size();
 
-        // orderList(i, position);
+        btDevicesArrayList = orderList(btDevicesArrayList, i, position);
 
         refreshDeviceList();
     }
 
-    public void orderList(int initial, int destination) {
-        //before: get the position in the list
+    public ArrayList<BtDevices> orderList(ArrayList firstList, int initial, int destination) {
+        ArrayList updatedList;
+        if (initial < 0 && initial <= firstList.size() - 1) {
+            if (initial < destination) {/*
+                updatedList = (ArrayList) firstList.subList(0, initial);
+                updatedList.add(firstList.get(initial));
+                updatedList.addAll(firstList.subList());
+            */
+            } else if (initial > destination) {
+
+            } else {
+                return firstList;
+            }
+
+
+        }
+        return firstList;
         //now: take position, move btDevices to new position, shift elements right.
     }
 
@@ -241,6 +264,7 @@ public class WindowsApp extends JFrame {
         disconnectDeviceButton.setBackground(new Color(-13421000));
         disconnectDeviceButton.setForeground(new Color(-10174465));
         disconnectDeviceButton.setText("Disconnect Device");
+        disconnectDeviceButton.setVisible(false);
         panel6.add(disconnectDeviceButton, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel8 = new JPanel();
         panel8.setLayout(new GridLayoutManager(4, 6, new Insets(0, 0, 0, 0), -1, -1));
