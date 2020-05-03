@@ -160,10 +160,10 @@ public class PresentationFragment extends Fragment implements KeyPressListener {
 
         if (key_code == KeyEvent.KEYCODE_VOLUME_UP) {
             Log.d(TAG, "volume up key");
-            //TODO: send PPMessage here
+            nextSlide();
         }
         else if (key_code == KeyEvent.KEYCODE_VOLUME_DOWN) {
-            Log.d(TAG, "volume down key");
+            previousSlide();
         }
     }
 
