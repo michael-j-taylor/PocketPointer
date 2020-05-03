@@ -1,5 +1,7 @@
 package Driver;
 
+import Bluetooth.PPMessage;
+
 import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -39,6 +41,7 @@ public class MouseRobot {
         powerPoint("B");
         mouseMovement(500, 0);
         buttonPress("mright");
+        buttonPress("singletap");
         scroll(5);
         
         System.out.println("Finished");
@@ -110,32 +113,32 @@ public class MouseRobot {
     	Robot robot = new Robot();
 
     	switch (buttonPress){
-			case "mleft": //case for left mouse click
+			case PPMessage.Button.MOUSE_LEFT: //case for left mouse click
 				robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
 				robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
 				System.out.println("Left");
 				break;
-			case "mmiddle": //case for middle mouse click
+			case PPMessage.Button.MOUSE_MIDDLE: //case for middle mouse click
 				robot.mousePress(InputEvent.BUTTON2_DOWN_MASK);
 				robot.mouseRelease(InputEvent.BUTTON2_DOWN_MASK);
 				System.out.println("Middle");
 				break;
-			case "mright": //case for right mouse click
+			case PPMessage.Button.MOUSE_RIGHT: //case for right mouse click
 				robot.mousePress(InputEvent.BUTTON3_DOWN_MASK);
 				robot.mouseRelease(InputEvent.BUTTON3_DOWN_MASK);
 				System.out.println("Right");
 				break;
-			case "doubletap": //case for doubletap on the screen alt + Right to forward page
-				robot.mousePress(KeyEvent.VK_ALT);
-				robot.mousePress(KeyEvent.VK_RIGHT);
-				robot.mouseRelease(KeyEvent.VK_ALT);
-				robot.mouseRelease(KeyEvent.VK_RIGHT);
+			case PPMessage.Button.TOUCH_DOUBLETAP: //case for doubletap on the screen alt + Right to forward page
+				robot.keyPress(KeyEvent.VK_ALT);
+				robot.keyPress(KeyEvent.VK_RIGHT);
+				robot.keyRelease(KeyEvent.VK_ALT);
+				robot.keyRelease(KeyEvent.VK_RIGHT);
 				break;
-			case "singletap": //case for singletap on the screen alt + Left to back page
-				robot.mousePress(KeyEvent.VK_ALT);
-				robot.mousePress(KeyEvent.VK_LEFT);
-				robot.mouseRelease(KeyEvent.VK_ALT);
-				robot.mouseRelease(KeyEvent.VK_LEFT);
+			case PPMessage.Button.TOUCH_TAP: //case for singletap on the screen alt + Left to back page
+				robot.keyPress(KeyEvent.VK_ALT);
+				robot.keyPress(KeyEvent.VK_LEFT);
+				robot.keyRelease(KeyEvent.VK_ALT);
+				robot.keyRelease(KeyEvent.VK_LEFT);
 				break;
 			default: //default output
 				System.out.println("Error Button Does Not Exist");
