@@ -1,5 +1,8 @@
 package com.example.testmouseapp.dataOperations;
 
+import android.content.Context;
+import android.os.Vibrator;
+
 public class PPMessage {
     public static final int MESSAGE_SIZE = 1024;
 
@@ -27,8 +30,6 @@ public class PPMessage {
     public PPMessage(byte what, String text) throws IllegalArgumentException {
         this.what = what;
         if (what == Command.NULL) throw new IllegalArgumentException();
-        else if (what == Command.BUTTON) //TODO Do haptic feedback here
-
         //Ensure text ends in newline character
         text = text.trim();
         if (text.charAt(text.length()-1) == '\n') this.text = text + "\n";
