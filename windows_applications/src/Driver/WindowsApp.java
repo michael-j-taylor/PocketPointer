@@ -18,7 +18,7 @@ public class WindowsApp extends JFrame {
     private JButton connectDeviceButton;
     private JList deviceList;
     private JButton connectNewDeviceButton;
-    private JButton saveDeviceButton;
+    private JButton updateButton;
     private JButton saveNewButton;
     private JButton deleteButton;
 
@@ -35,9 +35,11 @@ public class WindowsApp extends JFrame {
     public JTextField devNameField;
     public JTextField devPriorityField;
     public JLabel devBtIdField;
+    public JButton disconnectDeviceButton;
 
     public WindowsApp() {
         super("PocketPointer Receiver");
+        WindowsApp window = this;
 
         setSize(850, 400);
         setResizable(false);
@@ -52,7 +54,7 @@ public class WindowsApp extends JFrame {
                 int confirm = JOptionPane.showOptionDialog(null, "Are You Sure to Close Application?", "Exit Confirmation", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
                 if (confirm == 0) {
                     if (server != null) {
-                        server.end();
+                        server.end(true);
                         System.exit(0);
                     } else {
                         System.exit(0);
@@ -79,29 +81,14 @@ public class WindowsApp extends JFrame {
                     devPriorityField.setText(String.valueOf(deviceNum + 1));
                     devBtIdField.setText(dev.getDevBtId());
 
-                    saveDeviceButton.setVisible(true);
+                    updateButton.setVisible(true);
                     deleteButton.setVisible(true);
                 } else {
-                    saveDeviceButton.setVisible(false);
+                    updateButton.setVisible(false);
                     deleteButton.setVisible(false);
                 }
             }
         });
-
-        saveNewButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                BtDevices dev = new BtDevices(devNameField.getText(), devBtIdField.getText());
-                btDevicesArrayList.add(dev);
-                int x = devPriorityField.getX() - 1;
-                if (x >= 1 && x <= btDevicesArrayList.size()) {
-
-                }
-                refreshDeviceList();
-            }
-        });
-
-        WindowsApp window = this;
 
         connectDeviceButton.addActionListener(new ActionListener() {
             @Override
@@ -119,20 +106,51 @@ public class WindowsApp extends JFrame {
 
             }
         });
-        saveDeviceButton.addActionListener(new ActionListener() {
+
+        disconnectDeviceButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                server.end(true);
+            }
+        });
+
+        saveNewButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                BtDevices dev = new BtDevices(devNameField.getText(), devBtIdField.getText());
+                btDevicesArrayList.add(dev);
+                try {
+                    int current = btDevicesArrayList.size() - 1;
+                    int target = Integer.parseInt(devPriorityField.getText());
+                    btDevicesArrayList = orderList(btDevicesArrayList, current, target);
+                } catch (NumberFormatException exception) {
+                    System.out.println("Exception: " + exception);
+                }
+
+                refreshDeviceList();
+            }
+        });
+
+        updateButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int deviceNum = deviceList.getSelectedIndex();
-                if (deviceNum >= 0) {
-                    BtDevices dev = btDevicesArrayList.get(deviceNum);
-                    dev.setDevName(devNameField.getText());
-                    dev.setDevBtId(devBtIdField.getText());
-                    //set the priority number
-                    //orderList(deviceNum, Integer.parseInt(devPriorityField.getText()));
-                    refreshDeviceList();
+                BtDevices dev = btDevicesArrayList.get(deviceNum);
+                dev.setDevName(devNameField.getText());
+                dev.setDevBtId(devBtIdField.getText());
+
+                try {
+                    int target = Integer.parseInt(devPriorityField.getText());
+                    btDevicesArrayList = orderList(btDevicesArrayList, deviceNum, target);
+                } catch (NumberFormatException exception) {
+                    System.out.println("Exception: " + exception);
                 }
+
+                refreshDeviceList();
+
             }
         });
+
     }
 
     public void addBtDevice(BtDevices dev, int position) {
@@ -141,13 +159,28 @@ public class WindowsApp extends JFrame {
         btDevicesArrayList.add(dev);
         i = btDevicesArrayList.size();
 
-        // orderList(i, position);
+        btDevicesArrayList = orderList(btDevicesArrayList, i, position);
 
         refreshDeviceList();
     }
 
-    public void orderList(int initial, int destination) {
-        //before: get the position in the list
+    public ArrayList<BtDevices> orderList(ArrayList firstList, int initial, int destination) {
+        ArrayList updatedList;
+        if (initial < 0 && initial <= firstList.size() - 1) {
+            if (initial < destination) {/*
+                updatedList = (ArrayList) firstList.subList(0, initial);
+                updatedList.add(firstList.get(initial));
+                updatedList.addAll(firstList.subList());
+            */
+            } else if (initial > destination) {
+
+            } else {
+                return firstList;
+            }
+
+
+        }
+        return firstList;
         //now: take position, move btDevices to new position, shift elements right.
     }
 
@@ -206,7 +239,7 @@ public class WindowsApp extends JFrame {
         connectingOutput.setText("Connecting...");
         panel5.add(connectingOutput, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_SOUTH, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel6 = new JPanel();
-        panel6.setLayout(new GridLayoutManager(3, 1, new Insets(0, 0, 0, 0), -1, -1));
+        panel6.setLayout(new GridLayoutManager(4, 1, new Insets(0, 0, 0, 0), -1, -1));
         panel6.setBackground(new Color(-14737633));
         panel6.setEnabled(false);
         panel1.add(panel6, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
@@ -225,7 +258,14 @@ public class WindowsApp extends JFrame {
         panel7.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
         panel7.setBackground(new Color(-14737633));
         panel7.setEnabled(false);
-        panel6.add(panel7, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        panel6.add(panel7, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        disconnectDeviceButton = new JButton();
+        disconnectDeviceButton.setActionCommand("");
+        disconnectDeviceButton.setBackground(new Color(-13421000));
+        disconnectDeviceButton.setForeground(new Color(-10174465));
+        disconnectDeviceButton.setText("Disconnect Device");
+        disconnectDeviceButton.setVisible(false);
+        panel6.add(disconnectDeviceButton, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel8 = new JPanel();
         panel8.setLayout(new GridLayoutManager(4, 6, new Insets(0, 0, 0, 0), -1, -1));
         panel8.setBackground(new Color(-14737633));
@@ -280,12 +320,12 @@ public class WindowsApp extends JFrame {
         panel12.setLayout(new GridLayoutManager(1, 7, new Insets(0, 0, 0, 0), -1, -1));
         panel12.setBackground(new Color(-14737633));
         panel8.add(panel12, new GridConstraints(3, 0, 1, 6, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        saveDeviceButton = new JButton();
-        saveDeviceButton.setBackground(new Color(-13421000));
-        saveDeviceButton.setForeground(new Color(-1644826));
-        saveDeviceButton.setText("Update Device");
-        saveDeviceButton.setVisible(false);
-        panel12.add(saveDeviceButton, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        updateButton = new JButton();
+        updateButton.setBackground(new Color(-13421000));
+        updateButton.setForeground(new Color(-1644826));
+        updateButton.setText("Update Device");
+        updateButton.setVisible(false);
+        panel12.add(updateButton, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final Spacer spacer2 = new Spacer();
         panel12.add(spacer2, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         final Spacer spacer3 = new Spacer();
