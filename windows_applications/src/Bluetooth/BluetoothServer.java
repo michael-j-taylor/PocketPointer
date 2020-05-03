@@ -84,7 +84,7 @@ public class BluetoothServer {
 			System.out.println("Failed to retrieve connected device");
 			mm_window.devBtIdField.setText("...");
 		}
-		mm_window.devPriorityField.setText(String.valueOf(mm_window.getBtDevicesArrayList().size()));
+		mm_window.devPriorityField.setText(String.valueOf(mm_window.getBtDevicesArrayList().size() + 1));
 	}
 	
 	public boolean isConnected() {
