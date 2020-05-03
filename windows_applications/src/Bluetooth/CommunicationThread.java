@@ -58,7 +58,7 @@ class CommunicationThread extends Thread {
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Failure in communication thread:\n" + e + "\n");
-            mm_server.end();
+            mm_server.end(true);
         }
         
     	System.out.println("Stop communication thread");
@@ -135,7 +135,7 @@ class CommunicationThread extends Thread {
             }
         } else if (m.what == PPMessage.Command.END) {
         	//If message is notification to terminate, do so
-        	mm_server.end();
+        	mm_server.end(false);
         	try {
 				mm_server.restartServer();
 			} catch (BluetoothStateException ignored) {

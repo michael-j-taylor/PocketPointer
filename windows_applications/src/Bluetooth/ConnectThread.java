@@ -87,6 +87,10 @@ class ConnectThread extends Thread {
 	    return RemoteDevice.getRemoteDevice(mm_connection_stream);
     }
 
+    public CommunicationThread getComs() {
+	    return mm_communication_thread;
+    }
+
     public void end() {
         running = false;
         

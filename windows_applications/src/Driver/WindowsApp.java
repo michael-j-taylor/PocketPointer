@@ -52,7 +52,7 @@ public class WindowsApp extends JFrame {
                 int confirm = JOptionPane.showOptionDialog(null, "Are You Sure to Close Application?", "Exit Confirmation", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
                 if (confirm == 0) {
                     if (server != null) {
-                        server.end();
+                        server.end(true);
                         System.exit(0);
                     } else {
                         System.exit(0);
