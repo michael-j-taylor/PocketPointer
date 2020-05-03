@@ -27,6 +27,7 @@ public class PPMessage {
     public PPMessage(byte what, String text) throws IllegalArgumentException {
         this.what = what;
         if (what == Command.NULL) throw new IllegalArgumentException();
+        else if (what == Command.BUTTON) //TODO Do haptic feedback here
 
         //Ensure text ends in newline character
         text = text.trim();
