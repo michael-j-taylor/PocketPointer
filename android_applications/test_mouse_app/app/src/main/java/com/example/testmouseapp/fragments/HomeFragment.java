@@ -63,7 +63,7 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     private int twa = 0; //ticks without acceleration
     private float friction_coefficient = .8f;
     private float time;
-    private final int vibrationTime = 50;
+    private final int vibrationTime = 40;
 
     private Calibrater calibrater;
 
@@ -209,7 +209,7 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                 vibe.vibrate(vibrationTime);
                 if (canSendMessage())
                     mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_MIDDLE));
-                Log.d(TAG, "Middle mouse button touched");
+                Log.d(TAG, "Middle mouse button touched" + me.getX());
                 return true;
             }
             public void performClick() {}
@@ -312,7 +312,7 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                     accel_x = 0;
                     accel_y = 0;
                     twa++;
-                    if (twa >= 4) {
+                    if (twa >= 5) {
                         //Log.d(TAG, "3 or more ticks since acceleration");
                         x_vel *= friction_coefficient;
                         y_vel *= friction_coefficient;

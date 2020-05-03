@@ -127,7 +127,7 @@ public class BluetoothService extends Service {
         device = null;
     }
 
-    public void writeMessage(PPMessage m) {
+    public void writeMessage(PPMessage m) throws IllegalStateException {
         if (mm_coms == null) {
             Log.e(TAG, "Tried to write to null mm_coms");
             Toast.makeText(getApplicationContext(), "Not connected to any device", Toast.LENGTH_SHORT).show();

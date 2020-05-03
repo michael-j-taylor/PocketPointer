@@ -32,13 +32,14 @@ public class TouchpadFragment extends Fragment {
     private pointerTracker PPpointerTracker;
     private GestureDetectorCompat PPGestureDetector;
     private View view;
-    private final Vibrator vibe = (Vibrator) mm_main_activity.getSystemService(Context.VIBRATOR_SERVICE);
+    private Vibrator vibe;
 
     private boolean mouseLock = false;  //determines if swipe data is sent or pointer coordinates on touchpad
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-
+        mm_main_activity = (MainActivity) getActivity();
+        vibe = (Vibrator) mm_main_activity.getSystemService(Context.VIBRATOR_SERVICE);
         //hide action bar for this fragment
         //Objects.requireNonNull(((AppCompatActivity) Objects.requireNonNull(getActivity())).getSupportActionBar()).hide();
 
@@ -92,7 +93,15 @@ public class TouchpadFragment extends Fragment {
                 Log.d(TAG, "single tap");
                 vibe.vibrate(50);
                 try {
-                    mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_LEFT));
+                    if (mm_main_activity.bt_service != null) {
+                        if (mouseLock) {
+
+                            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_LEFT));
+                        }
+                        else {
+                            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.TOUCH_TAP));
+                        }
+                    }
                 } catch (IllegalStateException ignored) { }
 
                 return true;
@@ -104,7 +113,14 @@ public class TouchpadFragment extends Fragment {
                 vibe.vibrate(15);
                 Log.d(TAG, "double tap");
                 try {
-                    mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.DOUBLETAP, "SOMEWHERE"));
+                    if (mm_main_activity.bt_service != null) {
+                        if (mouseLock) {
+                            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_RIGHT));
+                        }
+                        else {
+                            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.TOUCH_DOUBLETAP));
+                        }
+                    }
                 } catch (IllegalStateException ignored) { }
                 vibe.vibrate(15);
 
@@ -115,40 +131,42 @@ public class TouchpadFragment extends Fragment {
             @Override
             public boolean onSwipe(PPOnSwipeListener.Direction direction) {
 
-                if (mouseLock) {
-                    return true;
-                }
+                if (mm_main_activity.bt_service != null) {
+                    if (mouseLock) {
+                        return true;
+                    }
 
-                if (direction == PPOnSwipeListener.Direction.up) {
-                    Log.d(TAG, "swipe up");
+                    if (direction == PPOnSwipeListener.Direction.up) {
+                        Log.d(TAG, "swipe up");
 
-                    try {
-                        mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.SWIPE, "UP"));
-                    } catch (IllegalStateException ignored) { }
-                }
+                        try {
+                            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.SWIPE, "UP"));
+                        } catch (IllegalStateException ignored) { }
+                    }
 
-                if (direction == PPOnSwipeListener.Direction.down) {
-                    Log.d(TAG, "swipe down");
+                    if (direction == PPOnSwipeListener.Direction.down) {
+                        Log.d(TAG, "swipe down");
 
-                    try {
-                        mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.SWIPE, "DOWN"));
-                    } catch (IllegalStateException ignored) { }
-                }
+                        try {
+                            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.SWIPE, "DOWN"));
+                        } catch (IllegalStateException ignored) { }
+                    }
 
-                if (direction == PPOnSwipeListener.Direction.left) {
-                    Log.d(TAG, "swipe left");
+                    if (direction == PPOnSwipeListener.Direction.left) {
+                        Log.d(TAG, "swipe left");
 
-                    try {
-                        mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.SWIPE, "LEFT"));
-                    } catch (IllegalStateException ignored) { }
-                }
+                        try {
+                            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.SWIPE, "LEFT"));
+                        } catch (IllegalStateException ignored) { }
+                    }
 
-                if (direction == PPOnSwipeListener.Direction.right) {
-                    Log.d(TAG, "swipe right");
+                    if (direction == PPOnSwipeListener.Direction.right) {
+                        Log.d(TAG, "swipe right");
 
-                    try {
-                        mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.SWIPE, "RIGHT"));
-                    } catch (IllegalStateException ignored) { }
+                        try {
+                            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.SWIPE, "RIGHT"));
+                        } catch (IllegalStateException ignored) { }
+                    }
                 }
 
                 return true;
