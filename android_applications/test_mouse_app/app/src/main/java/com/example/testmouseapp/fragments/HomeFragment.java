@@ -1,5 +1,6 @@
 package com.example.testmouseapp.fragments;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -7,9 +8,12 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.util.Log;
+import android.view.InputDevice;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -59,6 +63,7 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     private int twa = 0; //ticks without acceleration
     private float friction_coefficient = .8f;
     private float time;
+    private final int vibrationTime = 40;
 
     private Calibrater calibrater;
 
@@ -85,6 +90,7 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         movingAverage_Y = new MovingAverage(50);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -143,28 +149,25 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                 isCalibrating = true;
             }
         });
-
-
         /*----------STANDARD BUTTON CREATION----------*/
         //TODO: move appropriate buttons to navdrawer
 
+        final Vibrator vibe = (Vibrator) mm_main_activity.getSystemService(Context.VIBRATOR_SERVICE);
         //Register mouse buttons
         Button lmb = view.findViewById(R.id.button_left_mouse);
         lmb.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                vibe.vibrate(vibrationTime);
                 if (canSendMessage())
                     mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_LEFT));
                 Log.d(TAG, "Left mouse button clicked");
             }
         });
-        /*lmb.setOnTouchListener(new Button.OnTouchListener() {
-            public boolean onTouch(View v, MotionEvent e) {
-                mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_LEFT));
-            }
-        });*/
+
         Button rmb = view.findViewById(R.id.button_right_mouse);
         rmb.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                vibe.vibrate(vibrationTime);
                 if (canSendMessage())
                     mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_RIGHT));
                 Log.d(TAG, "Right mouse button clicked");
@@ -173,22 +176,53 @@ public class HomeFragment extends Fragment implements SensorEventListener {
 
         //Register scroll wheel and button
         ScrollView scroll_wheel = view.findViewById(R.id.scroll_wheel);
-        scroll_wheel.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
+        scroll_wheel.setOnGenericMotionListener(new View.OnGenericMotionListener() {
+            @Override
+            public boolean onGenericMotion(View view, MotionEvent motionEvent) {
+                Log.d(TAG, "Generic motion detected.");
+                switch (motionEvent.getAction()) {
+                    case MotionEvent.ACTION_SCROLL:
+                        {
+                            float newX = motionEvent.getX();
+                            float oldX = motionEvent.getHistoricalX(1);
+                            float newY = motionEvent.getY();
+                            float oldY = motionEvent.getHistoricalY(1);
+                            if (canSendMessage())
+                                mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.SCROLL, newX - oldX, newY - oldY));
+                            Log.d(TAG, "Scroll wheel used");
+                            return true;
+                        }
+                        case MotionEvent.ACTION_BUTTON_PRESS:
+                        {
+                            vibe.vibrate(vibrationTime);
+                            if (canSendMessage())
+                                mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_MIDDLE));
+                            Log.d(TAG, "Scroll wheel clicked");
+                            return true;
+                        }
+                    }
+                return false;
+            }
+        });
+        scroll_wheel.setOnTouchListener(new View.OnTouchListener() {
+            public boolean onTouch(View v, MotionEvent me) {
+                vibe.vibrate(vibrationTime);
                 if (canSendMessage())
                     mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_MIDDLE));
-                Log.d(TAG, "Middle mouse button clicked");
+                Log.d(TAG, "Middle mouse button touched" + me.getX());
+                return true;
             }
+            public void performClick() {}
         });
         scroll_wheel.setOverScrollMode(View.OVER_SCROLL_ALWAYS);
         scroll_wheel.setOnScrollChangeListener(new View.OnScrollChangeListener() {
+            @Override
             public void onScrollChange(View v, int newX, int newY, int oldX, int oldY) {
                 if (canSendMessage())
                     mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.SCROLL, newX - oldX, newY - oldY));
                 Log.d(TAG, "Scroll wheel invoked");
             }
         });
-
         return view;
     }
 
@@ -237,7 +271,7 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         //float raw_magnitude = (float) Math.sqrt(Math.pow(event.values[0], 2) + Math.pow(event.values[1], 2));
         float calibrated_magnitude = (float) Math.sqrt(Math.pow(raw_x - calibrater.x_offset, 2) +
                 Math.pow(raw_y - calibrater.y_offset, 2));
-        if (calibrated_magnitude > calibrater.magnitude_threshold) {
+        if (calibrated_magnitude > calibrater.magnitude_threshold && !calibrater.calibrating) {
             //Log.d(TAG, "THRESHOLD EXCEEDED");
             movingAverage_X.addToWindow(raw_x);
             movingAverage_Y.addToWindow(raw_y);
@@ -278,7 +312,7 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                     accel_x = 0;
                     accel_y = 0;
                     twa++;
-                    if (twa >= 4) {
+                    if (twa >= 5) {
                         //Log.d(TAG, "3 or more ticks since acceleration");
                         x_vel *= friction_coefficient;
                         y_vel *= friction_coefficient;
@@ -307,8 +341,8 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                     x_pos = 0;
                 if (y_pos < 0.0)
                     y_pos = 0;
-                delta_x*=20000;
-                delta_y*=-20000;
+                delta_x*=10000;
+                delta_y*=-10000;
                 if (canSendMessage()) {
                     mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.MOUSE_COORDS, delta_x, delta_y));
                 }
