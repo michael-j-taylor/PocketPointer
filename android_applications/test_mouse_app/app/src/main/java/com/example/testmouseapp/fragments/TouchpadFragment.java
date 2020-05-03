@@ -11,7 +11,6 @@ import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.fragment.app.Fragment;
@@ -22,8 +21,6 @@ import com.example.testmouseapp.dataOperations.PPMessage;
 import com.example.testmouseapp.dataOperations.PPOnSwipeListener;
 import com.example.testmouseapp.dataOperations.pointerTracker;
 import com.google.android.material.navigation.NavigationView;
-
-import java.util.Objects;
 
 public class TouchpadFragment extends Fragment {
     private static final String TAG = "Touchpad Fragment";
