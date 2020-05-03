@@ -19,7 +19,6 @@ public class WindowsApp extends JFrame {
     private JList deviceList;
     private JButton connectNewDeviceButton;
     private JButton saveDeviceButton;
-    private JLabel devBtIdField;
     private JButton saveNewButton;
     private JButton deleteButton;
 
@@ -95,17 +94,19 @@ public class WindowsApp extends JFrame {
                 BtDevices dev = new BtDevices(devNameField.getText(), devBtIdField.getText());
                 btDevicesArrayList.add(dev);
                 int x = devPriorityField.getX() - 1;
-                if (x >= 1 && x<= btDevicesArrayList.size()) {
+                if (x >= 1 && x <= btDevicesArrayList.size()) {
 
                 }
                 refreshDeviceList();
             }
         });
 
+        WindowsApp window = this;
+
         connectDeviceButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
-                server = new BluetoothServer();
+                server = new BluetoothServer(window);
                 try {
                     server.openServer();
                     connectingOutput.setText("Waiting for connection...");
