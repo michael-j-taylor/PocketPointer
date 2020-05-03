@@ -15,9 +15,14 @@ public class BtDevices {
         return devBtId;
     }
 
+    public void setDevBtId(String devBtId) {
+        this.devBtId = devBtId;
+    }
+
     public BtDevices(String name, String btId) {
         devName = name;
         devBtId = btId;
     }
+
 
 }

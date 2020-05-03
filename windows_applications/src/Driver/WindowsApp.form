@@ -76,7 +76,7 @@
               </grid>
             </children>
           </grid>
-          <grid id="c01fb" layout-manager="GridLayoutManager" row-count="4" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+          <grid id="c01fb" layout-manager="GridLayoutManager" row-count="3" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
               <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -87,7 +87,7 @@
             </properties>
             <border type="none"/>
             <children>
-              <component id="fa8" class="javax.swing.JButton" binding="connectExistingDeviceButton" default-binding="true">
+              <component id="fa8" class="javax.swing.JButton" binding="connectDeviceButton" default-binding="true">
                 <constraints>
                   <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="1" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
@@ -96,7 +96,7 @@
                   <enabled value="true"/>
                   <foreground color="-10174465"/>
                   <hideActionText value="false"/>
-                  <text value="Connect Existing Device"/>
+                  <text value="Connect Device"/>
                 </properties>
               </component>
               <component id="aa9a1" class="javax.swing.JLabel">
@@ -111,7 +111,7 @@
               <grid id="dbeae" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                 <margin top="0" left="0" bottom="0" right="0"/>
                 <constraints>
-                  <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <background color="-14737633"/>
@@ -120,17 +120,6 @@
                 <border type="none"/>
                 <children/>
               </grid>
-              <component id="82011" class="javax.swing.JButton" binding="connectNewDeviceButton" default-binding="true">
-                <constraints>
-                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <background color="-13421000"/>
-                  <foreground color="-10174465"/>
-                  <hideActionText value="true"/>
-                  <text value="Connect New Device"/>
-                </properties>
-              </component>
             </children>
           </grid>
         </children>

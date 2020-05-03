@@ -34,7 +34,7 @@ public class Receiver extends JPanel
         window.addBtDevice(ryan, 4);
 
 
-        BluetoothServer server = new BluetoothServer();
+        /*BluetoothServer server = new BluetoothServer();
     	try {
     		server.openServer();
     	} catch (Exception e) {
@@ -42,7 +42,7 @@ public class Receiver extends JPanel
                 System.out.println("In receiver, failed to use Bluetooth");
             } else
                 System.out.println("Exception from openServer:\n" + e + e.getMessage() + "\n");
-    	}
+    	}*/
         
         //TODO: initialize components. pass frame to method
 //        robotTest();
