@@ -1,8 +1,5 @@
 package com.example.testmouseapp.dataOperations;
 
-import android.content.Context;
-import android.os.Vibrator;
-
 public class PPMessage {
     public static final int MESSAGE_SIZE = 1024;
 
@@ -17,7 +14,6 @@ public class PPMessage {
         byte SWIPE = 3;
         byte STRING = 4;
         byte BUTTON = 5;
-        byte DOUBLETAP = 6;
         byte SCROLL = 7;
     }
 
@@ -25,7 +21,9 @@ public class PPMessage {
         String MOUSE_RIGHT = "mright";
         String MOUSE_LEFT = "mleft";
         String MOUSE_MIDDLE = "mmiddle";
-    }
+        String TOUCH_TAP = "singletap";
+        String TOUCH_DOUBLETAP = "doubletap";
+   }
 
     public PPMessage(byte what, String text) throws IllegalArgumentException {
         this.what = what;
@@ -58,8 +56,6 @@ public class PPMessage {
             return "STRING - ";
         } else if (what == Command.BUTTON) {
             return "MOUSE BUTTON - ";
-        } else if (what == Command.DOUBLETAP) {
-            return "DOUBLETAP - ";
         } else if (what == Command.SCROLL) {
             return "SCROLL - ";
         }

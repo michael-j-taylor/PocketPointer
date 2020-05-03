@@ -33,7 +33,6 @@ public class PresentationFragment extends Fragment implements KeyPressListener {
     private static final String TAG = "Presentation Activity";
     private MainActivity mm_main_activity;
     private View view;
-    private MainActivity mActivity;
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -113,8 +112,6 @@ public class PresentationFragment extends Fragment implements KeyPressListener {
             }
         });
 
-        Log.d(TAG, "TEST1: " + mActivity);
-
         return view;
     }
 
@@ -123,8 +120,8 @@ public class PresentationFragment extends Fragment implements KeyPressListener {
     public void onStart() {
         super.onStart();
         TextView device_view = view.findViewById(R.id.presentationDeviceText);
-        if (mActivity.bt_service != null && mActivity.bt_service.isConnected()) {
-            String s = "Connected to " + mActivity.bt_service.device.getName();
+        if (mm_main_activity.bt_service != null && mm_main_activity.bt_service.isConnected()) {
+            String s = "Connected to " + mm_main_activity.bt_service.device.getName();
             device_view.setText(s);
         } else {
             device_view.setText(R.string.not_connected);
@@ -137,7 +134,7 @@ public class PresentationFragment extends Fragment implements KeyPressListener {
         super.onAttach(ctx);
 
         if (ctx instanceof MainActivity){
-            mActivity = (MainActivity) ctx;
+            mm_main_activity = (MainActivity) ctx;
         }
     }
 
@@ -160,10 +157,10 @@ public class PresentationFragment extends Fragment implements KeyPressListener {
 
         if (key_code == KeyEvent.KEYCODE_VOLUME_UP) {
             Log.d(TAG, "volume up key");
-            //TODO: send PPMessage here
+            nextSlide();
         }
         else if (key_code == KeyEvent.KEYCODE_VOLUME_DOWN) {
-            Log.d(TAG, "volume down key");
+            previousSlide();
         }
     }
 
@@ -171,7 +168,9 @@ public class PresentationFragment extends Fragment implements KeyPressListener {
     //called when button_nextslide is toggled
     private void nextSlide() {
         try {
-            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.KEY_PRESS, "RIGHT"));
+            if (mm_main_activity.bt_service != null) {
+                mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.KEY_PRESS, "RIGHT"));
+            }
         } catch (IllegalStateException ignored) { }
     }
 
@@ -179,14 +178,18 @@ public class PresentationFragment extends Fragment implements KeyPressListener {
     //called when button_prevslide is toggled
     private void previousSlide() {
         try {
-            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.KEY_PRESS, "LEFT"));
+            if (mm_main_activity.bt_service != null) {
+                mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.KEY_PRESS, "LEFT"));
+            }
         } catch (IllegalStateException ignored) { }
     }
 
 
     private void hideScreen() {
         try {
-            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.KEY_PRESS, "B"));
+            if (mm_main_activity.bt_service != null) {
+                mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.KEY_PRESS, "B"));
+            }
         } catch (IllegalStateException ignored) { }
     }
 }

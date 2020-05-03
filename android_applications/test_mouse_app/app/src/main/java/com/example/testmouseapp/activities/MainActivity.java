@@ -37,6 +37,7 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.testmouseapp.R;
 import com.example.testmouseapp.dataOperations.KeyPressListener;
+import com.example.testmouseapp.dataOperations.PPMessage;
 import com.example.testmouseapp.fragments.HomeFragment;
 import com.example.testmouseapp.fragments.PresentationFragment;
 import com.example.testmouseapp.fragments.TouchpadFragment;
@@ -269,8 +270,23 @@ public class MainActivity extends AppCompatActivity
 
                 //otherwise this function is called on key down AND up
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                    listener.onKeyDown(event.getKeyCode());
-                    return true;
+                    //listener.onKeyDown(event.getKeyCode());
+                    int key_code = event.getKeyCode();
+
+                    try {
+                        if (bt_service != null) {
+                            if (key_code == KeyEvent.KEYCODE_VOLUME_UP) {
+                                Log.d(TAG, "volume up key");
+                                bt_service.writeMessage(new PPMessage(PPMessage.Command.KEY_PRESS, "RIGHT"));
+                            }
+                            else if (key_code == KeyEvent.KEYCODE_VOLUME_DOWN) {
+                                bt_service.writeMessage(new PPMessage(PPMessage.Command.KEY_PRESS, "LEFT"));
+                            }
+                            return true;
+                        }
+                    } catch (IllegalStateException ignored) { }
+
+
                 }
 
                 //ignore event sent when key is released
