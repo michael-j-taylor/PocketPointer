@@ -105,6 +105,14 @@ public class PresentationFragment extends Fragment implements KeyPressListener {
             }
         });
 
+        //Register hideScreen button listener
+        Button button_hideScreen = view.findViewById(R.id.button_hidescreen);
+        button_hideScreen.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                hideScreen();
+            }
+        });
+
         Log.d(TAG, "TEST1: " + mActivity);
 
         return view;
@@ -172,6 +180,13 @@ public class PresentationFragment extends Fragment implements KeyPressListener {
     private void previousSlide() {
         try {
             mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.KEY_PRESS, "LEFT"));
+        } catch (IllegalStateException ignored) { }
+    }
+
+
+    private void hideScreen() {
+        try {
+            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.KEY_PRESS, "B"));
         } catch (IllegalStateException ignored) { }
     }
 }
