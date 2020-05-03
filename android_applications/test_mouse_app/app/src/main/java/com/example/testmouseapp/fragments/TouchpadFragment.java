@@ -32,13 +32,14 @@ public class TouchpadFragment extends Fragment {
     private pointerTracker PPpointerTracker;
     private GestureDetectorCompat PPGestureDetector;
     private View view;
-    private final Vibrator vibe = (Vibrator) mm_main_activity.getSystemService(Context.VIBRATOR_SERVICE);
+    private Vibrator vibe;
 
     private boolean mouseLock = false;  //determines if swipe data is sent or pointer coordinates on touchpad
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-
+        mm_main_activity = (MainActivity) getActivity();
+        vibe = (Vibrator) mm_main_activity.getSystemService(Context.VIBRATOR_SERVICE);
         //hide action bar for this fragment
         //Objects.requireNonNull(((AppCompatActivity) Objects.requireNonNull(getActivity())).getSupportActionBar()).hide();
 
