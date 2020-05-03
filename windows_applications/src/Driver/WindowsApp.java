@@ -1,34 +1,161 @@
 package Driver;
 
+import Bluetooth.BluetoothServer;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 
+import javax.bluetooth.BluetoothStateException;
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
+import java.util.ArrayList;
 
 public class WindowsApp extends JFrame {
     private JPanel mainPanel;
-    private JButton connectExistingDeviceButton;
+    private JButton connectDeviceButton;
     private JList deviceList;
-    private JLabel connectingOutput;
     private JButton connectNewDeviceButton;
-    private JTextField textField1;
-    private JTextField textField2;
-    private JTextField textField3;
+    private JButton saveDeviceButton;
+    private JButton saveNewButton;
+    private JButton deleteButton;
+
+    public ArrayList<BtDevices> getBtDevicesArrayList() {
+        return btDevicesArrayList;
+    }
+
+    private ArrayList<BtDevices> btDevicesArrayList;
+    private DefaultListModel listModel;
+    private BluetoothServer server;
+
+
+    public JLabel connectingOutput;
+    public JTextField devNameField;
+    public JTextField devPriorityField;
+    public JLabel devBtIdField;
 
     public WindowsApp() {
         super("PocketPointer Receiver");
 
         setSize(850, 400);
         setResizable(false);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        //setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        WindowListener exitListener = new WindowAdapter() {
+            @Override
+            public void windowOpened(WindowEvent e) {
+                super.windowOpened(e);
+            }
 
+            public void windowClosing(WindowEvent e) {
+                int confirm = JOptionPane.showOptionDialog(null, "Are You Sure to Close Application?", "Exit Confirmation", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
+                if (confirm == 0) {
+                    if (server != null) {
+                        server.end();
+                        System.exit(0);
+                    } else {
+                        System.exit(0);
+                    }
+
+                }
+            }
+        };
+
+        addWindowListener(exitListener);
         getContentPane().add(mainPanel);
 
-        setVisible(true);
+        btDevicesArrayList = new ArrayList<BtDevices>();
+        listModel = new DefaultListModel();
+        deviceList.setModel(listModel);
+
+        deviceList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                int deviceNum = deviceList.getSelectedIndex();
+                if (deviceNum >= 0) {
+                    BtDevices dev = btDevicesArrayList.get(deviceNum);
+                    devNameField.setText(dev.getDevName());
+                    devPriorityField.setText(String.valueOf(deviceNum + 1));
+                    devBtIdField.setText(dev.getDevBtId());
+
+                    saveDeviceButton.setVisible(true);
+                    deleteButton.setVisible(true);
+                } else {
+                    saveDeviceButton.setVisible(false);
+                    deleteButton.setVisible(false);
+                }
+            }
+        });
+
+        saveNewButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                BtDevices dev = new BtDevices(devNameField.getText(), devBtIdField.getText());
+                btDevicesArrayList.add(dev);
+                int x = devPriorityField.getX() - 1;
+                if (x >= 1 && x <= btDevicesArrayList.size()) {
+
+                }
+                refreshDeviceList();
+            }
+        });
+
+        WindowsApp window = this;
+
+        connectDeviceButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                server = new BluetoothServer(window);
+                try {
+                    server.openServer();
+                    connectingOutput.setText("Waiting for connection...");
+                } catch (Exception e) {
+                    if (e instanceof BluetoothStateException) {
+                        System.out.println("In receiver, failed to use Bluetooth");
+                    } else
+                        System.out.println("Exception from openServer:\n" + e + e.getMessage() + "\n");
+                }
+
+            }
+        });
+        saveDeviceButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int deviceNum = deviceList.getSelectedIndex();
+                if (deviceNum >= 0) {
+                    BtDevices dev = btDevicesArrayList.get(deviceNum);
+                    dev.setDevName(devNameField.getText());
+                    dev.setDevBtId(devBtIdField.getText());
+                    //set the priority number
+                    //orderList(deviceNum, Integer.parseInt(devPriorityField.getText()));
+                    refreshDeviceList();
+                }
+            }
+        });
+    }
+
+    public void addBtDevice(BtDevices dev, int position) {
+        int i;
+
+        btDevicesArrayList.add(dev);
+        i = btDevicesArrayList.size();
+
+        // orderList(i, position);
+
+        refreshDeviceList();
+    }
+
+    public void orderList(int initial, int destination) {
+        //before: get the position in the list
+        //now: take position, move btDevices to new position, shift elements right.
+    }
+
+    public void refreshDeviceList() {
+        listModel.removeAllElements();
+        for (BtDevices dev : btDevicesArrayList) {
+            listModel.addElement(dev.getDevName());
+        }
     }
 
     private void createUIComponents() {
@@ -79,17 +206,17 @@ public class WindowsApp extends JFrame {
         connectingOutput.setText("Connecting...");
         panel5.add(connectingOutput, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_SOUTH, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel6 = new JPanel();
-        panel6.setLayout(new GridLayoutManager(4, 1, new Insets(0, 0, 0, 0), -1, -1));
+        panel6.setLayout(new GridLayoutManager(3, 1, new Insets(0, 0, 0, 0), -1, -1));
         panel6.setBackground(new Color(-14737633));
         panel6.setEnabled(false);
         panel1.add(panel6, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        connectExistingDeviceButton = new JButton();
-        connectExistingDeviceButton.setBackground(new Color(-13421000));
-        connectExistingDeviceButton.setEnabled(true);
-        connectExistingDeviceButton.setForeground(new Color(-10174465));
-        connectExistingDeviceButton.setHideActionText(false);
-        connectExistingDeviceButton.setText("Connect Existing Device");
-        panel6.add(connectExistingDeviceButton, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        connectDeviceButton = new JButton();
+        connectDeviceButton.setBackground(new Color(-13421000));
+        connectDeviceButton.setEnabled(true);
+        connectDeviceButton.setForeground(new Color(-10174465));
+        connectDeviceButton.setHideActionText(false);
+        connectDeviceButton.setText("Connect Device");
+        panel6.add(connectDeviceButton, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JLabel label1 = new JLabel();
         label1.setForeground(new Color(-1644826));
         label1.setText("Connect to Android Application via Bluetooth");
@@ -98,13 +225,7 @@ public class WindowsApp extends JFrame {
         panel7.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
         panel7.setBackground(new Color(-14737633));
         panel7.setEnabled(false);
-        panel6.add(panel7, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        connectNewDeviceButton = new JButton();
-        connectNewDeviceButton.setBackground(new Color(-13421000));
-        connectNewDeviceButton.setForeground(new Color(-10174465));
-        connectNewDeviceButton.setHideActionText(true);
-        connectNewDeviceButton.setText("Connect New Device");
-        panel6.add(connectNewDeviceButton, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        panel6.add(panel7, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         final JPanel panel8 = new JPanel();
         panel8.setLayout(new GridLayoutManager(4, 6, new Insets(0, 0, 0, 0), -1, -1));
         panel8.setBackground(new Color(-14737633));
@@ -126,27 +247,25 @@ public class WindowsApp extends JFrame {
         label4.setForeground(new Color(-1644826));
         label4.setText("Bluetooth ID");
         panel9.add(label4, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_SOUTH, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        textField1 = new JTextField();
-        textField1.setBackground(new Color(-13421000));
-        textField1.setForeground(new Color(-1644826));
-        textField1.setSelectedTextColor(new Color(-1));
-        textField1.setSelectionColor(new Color(-11967840));
-        textField1.setText("");
-        panel9.add(textField1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_NORTHWEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
-        textField2 = new JTextField();
-        textField2.setBackground(new Color(-13421000));
-        textField2.setForeground(new Color(-1644826));
-        textField2.setSelectedTextColor(new Color(-1));
-        textField2.setSelectionColor(new Color(-11967840));
-        panel9.add(textField2, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_NORTHWEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
-        textField3 = new JTextField();
-        textField3.setBackground(new Color(-13421000));
-        textField3.setForeground(new Color(-1644826));
-        textField3.setSelectedTextColor(new Color(-1));
-        textField3.setSelectionColor(new Color(-11967840));
-        panel9.add(textField3, new GridConstraints(1, 2, 1, 1, GridConstraints.ANCHOR_NORTHWEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        devNameField = new JTextField();
+        devNameField.setBackground(new Color(-13421000));
+        devNameField.setForeground(new Color(-1644826));
+        devNameField.setSelectedTextColor(new Color(-1));
+        devNameField.setSelectionColor(new Color(-11967840));
+        devNameField.setText("");
+        panel9.add(devNameField, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_NORTHWEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        devPriorityField = new JTextField();
+        devPriorityField.setBackground(new Color(-13421000));
+        devPriorityField.setForeground(new Color(-1644826));
+        devPriorityField.setSelectedTextColor(new Color(-1));
+        devPriorityField.setSelectionColor(new Color(-11967840));
+        panel9.add(devPriorityField, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_NORTHWEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         final Spacer spacer1 = new Spacer();
         panel9.add(spacer1, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        devBtIdField = new JLabel();
+        devBtIdField.setForeground(new Color(-1644826));
+        devBtIdField.setText("Exampleid");
+        panel9.add(devBtIdField, new GridConstraints(1, 2, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel10 = new JPanel();
         panel10.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
         panel10.setBackground(new Color(-14737633));
@@ -155,11 +274,33 @@ public class WindowsApp extends JFrame {
         final JPanel panel11 = new JPanel();
         panel11.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
         panel11.setBackground(new Color(-14737633));
+        panel11.setForeground(new Color(-1644826));
         panel8.add(panel11, new GridConstraints(1, 3, 1, 3, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         final JPanel panel12 = new JPanel();
-        panel12.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        panel12.setLayout(new GridLayoutManager(1, 7, new Insets(0, 0, 0, 0), -1, -1));
         panel12.setBackground(new Color(-14737633));
         panel8.add(panel12, new GridConstraints(3, 0, 1, 6, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        saveDeviceButton = new JButton();
+        saveDeviceButton.setBackground(new Color(-13421000));
+        saveDeviceButton.setForeground(new Color(-1644826));
+        saveDeviceButton.setText("Update Device");
+        saveDeviceButton.setVisible(false);
+        panel12.add(saveDeviceButton, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final Spacer spacer2 = new Spacer();
+        panel12.add(spacer2, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        final Spacer spacer3 = new Spacer();
+        panel12.add(spacer3, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        saveNewButton = new JButton();
+        saveNewButton.setText("Save New");
+        panel12.add(saveNewButton, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        deleteButton = new JButton();
+        deleteButton.setText("Delete");
+        deleteButton.setVisible(false);
+        panel12.add(deleteButton, new GridConstraints(0, 5, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final Spacer spacer4 = new Spacer();
+        panel12.add(spacer4, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        final Spacer spacer5 = new Spacer();
+        panel12.add(spacer5, new GridConstraints(0, 6, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         final JPanel panel13 = new JPanel();
         panel13.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
         panel8.add(panel13, new GridConstraints(1, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));

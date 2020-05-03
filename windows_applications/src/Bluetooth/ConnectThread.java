@@ -5,6 +5,7 @@ import java.io.IOException;
 import javax.bluetooth.BluetoothStateException;
 import javax.bluetooth.DiscoveryAgent;
 import javax.bluetooth.LocalDevice;
+import javax.bluetooth.RemoteDevice;
 import javax.microedition.io.StreamConnection;
 
 class ConnectThread extends Thread {
@@ -62,9 +63,9 @@ class ConnectThread extends Thread {
 	
 	private void successfulConnection() {
     	System.out.println("Connected to remote device");
-    	mm_server.setConnected(true);
-    	
-    	//Send test message
+        mm_server.successfulConnection();
+
+        //Send test message
 		mm_communication_thread.write(new PPMessage(PPMessage.Command.STRING, "Test message from Windows\n"));
     	
     	//Stop watching for expired discoverability
@@ -81,6 +82,10 @@ class ConnectThread extends Thread {
 	public StreamConnection getStream() {
 		return mm_connection_stream;
 	}
+
+	public RemoteDevice getConnectedDevice() throws IOException {
+	    return RemoteDevice.getRemoteDevice(mm_connection_stream);
+    }
 
     public void end() {
         running = false;
