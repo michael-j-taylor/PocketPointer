@@ -41,7 +41,7 @@ public class TouchpadFragment extends Fragment {
                              ViewGroup container, Bundle savedInstanceState) {
 
         //hide action bar for this fragment
-        Objects.requireNonNull(((AppCompatActivity) Objects.requireNonNull(getActivity())).getSupportActionBar()).hide();
+        //Objects.requireNonNull(((AppCompatActivity) Objects.requireNonNull(getActivity())).getSupportActionBar()).hide();
 
         view = inflater.inflate(R.layout.fragment_touchpad, container, false);
 
