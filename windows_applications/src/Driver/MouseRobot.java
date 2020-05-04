@@ -1,5 +1,7 @@
 package Driver;
 
+import Bluetooth.PPMessage;
+
 import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -39,28 +41,52 @@ public class MouseRobot {
         powerPoint("B");
         mouseMovement(500, 0);
         buttonPress("mright");
+        buttonPress("singletap");
         scroll(5);
         
         System.out.println("Finished");
     }
 
-    //Powerpoint mode that takes a button press and gives the corrisponding button press in powerpoint mode
+    //Powerpoint mode that takes a button press and gives the corresponding button press in powerpoint mode
     public static void powerPoint(String buttonPress) throws AWTException {
     	Robot robot = new Robot();
-    	
-    	if (buttonPress.equals("RIGHT")) {
+
+    	switch (buttonPress){
+			case "RIGHT" :
+				robot.keyPress(KeyEvent.VK_RIGHT);
+				robot.keyRelease(KeyEvent.VK_RIGHT);
+				System.out.println("Right");
+				break;
+			case "LEFT":
+				robot.keyPress(KeyEvent.VK_LEFT);
+				robot.keyRelease(KeyEvent.VK_LEFT);
+				System.out.println("Left");
+				break;
+			case "B":
+				robot.keyPress(KeyEvent.VK_B);
+				robot.keyRelease(KeyEvent.VK_B);
+				System.out.println("B");
+				break;
+			default:
+				System.out.println("error");
+				break;
+		}
+    	/*if (buttonPress.equals("RIGHT")) {
     		
     		//This is the right press button
 			robot.keyPress(KeyEvent.VK_RIGHT);
+			robot.keyRelease(KeyEvent.VK_RIGHT);
     	}
     	else if (buttonPress.equals("LEFT")) {
     		//This is left press button
     		robot.keyPress(KeyEvent.VK_LEFT);
+    		robot.keyRelease(KeyEvent.VK_LEFT);
     	}
     	else if (buttonPress.equals("B")) {
     		//This is for the blank screen
     		robot.keyPress(KeyEvent.VK_B);
-    	}
+    		robot.keyRelease(KeyEvent.VK_B);
+    	}*/
 
     }
 
@@ -86,7 +112,39 @@ public class MouseRobot {
     public static void buttonPress(String buttonPress) throws AWTException{
     	Robot robot = new Robot();
 
-    	//This is if the left mouse button is clicked
+    	switch (buttonPress){
+			case PPMessage.Button.MOUSE_LEFT: //case for left mouse click
+				robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+				robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+				System.out.println("Left");
+				break;
+			case PPMessage.Button.MOUSE_MIDDLE: //case for middle mouse click
+				robot.mousePress(InputEvent.BUTTON2_DOWN_MASK);
+				robot.mouseRelease(InputEvent.BUTTON2_DOWN_MASK);
+				System.out.println("Middle");
+				break;
+			case PPMessage.Button.MOUSE_RIGHT: //case for right mouse click
+				robot.mousePress(InputEvent.BUTTON3_DOWN_MASK);
+				robot.mouseRelease(InputEvent.BUTTON3_DOWN_MASK);
+				System.out.println("Right");
+				break;
+			case PPMessage.Button.TOUCH_DOUBLETAP: //case for doubletap on the screen alt + Right to forward page
+				robot.keyPress(KeyEvent.VK_ALT);
+				robot.keyPress(KeyEvent.VK_RIGHT);
+				robot.keyRelease(KeyEvent.VK_ALT);
+				robot.keyRelease(KeyEvent.VK_RIGHT);
+				break;
+			case PPMessage.Button.TOUCH_TAP: //case for singletap on the screen alt + Left to back page
+				robot.keyPress(KeyEvent.VK_ALT);
+				robot.keyPress(KeyEvent.VK_LEFT);
+				robot.keyRelease(KeyEvent.VK_ALT);
+				robot.keyRelease(KeyEvent.VK_LEFT);
+				break;
+			default: //default output
+				System.out.println("Error Button Does Not Exist");
+				break;
+		}
+    	/*//This is if the left mouse button is clicked
     	if (buttonPress.equals("mleft")) {
     		robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
     		robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
@@ -105,7 +163,7 @@ public class MouseRobot {
     		robot.mousePress(InputEvent.BUTTON3_DOWN_MASK);
     		robot.mouseRelease(InputEvent.BUTTON3_DOWN_MASK);
     		System.out.println("Right");
-    	}
+    	}*/
     	
     }
 
@@ -118,16 +176,47 @@ public class MouseRobot {
     }
 
     //this is a method for double tap input for specific applications
-    public static void doubleTap() throws AWTException{
+    /*public static void doubleTap() throws AWTException{
 		Robot robot = new Robot();
 		//presses space for double tap
 		robot.keyPress(KeyEvent.VK_SPACE);
-	}
+		robot.keyRelease(KeyEvent.VK_SPACE);
+	}*/
 
 	//this method for swipe input for specific applications, currently for tab switches in Google Chrome
 	public static void swipe(String swipeInput) throws AWTException{
 		Robot robot = new Robot();
 
+		switch (swipeInput){
+			case "RIGHT": //case for a right swipe
+				robot.keyPress(KeyEvent.VK_CONTROL);
+				robot.keyPress(KeyEvent.VK_PAGE_DOWN);
+				robot.keyRelease(KeyEvent.VK_CONTROL);
+				robot.keyRelease(KeyEvent.VK_PAGE_DOWN);
+				System.out.println("Swipe right");
+				break;
+			case "LEFT": //case for left swipe
+				robot.keyPress(KeyEvent.VK_CONTROL);
+				robot.keyPress(KeyEvent.VK_PAGE_UP);
+				robot.keyRelease(KeyEvent.VK_CONTROL);
+				robot.keyRelease(KeyEvent.VK_PAGE_UP);
+				System.out.println("Swipe left");
+				break;
+			case "UP": //case for up swipe
+				robot.keyPress(KeyEvent.VK_PAGE_UP);
+				robot.keyRelease(KeyEvent.VK_PAGE_UP);
+				System.out.println("Swipe up");
+				break;
+			case "DOWN": //case for down swipe
+				robot.keyPress(KeyEvent.VK_PAGE_DOWN);
+				robot.keyRelease(KeyEvent.VK_PAGE_DOWN);
+				System.out.println("Swipe Down");
+				break;
+			default:
+				System.out.println("Error Swipe Not Detected");
+				break;
+		}
+		/*
 		//checks if the input is a swipe right
 		if (swipeInput.equals("RIGHT")){
 			//these press the control + page down button for tab right
@@ -152,13 +241,15 @@ public class MouseRobot {
 		else if (swipeInput.equals("UP")){
 			//these press the page up button
 			robot.keyPress(KeyEvent.VK_PAGE_UP);
+			robot.keyRelease(KeyEvent.VK_PAGE_UP);
 		}
 
 		//checks if the input is a swipe down
-		else if(swipeInput.equals("Down")){
+		else if(swipeInput.equals("DOWN")){
 			//these press the page down button
 			robot.keyPress(KeyEvent.VK_PAGE_DOWN);
-		}
+			robot.keyRelease(KeyEvent.VK_PAGE_DOWN);
+		}*/
 
     }
 }
