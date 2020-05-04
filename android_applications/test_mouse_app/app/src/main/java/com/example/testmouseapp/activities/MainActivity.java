@@ -12,24 +12,19 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.text.method.Touch;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -37,9 +32,8 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.testmouseapp.R;
 import com.example.testmouseapp.dataOperations.KeyPressListener;
-import com.example.testmouseapp.fragments.HomeFragment;
+import com.example.testmouseapp.dataOperations.PPMessage;
 import com.example.testmouseapp.fragments.PresentationFragment;
-import com.example.testmouseapp.fragments.TouchpadFragment;
 import com.example.testmouseapp.services.BluetoothService;
 import com.google.android.material.navigation.NavigationView;
 
@@ -179,24 +173,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void disconnectDevice() {
-        bt_service.closeConnection();
+        bt_service.closeConnection(true);
 
-        //Identifies current fragment if possible
-        TextView device_view = findViewById(R.id.homeDeviceText);
-        if (device_view == null) {
-            device_view = findViewById(R.id.touchpadDeviceText);
-            if (device_view == null) {
-                device_view = findViewById(R.id.presentationDeviceText);
-            }
-        }
-
-        if ( device_view != null ) {
-            device_view.setText(R.string.not_connected);
-            //Log.d(TAG, "Updated " + device_view + " text");
-        }
-
-        button_connect.setVisibility(View.VISIBLE);
-        button_disconnect.setVisibility(View.INVISIBLE);
+        removeConnection();
     }
 
     @Override
@@ -235,7 +214,7 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    public void updateConnection() {
+    public void addConnection() {
         TextView device_view;
         if ((device_view = findViewById(R.id.homeDeviceText)) != null ) {
             Log.d(TAG, "In HomeFragment");
@@ -254,6 +233,24 @@ public class MainActivity extends AppCompatActivity
         button_disconnect.setVisibility(View.VISIBLE);
     }
 
+    public void removeConnection() {
+        //Identifies current fragment if possible
+        TextView device_view = findViewById(R.id.homeDeviceText);
+        if (device_view == null) {
+            device_view = findViewById(R.id.touchpadDeviceText);
+            if (device_view == null) {
+                device_view = findViewById(R.id.presentationDeviceText);
+            }
+        }
+
+        if ( device_view != null ) {
+            device_view.setText(R.string.not_connected);
+            Log.d(TAG, "Updated " + device_view + " text");
+        }
+        button_connect.setVisibility(View.VISIBLE);
+        button_disconnect.setVisibility(View.INVISIBLE);
+    }
+
     //Used to override volume keys in PresentationMode fragment
     //this method cannot be used in a fragment, so is overridden here
     @Override
@@ -266,8 +263,23 @@ public class MainActivity extends AppCompatActivity
 
                 //otherwise this function is called on key down AND up
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                    listener.onKeyDown(event.getKeyCode());
-                    return true;
+                    //listener.onKeyDown(event.getKeyCode());
+                    int key_code = event.getKeyCode();
+
+                    try {
+                        if (bt_service != null) {
+                            if (key_code == KeyEvent.KEYCODE_VOLUME_UP) {
+                                Log.d(TAG, "volume up key");
+                                bt_service.writeMessage(new PPMessage(PPMessage.Command.KEY_PRESS, "RIGHT"));
+                            }
+                            else if (key_code == KeyEvent.KEYCODE_VOLUME_DOWN) {
+                                bt_service.writeMessage(new PPMessage(PPMessage.Command.KEY_PRESS, "LEFT"));
+                            }
+                            return true;
+                        }
+                    } catch (IllegalStateException ignored) { }
+
+
                 }
 
                 //ignore event sent when key is released

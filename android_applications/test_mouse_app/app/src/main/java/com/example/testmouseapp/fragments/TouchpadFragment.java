@@ -34,7 +34,7 @@ public class TouchpadFragment extends Fragment {
     private View view;
     private Vibrator vibe;
 
-    private boolean mouseLock = false;  //determines if swipe data is sent or pointer coordinates on touchpad
+    private boolean browser_lock = false;  //determines if swipe data is sent or pointer coordinates on touchpad
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -75,7 +75,7 @@ public class TouchpadFragment extends Fragment {
         button_mouse_lock.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                mouseLock = isChecked;
+                browser_lock = isChecked;
             }
         });
 
@@ -94,7 +94,7 @@ public class TouchpadFragment extends Fragment {
                 vibe.vibrate(50);
                 try {
                     if (mm_main_activity.bt_service != null) {
-                        if (mouseLock) {
+                        if (browser_lock) {
 
                             mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_LEFT));
                         }
@@ -114,7 +114,7 @@ public class TouchpadFragment extends Fragment {
                 Log.d(TAG, "double tap");
                 try {
                     if (mm_main_activity.bt_service != null) {
-                        if (mouseLock) {
+                        if (browser_lock) {
                             mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_RIGHT));
                         }
                         else {
@@ -132,7 +132,7 @@ public class TouchpadFragment extends Fragment {
             public boolean onSwipe(PPOnSwipeListener.Direction direction) {
 
                 if (mm_main_activity.bt_service != null) {
-                    if (mouseLock) {
+                    if (browser_lock) {
                         return true;
                     }
 
@@ -180,15 +180,15 @@ public class TouchpadFragment extends Fragment {
             public boolean onTouch(View v, MotionEvent event) {
                 //TODO: ignore touch if within 24px of an edge
 
-                if (mouseLock) {  //if mouse lock enabled, send x and y coordinates of pointer
+                if (browser_lock) {  //if mouse lock enabled, send x and y coordinates of pointer
+                    PPGestureDetector.onTouchEvent(event);
+                } else {  //capture gesture from swipe
                     PPpointerTracker.setMouseCoordinates(event);
                     if (mm_main_activity.bt_service != null && mm_main_activity.bt_service.isConnected()) {
 
                         mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.MOUSE_COORDS, PPpointerTracker.getDeltaX(), PPpointerTracker.getDeltaY()));
                         PPGestureDetector.onTouchEvent(event);
                     }
-                } else {  //capture gesture from swipe
-                    PPGestureDetector.onTouchEvent(event);
                 }
 
                 return true;
