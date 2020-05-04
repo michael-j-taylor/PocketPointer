@@ -64,8 +64,10 @@ public class BluetoothServer {
 	public void restartServer() throws BluetoothStateException {
 		mm_connect_thread = null;
 		mm_watcher = null;
-		mm_connected = false;
 		notifier = null;
+
+		mm_window.connectDeviceButton.setVisible(false);
+		mm_window.stopConnectingButton.setVisible(true);
 		
 		openServer();
 	}
@@ -84,6 +86,10 @@ public class BluetoothServer {
 			mm_window.devBtIdField.setText("...");
 		}
 		mm_window.devPriorityField.setText(String.valueOf(mm_window.getBtDevicesArrayList().size() + 1));
+
+        mm_window.connectDeviceButton.setVisible(false);
+        mm_window.stopConnectingButton.setVisible(false);
+        mm_window.disconnectDeviceButton.setVisible(true);
 	}
 	
 	public boolean isConnected() {
@@ -98,7 +104,9 @@ public class BluetoothServer {
 		return notifier;
 	}
 
-
+	public WindowsApp getWindow() {
+    	return mm_window;
+	}
 
 	public String[] getPairedNames() throws BluetoothStateException {
 		RemoteDevice[] devices = LocalDevice.getLocalDevice().getDiscoveryAgent().retrieveDevices(DiscoveryAgent.PREKNOWN);
@@ -150,7 +158,14 @@ public class BluetoothServer {
 		if (localKilled && isConnected()) {
 		    mm_connect_thread.getComs().write(new PPMessage(PPMessage.Command.END, "Server ending activity"));
         }
-		
+
+		mm_connected = false;
+
+        //Update text fields in window to show no connection
+        mm_window.connectingOutput.setText("No connected device");
+        mm_window.connectDeviceButton.setVisible(true);
+		mm_window.disconnectDeviceButton.setVisible(false);
+
 		//Shut down threads
         if (mm_connect_thread != null) {
         	mm_connect_thread.end();

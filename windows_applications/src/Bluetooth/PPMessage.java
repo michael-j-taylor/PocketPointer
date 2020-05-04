@@ -14,7 +14,6 @@ public class PPMessage {
         byte SWIPE = 3;
         byte STRING = 4;
         byte BUTTON = 5;
-        byte DOUBLETAP = 6;
         byte SCROLL = 7;
     }
 
@@ -22,12 +21,13 @@ public class PPMessage {
         String MOUSE_RIGHT = "mright";
         String MOUSE_LEFT = "mleft";
         String MOUSE_MIDDLE = "mmiddle";
+        String TOUCH_TAP = "singletap";
+        String TOUCH_DOUBLETAP = "doubletap";
     }
 
     public PPMessage(byte what, String text) throws IllegalArgumentException {
         this.what = what;
         if (what == Command.NULL) throw new IllegalArgumentException();
-
         //Ensure text ends in newline character
         text = text.trim();
         if (text.charAt(text.length()-1) == '\n') this.text = text + "\n";
@@ -56,8 +56,6 @@ public class PPMessage {
             return "STRING - ";
         } else if (what == Command.BUTTON) {
             return "MOUSE BUTTON - ";
-        } else if (what == Command.DOUBLETAP) {
-            return "DOUBLETAP - ";
         } else if (what == Command.SCROLL) {
             return "SCROLL - ";
         }
