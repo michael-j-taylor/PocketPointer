@@ -10,9 +10,8 @@
 
         <item
             android:id="@+id/nav_home"
-            android:icon="@drawable/touchpad_ic_mouse_blue_24dp"
-            android:iconTint="@android:color/white"
-            android:title="@string/menu_mouse"/>
+            android:icon="@drawable/ic_laptop_black_24dp"
+            android:title="@string/menu_home"/>
 
         <item
             android:id="@+id/nav_presentation"
@@ -31,8 +30,8 @@
 
         <item
             android:id="@+id/nav_switch_mousemode"
-            android:icon="@drawable/ic_movingcursor"
-            android:title="@string/menu_touchpad_cursor"
+            android:icon="@drawable/touchpad_ic_mouse_blue_24dp"
+            android:title="@string/menu_mousemode"
             app:actionLayout="@layout/navdrawer_menu_switch_mousemode"/>
         <item
             android:id="@+id/nav_switch_override_volume_keys"

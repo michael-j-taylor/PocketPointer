@@ -125,15 +125,7 @@ class CommunicationThread extends Thread {
             } catch (AWTException e) {
                 System.out.println("Failed to execute command");
             }
-        } /*else if (m.what == PPMessage.Command.DOUBLETAP) {
-            //If message is a double tap
-            try {
-                //calls doubleTap() in MouseRobot
-                MouseRobot.doubleTap();
-            } catch (AWTException e) {
-                System.out.println("Failed to execute command");
-            }
-        }*/ else if (m.what == PPMessage.Command.END) {
+        } else if (m.what == PPMessage.Command.END) {
         	//If message is notification to terminate, do so
         	mm_server.end(false);
         	try {

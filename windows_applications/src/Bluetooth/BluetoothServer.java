@@ -64,8 +64,10 @@ public class BluetoothServer {
 	public void restartServer() throws BluetoothStateException {
 		mm_connect_thread = null;
 		mm_watcher = null;
-		mm_connected = false;
 		notifier = null;
+
+		mm_window.connectDeviceButton.setVisible(false);
+		mm_window.stopConnectingButton.setVisible(true);
 		
 		openServer();
 	}
@@ -86,6 +88,7 @@ public class BluetoothServer {
 		mm_window.devPriorityField.setText(String.valueOf(mm_window.getBtDevicesArrayList().size() + 1));
 
         mm_window.connectDeviceButton.setVisible(false);
+        mm_window.stopConnectingButton.setVisible(false);
         mm_window.disconnectDeviceButton.setVisible(true);
 	}
 	
@@ -162,7 +165,7 @@ public class BluetoothServer {
         mm_window.connectingOutput.setText("No connected device");
         mm_window.connectDeviceButton.setVisible(true);
 		mm_window.disconnectDeviceButton.setVisible(false);
-		
+
 		//Shut down threads
         if (mm_connect_thread != null) {
         	mm_connect_thread.end();

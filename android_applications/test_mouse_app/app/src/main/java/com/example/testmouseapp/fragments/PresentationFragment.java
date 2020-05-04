@@ -2,7 +2,6 @@ package com.example.testmouseapp.fragments;
 
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -18,14 +17,12 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.testmouseapp.R;
 import com.example.testmouseapp.activities.MainActivity;
-import com.example.testmouseapp.dataOperations.PPMessage;
 import com.example.testmouseapp.dataOperations.KeyPressListener;
+import com.example.testmouseapp.dataOperations.PPMessage;
 import com.google.android.material.navigation.NavigationView;
 
 public class PresentationFragment extends Fragment implements KeyPressListener {
