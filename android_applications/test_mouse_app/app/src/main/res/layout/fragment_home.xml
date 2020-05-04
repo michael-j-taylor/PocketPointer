@@ -55,15 +55,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.13999999"
-        tools:visibility="visible">
-
-        <LinearLayout
-            android:id="@+id/wheel_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="#00FFFFFF"
-            android:orientation="vertical"></LinearLayout>
-    </ScrollView>
+        tools:visibility="visible"/>
 
     <TextView
         android:id="@+id/acceleration"
