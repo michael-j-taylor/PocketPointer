@@ -295,7 +295,6 @@ public class HomeFragment extends Fragment implements SensorEventListener {
             }
 
             if (currentTime - startTime > time*1000 && inFocus) {
-                startTime = Calendar.getInstance().getTimeInMillis();
                 //set maximum x & y acceleration readings
                 /*if (event.values[0] > xmax) {xmax = event.values[0];} //Might repurpose this later
                 if (event.values[0] < xmin) {xmin = event.values[0];}
@@ -355,6 +354,8 @@ public class HomeFragment extends Fragment implements SensorEventListener {
 
                 prev_accel_x = accel_x;
                 prev_accel_y = accel_y;
+
+                startTime = Calendar.getInstance().getTimeInMillis();
 
                 /*String data_live = "X: " + String.format("%.3f", x_pos) + "\nY: " + String.format("%.3f", y_pos) + "\nax: " + accel_x +"\nay: " + accel_y +
                         "\ncx: " + calibrater.x_offset + "\ncy: " + calibrater.y_offset + "\nrx: " + String.format("%.5f", raw_x) +
