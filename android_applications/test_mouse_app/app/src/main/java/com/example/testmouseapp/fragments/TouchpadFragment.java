@@ -96,10 +96,10 @@ public class TouchpadFragment extends Fragment {
                     if (mm_main_activity.bt_service != null) {
                         if (browser_lock) {
 
-                            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_LEFT));
+                            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.TOUCH_TAP));
                         }
                         else {
-                            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.TOUCH_TAP));
+                            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_LEFT);
                         }
                     }
                 } catch (IllegalStateException ignored) { }
@@ -115,10 +115,10 @@ public class TouchpadFragment extends Fragment {
                 try {
                     if (mm_main_activity.bt_service != null) {
                         if (browser_lock) {
-                            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_RIGHT));
+                            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.TOUCH_DOUBLETAP));
                         }
                         else {
-                            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.TOUCH_DOUBLETAP));
+                            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_RIGHT));
                         }
                     }
                 } catch (IllegalStateException ignored) { }
@@ -132,9 +132,6 @@ public class TouchpadFragment extends Fragment {
             public boolean onSwipe(PPOnSwipeListener.Direction direction) {
 
                 if (mm_main_activity.bt_service != null) {
-                    if (browser_lock) {
-                        return true;
-                    }
 
                     if (direction == PPOnSwipeListener.Direction.up) {
                         Log.d(TAG, "swipe up");
