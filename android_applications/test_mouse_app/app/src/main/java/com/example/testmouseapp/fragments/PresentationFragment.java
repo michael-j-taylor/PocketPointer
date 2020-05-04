@@ -2,7 +2,6 @@ package com.example.testmouseapp.fragments;
 
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -18,14 +17,12 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.testmouseapp.R;
 import com.example.testmouseapp.activities.MainActivity;
-import com.example.testmouseapp.dataOperations.PPMessage;
 import com.example.testmouseapp.dataOperations.KeyPressListener;
+import com.example.testmouseapp.dataOperations.PPMessage;
 import com.google.android.material.navigation.NavigationView;
 
 public class PresentationFragment extends Fragment implements KeyPressListener {
@@ -33,7 +30,6 @@ public class PresentationFragment extends Fragment implements KeyPressListener {
     private static final String TAG = "Presentation Activity";
     private MainActivity mm_main_activity;
     private View view;
-    private MainActivity mActivity;
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -105,7 +101,13 @@ public class PresentationFragment extends Fragment implements KeyPressListener {
             }
         });
 
-        Log.d(TAG, "TEST1: " + mActivity);
+        //Register hideScreen button listener
+        Button button_hideScreen = view.findViewById(R.id.button_hidescreen);
+        button_hideScreen.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                hideScreen();
+            }
+        });
 
         return view;
     }
@@ -115,8 +117,8 @@ public class PresentationFragment extends Fragment implements KeyPressListener {
     public void onStart() {
         super.onStart();
         TextView device_view = view.findViewById(R.id.presentationDeviceText);
-        if (mActivity.bt_service != null && mActivity.bt_service.isConnected()) {
-            String s = "Connected to " + mActivity.bt_service.device.getName();
+        if (mm_main_activity.bt_service != null && mm_main_activity.bt_service.isConnected()) {
+            String s = "Connected to " + mm_main_activity.bt_service.device.getName();
             device_view.setText(s);
         } else {
             device_view.setText(R.string.not_connected);
@@ -129,7 +131,7 @@ public class PresentationFragment extends Fragment implements KeyPressListener {
         super.onAttach(ctx);
 
         if (ctx instanceof MainActivity){
-            mActivity = (MainActivity) ctx;
+            mm_main_activity = (MainActivity) ctx;
         }
     }
 
@@ -152,10 +154,10 @@ public class PresentationFragment extends Fragment implements KeyPressListener {
 
         if (key_code == KeyEvent.KEYCODE_VOLUME_UP) {
             Log.d(TAG, "volume up key");
-            //TODO: send PPMessage here
+            nextSlide();
         }
         else if (key_code == KeyEvent.KEYCODE_VOLUME_DOWN) {
-            Log.d(TAG, "volume down key");
+            previousSlide();
         }
     }
 
@@ -163,7 +165,9 @@ public class PresentationFragment extends Fragment implements KeyPressListener {
     //called when button_nextslide is toggled
     private void nextSlide() {
         try {
-            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.KEY_PRESS, "RIGHT"));
+            if (mm_main_activity.bt_service != null) {
+                mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.KEY_PRESS, "RIGHT"));
+            }
         } catch (IllegalStateException ignored) { }
     }
 
@@ -171,7 +175,18 @@ public class PresentationFragment extends Fragment implements KeyPressListener {
     //called when button_prevslide is toggled
     private void previousSlide() {
         try {
-            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.KEY_PRESS, "LEFT"));
+            if (mm_main_activity.bt_service != null) {
+                mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.KEY_PRESS, "LEFT"));
+            }
+        } catch (IllegalStateException ignored) { }
+    }
+
+
+    private void hideScreen() {
+        try {
+            if (mm_main_activity.bt_service != null) {
+                mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.KEY_PRESS, "B"));
+            }
         } catch (IllegalStateException ignored) { }
     }
 }

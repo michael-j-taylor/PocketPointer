@@ -23,7 +23,6 @@ public class BluetoothService extends Service {
     public BluetoothDevice device;
     private CommunicationThread mm_coms = null;
     private ConnectThread mm_connection = null;
-    private boolean mm_remote_killed = false;
     private ServiceCallback mm_callback;
 
     @SuppressLint("HandlerLeak")
@@ -49,8 +48,8 @@ public class BluetoothService extends Service {
                 if (m.what == PPMessage.Command.END) {
                     //Shut down BluetoothService
                     Toast.makeText(getApplicationContext(), "Bluetooth device disconnected", Toast.LENGTH_SHORT).show();
-                    mm_remote_killed = true;
-                    closeConnection();
+                    mm_callback.removeConnection();
+                    closeConnection(false);
                 }
 
             } else if (msg.what == MessageConstants.MESSAGE_WRITE) {
@@ -68,7 +67,7 @@ public class BluetoothService extends Service {
 
             } else if (msg.what == MessageConstants.CONNECT_SUCCEEDED) {
                 mm_coms = mm_connection.getCommunicationThread();
-                mm_callback.updateConnection();
+                mm_callback.addConnection();
                 Toast.makeText(getApplicationContext(), "Connected to " + device.getName(), Toast.LENGTH_SHORT).show();
 
             } else {
@@ -93,7 +92,8 @@ public class BluetoothService extends Service {
     }
 
     public interface ServiceCallback {
-        void updateConnection();
+        void addConnection();
+        void removeConnection();
     }
 
     @Override
@@ -114,11 +114,12 @@ public class BluetoothService extends Service {
         Log.d(TAG, "Started connectThread");
     }
 
-    public void closeConnection() {
-        if (mm_coms != null && !mm_remote_killed) {
+    public void closeConnection(boolean localKilled) {
+        if (mm_coms != null && localKilled) {
             writeMessage(new PPMessage(PPMessage.Command.END, "Client ending activity"));
-            mm_coms = null;
         }
+        mm_coms = null;
+
         //Shut down communicationsThread and connectThread
         if (mm_connection != null && mm_connection.isConnected())
             mm_connection.cancel();
@@ -126,7 +127,7 @@ public class BluetoothService extends Service {
         device = null;
     }
 
-    public void writeMessage(PPMessage m) {
+    public void writeMessage(PPMessage m) throws IllegalStateException {
         if (mm_coms == null) {
             Log.e(TAG, "Tried to write to null mm_coms");
             Toast.makeText(getApplicationContext(), "Not connected to any device", Toast.LENGTH_SHORT).show();
@@ -148,7 +149,7 @@ public class BluetoothService extends Service {
     @Override
     public void onDestroy() {
         Toast.makeText(this, "Shutting down", Toast.LENGTH_SHORT).show();
-        closeConnection();
+        closeConnection(true);
         super.onDestroy();
     }
 }
