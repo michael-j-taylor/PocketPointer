@@ -295,7 +295,7 @@ public class HomeFragment extends Fragment implements SensorEventListener {
             }
 
             if (currentTime - startTime > time*1000 && inFocus) {
-
+                startTime = Calendar.getInstance().getTimeInMillis();
                 //set maximum x & y acceleration readings
                 /*if (event.values[0] > xmax) {xmax = event.values[0];} //Might repurpose this later
                 if (event.values[0] < xmin) {xmin = event.values[0];}
@@ -339,8 +339,8 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                 x_vel = x_vel + accel_x * time + .5 * jerk_x * Math.pow(time, 2);
                 y_vel = y_vel + accel_y * time + .5 * jerk_y * Math.pow(time, 2);
                 //calculate position. Will jerk help? We'll find out. Delta x and y to send to Windows if that is what is needed.
-                double delta_x = x_vel * time + .5 * accel_x * Math.pow(time, 2) + 1/6 * jerk_x * Math.pow(time, 3);
-                double delta_y = y_vel * time + .5 * accel_y * Math.pow(time, 2) + 1/6 * jerk_y * Math.pow(time, 3);
+                double delta_x = x_vel * time + .5 * accel_x * Math.pow(time, 2) + (double)1/6 * jerk_x * Math.pow(time, 3);
+                double delta_y = y_vel * time + .5 * accel_y * Math.pow(time, 2) + (double)1/6 * jerk_y * Math.pow(time, 3);
                 x_pos += delta_x*5000;
                 y_pos += -(delta_y*5000);
                 if (x_pos < 0.0)
@@ -362,7 +362,6 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                         "\nvy: " + String.format("%.5f", y_vel);
 
                 live_acceleration.setText(data_live);*/
-                startTime = Calendar.getInstance().getTimeInMillis();
             }
         //there was an else statement here, but it was basically empty
         }
