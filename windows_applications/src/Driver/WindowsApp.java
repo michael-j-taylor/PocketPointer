@@ -199,7 +199,11 @@ public class WindowsApp extends JFrame {
             } else { return firstList; }
         } else if (initial > 0 && initial < destination && initial < firstList.size() - 1) {
             if (destination == firstList.size() - 1) {
-                //algo 3
+                updatedList = new ArrayList<BtDevices>(firstList.subList(0, initial));
+                for (int i = initial + 1; i < destination + 1; i++) {
+                    updatedList.add((BtDevices) firstList.get(i));
+                }
+                updatedList.add((BtDevices) firstList.get(initial));
 
                 return updatedList;
             } else if (destination < firstList.size() - 1) {

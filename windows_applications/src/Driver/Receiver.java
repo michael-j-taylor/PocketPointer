@@ -27,11 +27,13 @@ public class Receiver extends JPanel
         BtDevices michael = new BtDevices("Michael's Device","234567891");
         BtDevices terran = new BtDevices("Terran's Device","345678912");
         BtDevices ryan = new BtDevices("Ryan's Device","456789123");
+        BtDevices ben = new BtDevices("Ben's Device","567891234");
 
-        window.addBtDevice(alejandro, 1);
+        window.addBtDevice(ben,1);
         window.addBtDevice(michael, 2);
-        window.addBtDevice(terran, 3);
+        window.addBtDevice(alejandro, 3);
         window.addBtDevice(ryan, 4);
+        window.addBtDevice(terran, 5);
 
 
         /*BluetoothServer server = new BluetoothServer();
