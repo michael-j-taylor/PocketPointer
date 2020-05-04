@@ -99,7 +99,7 @@ public class TouchpadFragment extends Fragment {
                             mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.TOUCH_TAP));
                         }
                         else {
-                            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_LEFT);
+                            mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_LEFT));
                         }
                     }
                 } catch (IllegalStateException ignored) { }
@@ -199,7 +199,7 @@ public class TouchpadFragment extends Fragment {
         super.onStart();
         TextView device_view = view.findViewById(R.id.touchpadDeviceText);
         if (mm_main_activity.bt_service != null && mm_main_activity.bt_service.isConnected()) {
-            String s = "Connected to " + mm_main_activity.bt_service.device.getName();
+            String s = "Connectedd to " + mm_main_activity.bt_service.device.getName();
             device_view.setText(s);
         } else {
             device_view.setText(R.string.not_connected);
