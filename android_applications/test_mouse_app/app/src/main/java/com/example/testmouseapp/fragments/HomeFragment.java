@@ -57,12 +57,13 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     //printed accelerometer values
     private float accel_x, prev_accel_x, raw_x;
     private float accel_y, prev_accel_y, raw_y;
+    private float raw_z;
     private long startTime = 0;
     private long currentTime;
 
     private final int polling_rate = 60; //in Hz
     private int twa = 0; //ticks without acceleration
-    private float friction_coefficient = .85f;
+    private float friction_coefficient = .82f;
     private float time;
     private final int vibrationTime = 40;
 
@@ -86,9 +87,9 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         time = 1.f/polling_rate;
-        calibrater = new Calibrater(100);
-        movingAverage_X = new MovingAverage(50);
-        movingAverage_Y = new MovingAverage(50);
+        calibrater = new Calibrater(150);
+        movingAverage_X = new MovingAverage(40);
+        movingAverage_Y = new MovingAverage(40);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -177,34 +178,6 @@ public class HomeFragment extends Fragment implements SensorEventListener {
 
         //Register scroll wheel and button
         ScrollView scroll_wheel = view.findViewById(R.id.scroll_wheel);
-        scroll_wheel.setOnGenericMotionListener(new View.OnGenericMotionListener() {
-            @Override
-            public boolean onGenericMotion(View view, MotionEvent motionEvent) {
-                Log.d(TAG, "Generic motion detected.");
-                switch (motionEvent.getAction()) {
-                    case MotionEvent.ACTION_SCROLL:
-                        {
-                            float newX = motionEvent.getX();
-                            float oldX = motionEvent.getHistoricalX(1);
-                            float newY = motionEvent.getY();
-                            float oldY = motionEvent.getHistoricalY(1);
-                            if (canSendMessage())
-                                mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.SCROLL, newX - oldX, newY - oldY));
-                            Log.d(TAG, "Scroll wheel used");
-                            return true;
-                        }
-                        case MotionEvent.ACTION_BUTTON_PRESS:
-                        {
-                            vibe.vibrate(vibrationTime);
-                            if (canSendMessage())
-                                mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_MIDDLE));
-                            Log.d(TAG, "Scroll wheel clicked");
-                            return true;
-                        }
-                    }
-                return false;
-            }
-        });
         scroll_wheel.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v)
             {
@@ -293,11 +266,12 @@ public class HomeFragment extends Fragment implements SensorEventListener {
 
         raw_x = event.values[0];
         raw_y = event.values[1];
+        raw_z = event.values[2];
 
         //float raw_magnitude = (float) Math.sqrt(Math.pow(event.values[0], 2) + Math.pow(event.values[1], 2));
         float calibrated_magnitude = (float) Math.sqrt(Math.pow(raw_x - calibrater.x_offset, 2) +
                 Math.pow(raw_y - calibrater.y_offset, 2));
-        if (calibrated_magnitude > calibrater.magnitude_threshold && !calibrater.calibrating) {
+        if (calibrated_magnitude > calibrater.magnitude_threshold && !calibrater.calibrating && raw_z < 10 && raw_z > 9.5) {
             //Log.d(TAG, "THRESHOLD EXCEEDED");
             movingAverage_X.addToWindow(raw_x);
             movingAverage_Y.addToWindow(raw_y);
@@ -338,7 +312,7 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                     accel_x = 0;
                     accel_y = 0;
                     twa++;
-                    if (twa >= 5) {
+                    if (twa >= 6) {
                         //Log.d(TAG, "3 or more ticks since acceleration");
                         x_vel *= friction_coefficient;
                         y_vel *= friction_coefficient;
@@ -354,8 +328,8 @@ public class HomeFragment extends Fragment implements SensorEventListener {
 
                 if (VectorOperations.oppositeDirection(accel_x, accel_y, x_vel, y_vel))
                 {
-                    accel_x *= 6;
-                    accel_y *= 6;
+                    accel_x *= 5;
+                    accel_y *= 5;
                 }
 
                 //calculate jerk
@@ -367,14 +341,14 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                 //calculate position. Will jerk help? We'll find out. Delta x and y to send to Windows if that is what is needed.
                 double delta_x = x_vel * time + .5 * accel_x * Math.pow(time, 2) + 1/6 * jerk_x * Math.pow(time, 3);
                 double delta_y = y_vel * time + .5 * accel_y * Math.pow(time, 2) + 1/6 * jerk_y * Math.pow(time, 3);
-                x_pos += delta_x*2000;
-                y_pos += -(delta_y*2000);
+                x_pos += delta_x*5000;
+                y_pos += -(delta_y*5000);
                 if (x_pos < 0.0)
                     x_pos = 0;
                 if (y_pos < 0.0)
                     y_pos = 0;
-                delta_x*=2000;
-                delta_y*=-2000;
+                delta_x*=5000;
+                delta_y*=-5000;
                 if (canSendMessage()) {
                     mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.MOUSE_COORDS, delta_x, delta_y));
                 }
@@ -382,12 +356,12 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                 prev_accel_x = accel_x;
                 prev_accel_y = accel_y;
 
-                String data_live = "X: " + String.format("%.3f", x_pos) + "\nY: " + String.format("%.3f", y_pos) + "\nax: " + accel_x +"\nay: " + accel_y +
+                /*String data_live = "X: " + String.format("%.3f", x_pos) + "\nY: " + String.format("%.3f", y_pos) + "\nax: " + accel_x +"\nay: " + accel_y +
                         "\ncx: " + calibrater.x_offset + "\ncy: " + calibrater.y_offset + "\nrx: " + String.format("%.5f", raw_x) +
                         "\nry: " + String.format("%.5f", raw_y) + "\nvx: " + String.format("%.5f", x_vel) +
                         "\nvy: " + String.format("%.5f", y_vel);
 
-                live_acceleration.setText(data_live);
+                live_acceleration.setText(data_live);*/
                 startTime = Calendar.getInstance().getTimeInMillis();
             }
         //there was an else statement here, but it was basically empty
