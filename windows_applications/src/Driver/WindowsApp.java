@@ -183,21 +183,20 @@ public class WindowsApp extends JFrame {
         if (initial == 0 && initial < destination) {
             if (destination == firstList.size() - 1) {
                 updatedList = new ArrayList<BtDevices>(firstList.subList(1, destination));
+                updatedList.add((BtDevices) firstList.get(destination));
                 updatedList.add((BtDevices) firstList.get(initial));
 
                 return updatedList;
             } else if (destination < firstList.size() - 1) {
-                //algo 2
+                updatedList = new ArrayList<BtDevices>(firstList.subList(1, destination));
+                updatedList.add((BtDevices) firstList.get(destination));
+                updatedList.add((BtDevices) firstList.get(initial));
+                for (int i = destination + 1; i < firstList.size(); i++) {
+                    updatedList.add((BtDevices) firstList.get(i));
+                }
 
                 return updatedList;
-            } else {
-                for (int k = 0; k < firstList.size(); k++) {
-                    System.out.println("firstList element: " + k);
-                    BtDevices tempDevice = (BtDevices) firstList.get(k);
-                    System.out.println("device in that element: " + tempDevice.getDevName());
-                }
-                return firstList;
-            }
+            } else { return firstList; }
         } else if (initial > 0 && initial < destination && initial < firstList.size() - 1) {
             if (destination == firstList.size() - 1) {
                 //algo 3
