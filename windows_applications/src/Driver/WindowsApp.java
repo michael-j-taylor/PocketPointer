@@ -182,58 +182,96 @@ public class WindowsApp extends JFrame {
 
         if (initial == 0 && initial < destination) {
             if (destination == firstList.size() - 1) {
+                //sort instance 1
                 updatedList = new ArrayList<BtDevices>(firstList.subList(1, destination));
+                updatedList.add((BtDevices) firstList.get(destination));
                 updatedList.add((BtDevices) firstList.get(initial));
 
                 return updatedList;
             } else if (destination < firstList.size() - 1) {
-                //algo 2
+                //sort instance 2
+                updatedList = new ArrayList<BtDevices>(firstList.subList(1, destination));
+                updatedList.add((BtDevices) firstList.get(destination));
+                updatedList.add((BtDevices) firstList.get(initial));
+                for (int i = destination + 1; i < firstList.size(); i++) {
+                    updatedList.add((BtDevices) firstList.get(i));
+                }
 
                 return updatedList;
-            } else {
-                for (int k = 0; k < firstList.size(); k++) {
-                    System.out.println("firstList element: " + k);
-                    BtDevices tempDevice = (BtDevices) firstList.get(k);
-                    System.out.println("device in that element: " + tempDevice.getDevName());
-                }
-                return firstList;
-            }
+            } else { return firstList; }
         } else if (initial > 0 && initial < destination && initial < firstList.size() - 1) {
             if (destination == firstList.size() - 1) {
-                //algo 3
+                //sort instance 3
+                updatedList = new ArrayList<BtDevices>(firstList.subList(0, initial));
+                for (int i = initial + 1; i < destination + 1; i++) {
+                    updatedList.add((BtDevices) firstList.get(i));
+                }
+                updatedList.add((BtDevices) firstList.get(initial));
 
                 return updatedList;
             } else if (destination < firstList.size() - 1) {
-                //algo 4
+                //sort instance 4
+                updatedList = new ArrayList<BtDevices>(firstList.subList(0, initial));
+                for (int i = initial + 1; i < destination + 1; i++) {
+                    updatedList.add((BtDevices) firstList.get(i));
+                }
+                updatedList.add((BtDevices) firstList.get(initial));
+                for (int i = destination + 1; i < firstList.size(); i++) {
+                    updatedList.add((BtDevices) firstList.get(i));
+                }
 
                 return updatedList;
-            } else {
-                return firstList;
-            }
+            } else { return firstList; }
         } else if (destination == 0 && destination < initial) {
             if (initial == firstList.size() - 1) {
-                //algo 5
+                //sort instance 5
+                updatedList = new ArrayList<BtDevices>();
+                updatedList.add((BtDevices) firstList.get(initial));
+                for (int i = destination; i < firstList.size() - 1; i++) {
+                    updatedList.add((BtDevices) firstList.get(i));
+                }
 
                 return updatedList;
             } else if (initial < firstList.size() - 1) {
-                //algo 6
+                //sort instance 6
+                updatedList = new ArrayList<BtDevices>();
+                updatedList.add((BtDevices) firstList.get(initial));
+                for (int i = destination; i < initial; i++) {
+                    updatedList.add((BtDevices) firstList.get(i));
+                }
+                for (int i = initial + 1; i < firstList.size(); i++) {
+                    updatedList.add((BtDevices) firstList.get(i));
+                }
 
                 return updatedList;
-            } else {
-                return firstList;
-            }
+            } else { return firstList; }
         } else if (destination > 0 && destination < initial && destination < firstList.size() - 1) {
-            if (destination == firstList.size() - 1) {
-                //algo 7
+            System.out.println("trying 1");
+            if (initial == firstList.size() - 1) {
+                //sort instance 7
+                System.out.println("trying 2");
+                updatedList = new ArrayList<BtDevices>(firstList.subList(0, destination));
+                updatedList.add((BtDevices) firstList.get(initial));
+                for (int i = destination; i < initial; i++) {
+                    updatedList.add((BtDevices) firstList.get(i));
+                }
 
                 return updatedList;
-            } else if (destination < firstList.size() - 1) {
-                //algo 8
+            } else if (initial < firstList.size() - 1) {
+                //sort instance 8
+                System.out.println("trying 3");
+                updatedList = new ArrayList<BtDevices>(firstList.subList(0, destination));
+                updatedList.add((BtDevices) firstList.get(initial));
+                for (int i = destination; i < initial; i++) {
+                    updatedList.add((BtDevices) firstList.get(i));
+                }
+                for (int i = initial + 1; i < firstList.size(); i++) {
+                    updatedList.add((BtDevices) firstList.get(i));
+                }
+
 
                 return updatedList;
-            } else {
-                return firstList;
-            }
+            } else { return firstList; }
         } else {
             return firstList;
         }

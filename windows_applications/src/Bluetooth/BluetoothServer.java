@@ -65,7 +65,6 @@ public class BluetoothServer {
 		mm_connect_thread = null;
 		mm_watcher = null;
 		notifier = null;
-
 		mm_window.connectDeviceButton.setVisible(false);
 		mm_window.stopConnectingButton.setVisible(true);
 		
@@ -164,6 +163,7 @@ public class BluetoothServer {
         //Update text fields in window to show no connection
         mm_window.connectingOutput.setText("No connected device");
         mm_window.connectDeviceButton.setVisible(true);
+        mm_window.stopConnectingButton.setVisible(false);
 		mm_window.disconnectDeviceButton.setVisible(false);
 
 		//Shut down threads

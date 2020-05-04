@@ -218,19 +218,20 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                 Log.d(TAG, "Middle mouse button clicked");
                 vibe.vibrate(vibrationTime);
                 float oldY;
-                if (me.getHistorySize() >= 1)
+                float newY = me.getY();
+                if (me.getHistorySize() > 0)
                     oldY = me.getHistoricalY(0);
                 else
-                    oldY = 0;
-                float newY = me.getY();
+                    oldY = newY;
+
                 if (canSendMessage()) {
-                    if (Math.abs(me.getHistoricalY(1) - me.getY()) <= 5) {
+                    if (Math.abs(newY - oldY) <= 5) {
                         mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.BUTTON, PPMessage.Button.MOUSE_MIDDLE));
                         Log.d(TAG, "Middle mouse button clicked");
                         return true;
                     }
                     else {
-                        mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.SCROLL, 0, newY - oldY));
+                        mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.SCROLL, 0, (newY - oldY)/10));
                         Log.d(TAG, "Middle mouse button scrolled: " + me.getY());
                         return true;
                     }
@@ -353,8 +354,8 @@ public class HomeFragment extends Fragment implements SensorEventListener {
 
                 if (VectorOperations.oppositeDirection(accel_x, accel_y, x_vel, y_vel))
                 {
-                    accel_x *= 5;
-                    accel_y *= 5;
+                    accel_x *= 6;
+                    accel_y *= 6;
                 }
 
                 //calculate jerk
@@ -366,14 +367,14 @@ public class HomeFragment extends Fragment implements SensorEventListener {
                 //calculate position. Will jerk help? We'll find out. Delta x and y to send to Windows if that is what is needed.
                 double delta_x = x_vel * time + .5 * accel_x * Math.pow(time, 2) + 1/6 * jerk_x * Math.pow(time, 3);
                 double delta_y = y_vel * time + .5 * accel_y * Math.pow(time, 2) + 1/6 * jerk_y * Math.pow(time, 3);
-                x_pos += delta_x*1000;
-                y_pos += -(delta_y*1000);
+                x_pos += delta_x*2000;
+                y_pos += -(delta_y*2000);
                 if (x_pos < 0.0)
                     x_pos = 0;
                 if (y_pos < 0.0)
                     y_pos = 0;
-                delta_x*=1000;
-                delta_y*=-1000;
+                delta_x*=2000;
+                delta_y*=-2000;
                 if (canSendMessage()) {
                     mm_main_activity.bt_service.writeMessage(new PPMessage(PPMessage.Command.MOUSE_COORDS, delta_x, delta_y));
                 }
