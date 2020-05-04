@@ -198,9 +198,7 @@ public class WindowsApp extends JFrame {
                 }
 
                 return updatedList;
-            } else {
-                return firstList;
-            }
+            } else { return firstList; }
         } else if (initial > 0 && initial < destination && initial < firstList.size() - 1) {
             if (destination == firstList.size() - 1) {
                 //sort instance 3
@@ -223,9 +221,7 @@ public class WindowsApp extends JFrame {
                 }
 
                 return updatedList;
-            } else {
-                return firstList;
-            }
+            } else { return firstList; }
         } else if (destination == 0 && destination < initial) {
             if (initial == firstList.size() - 1) {
                 //sort instance 5
@@ -247,24 +243,35 @@ public class WindowsApp extends JFrame {
                     updatedList.add((BtDevices) firstList.get(i));
                 }
 
-
                 return updatedList;
-            } else {
-                return firstList;
-            }
+            } else { return firstList; }
         } else if (destination > 0 && destination < initial && destination < firstList.size() - 1) {
-            if (destination == firstList.size() - 1) {
+            System.out.println("trying 1");
+            if (initial == firstList.size() - 1) {
                 //sort instance 7
-
+                System.out.println("trying 2");
+                updatedList = new ArrayList<BtDevices>(firstList.subList(0, destination));
+                updatedList.add((BtDevices) firstList.get(initial));
+                for (int i = destination; i < initial; i++) {
+                    updatedList.add((BtDevices) firstList.get(i));
+                }
 
                 return updatedList;
-            } else if (destination < firstList.size() - 1) {
+            } else if (initial < firstList.size() - 1) {
                 //sort instance 8
+                System.out.println("trying 3");
+                updatedList = new ArrayList<BtDevices>(firstList.subList(0, destination));
+                updatedList.add((BtDevices) firstList.get(initial));
+                for (int i = destination; i < initial; i++) {
+                    updatedList.add((BtDevices) firstList.get(i));
+                }
+                for (int i = initial + 1; i < firstList.size(); i++) {
+                    updatedList.add((BtDevices) firstList.get(i));
+                }
+
 
                 return updatedList;
-            } else {
-                return firstList;
-            }
+            } else { return firstList; }
         } else {
             return firstList;
         }
